@@ -10,6 +10,7 @@ import axios, { AxiosError } from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import api from "@/lib/api";
 
 type DayStatus = "weekend" | "absent" | "present" | "today" | "future";
 
@@ -204,7 +205,7 @@ const EmployeeAttendancePage = () => {
             setMessage(null);
 
             const token = Cookies.get("access");
-            const response = await axios.get<PunchResponse>(`${apiUrl}/today/`, {
+            const response = await api.get<PunchResponse>(`${apiUrl}/today/`, {
                 headers: {
                     Authorization: token ? `Bearer ${token}` : "",
                 },
@@ -258,7 +259,7 @@ const EmployeeAttendancePage = () => {
         try {
             const accessToken = Cookies.get("access");
 
-            const response = await axios.post<PunchResponse>(
+            const response = await api.post<PunchResponse>(
                 endpoint,
                 {
                     latitude: location.lat,
