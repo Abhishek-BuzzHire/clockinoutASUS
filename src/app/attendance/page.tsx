@@ -13,7 +13,7 @@ import Cookies from "js-cookie";
 
 type DayStatus = "weekend" | "absent" | "present" | "today" | "future";
 
-const apiUrl= "https://buzzhire.trueledgrr.com/api/attendance"
+const apiUrl= "https://buzzhire.trueledgrr.com/"
 
 type AttendanceRecord = {
     id?: number;
