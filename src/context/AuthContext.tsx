@@ -89,8 +89,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = (access: string, refresh: string, userData: UserState) => {
     // Set cookies with appropriate expiration times
     // NOTE: Access token expiration should match backend setting (e.g., 5-60 minutes)
-    Cookies.set("access", access, { expires: 1 / 24, secure: true, sameSite: 'Strict' }); // ~1 hour expiration
-    Cookies.set("refresh", refresh, { expires: 30, secure: true, sameSite: 'Strict' }); // 30 days expiration
+    Cookies.set("access", access,); // ~1 hour expiration
+    Cookies.set("refresh", refresh, ); // 30 days expiration
 
     // Set the user state immediately
     setUser(userData);
@@ -135,3 +135,7 @@ export const useAuth = () => {
   }
   return context;
 };
+
+
+// { expires: 30, secure: true, sameSite: 'Strict' }
+//  { expires: 1 / 24, secure: true, sameSite: 'Strict' }
