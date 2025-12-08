@@ -11,6 +11,24 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 
+function parseTimestamp(timestamp: string): Date {
+  // Convert "2025-12-08 15:55:18.163915" → "2025-12-08T15:55:18.163"
+  const iso = timestamp
+    .replace(" ", "T")
+    .replace(/(\.\d{3})\d+$/, "$1");
+
+  return new Date(iso);
+}
+
+function formatPunchTime(timestamp: string) {
+  const date = parseTimestamp(timestamp);
+
+  return date.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 type DayStatus = "weekend" | "absent" | "present" | "today" | "future";
 
 const apiUrl= "https://buzzhire.trueledgrr.com/"
@@ -222,10 +240,10 @@ const EmployeeAttendancePage = () => {
                     const elapsed = Math.max(0, Math.floor((now - punchIn) / 1000));
                     setInitialElapsedSeconds(elapsed);
                     // setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-                    setPunchTime(data.data.punch_in_time)
+                    setPunchTime(formatPunchTime(data.data.punch_in_time))
                 } else if (data.data.punch_out_time) {
                     // setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-                    setPunchTime(data.data.punch_out_time)
+                    setPunchTime(formatPunchTime(data.data.punch_out_time))
                     setInitialElapsedSeconds(0);
                 } else {
                     setPunchTime("");
@@ -288,11 +306,11 @@ const EmployeeAttendancePage = () => {
                         const elapsed = Math.max(0, Math.floor((Date.now() - pIn) / 1000));
                         setInitialElapsedSeconds(elapsed);
                         // setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-                        setPunchTime(data.data.punch_in_time)
+                        setPunchTime(formatPunchTime(data.data.punch_in_time))
                     } else if (type === "out" && data.data.punch_out_time) {
                         setInitialElapsedSeconds(0);
                         // setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-                        setPunchTime(data.data.punch_out_time)
+                        setPunchTime(formatPunchTime(data.data.punch_out_time))
                     }
                 } else {
                     // fallback: refresh today's attendance
