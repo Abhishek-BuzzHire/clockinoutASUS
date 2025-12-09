@@ -9,10 +9,20 @@ import axios, { AxiosError } from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { TimesheetLegend } from "@/components/attendance/TimeSheetLegend";
+import { TimeEntryRow } from "@/components/attendance/TimeEntryRow";
+import { TimesheetHeader } from "@/components/attendance/TimeSheetHeader";
+import { ShiftConfig } from "@/lib/types";
+
+export const SHIFT_CONFIG: ShiftConfig = {
+    startTime: "09:30",
+    endTime: "19:00",
+};
+
 
 type DayStatus = "weekend" | "absent" | "present" | "today" | "future";
 
-const apiUrl= "https://buzzhire.trueledgrr.com/"
+const apiUrl = "https://buzzhire.trueledgrr.com/"
 
 type AttendanceRecord = {
     id?: number;
@@ -31,15 +41,26 @@ type PunchResponse = {
     data?: AttendanceRecord;
 };
 
-// const formatTime = (totalSeconds: number): string => {
-//     const hours = Math.floor(totalSeconds / 3600);
-//     const minutes = Math.floor((totalSeconds % 3600) / 60);
-//     const seconds = totalSeconds % 60;
+const formatTime = (totalSeconds: number): string => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
 
-//     return [hours, minutes, seconds]
-//         .map((v) => (v < 10 ? "0" + v : v))
-//         .join(" : ");
-// };
+    return [hours, minutes, seconds]
+        .map((v) => (v < 10 ? "0" + v : v))
+        .join(" : ");
+};
+
+const formattedTime = (isoString: any) => {
+        if (!isoString) return undefined;
+
+        return new Date(isoString).toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+            timeZone: "UTC"   // <-- Keeps the exact time sent from backend
+        });
+    };
 
 const PunchCard: React.FC<{
     isPunchedIn: boolean;
@@ -123,10 +144,6 @@ const PunchCard: React.FC<{
 };
 
 const EmployeeAttendancePage = () => {
-    // Tabs UI
-    const tabs = ["Attendance", "Leaves", "Shift", "Seperation"];
-    const [activeTab, setActiveTab] = useState("Attendance");
-
     // Auth + router
     const { user, loading, logout } = useAuth();
     const router = useRouter();
@@ -144,6 +161,8 @@ const EmployeeAttendancePage = () => {
     // Timer / UI state
     const [punchTime, setPunchTime] = useState<string>("");
     const [initialElapsedSeconds, setInitialElapsedSeconds] = useState<number>(0);
+
+
 
     const { toast } = useToast();
 
@@ -220,11 +239,9 @@ const EmployeeAttendancePage = () => {
                     const now = Date.now();
                     const elapsed = Math.max(0, Math.floor((now - punchIn) / 1000));
                     setInitialElapsedSeconds(elapsed);
-                    // setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-                    setPunchTime(data.data.punch_in_time)
+                    setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" }));
                 } else if (data.data.punch_out_time) {
-                    // setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-                    setPunchTime(data.data.punch_out_time)
+                    setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" }));
                     setInitialElapsedSeconds(0);
                 } else {
                     setPunchTime("");
@@ -286,12 +303,10 @@ const EmployeeAttendancePage = () => {
                         const pIn = new Date(data.data.punch_in_time).getTime();
                         const elapsed = Math.max(0, Math.floor((Date.now() - pIn) / 1000));
                         setInitialElapsedSeconds(elapsed);
-                        // setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-                        setPunchTime(data.data.punch_in_time)
+                        setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" }));
                     } else if (type === "out" && data.data.punch_out_time) {
                         setInitialElapsedSeconds(0);
-                        // setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-                        setPunchTime(data.data.punch_out_time)
+                        setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit",  hour12: true, timeZone: "UTC" }));
                     }
                 } else {
                     // fallback: refresh today's attendance
@@ -365,15 +380,20 @@ const EmployeeAttendancePage = () => {
 
     // Helpers (minimal replacements for original utilities used in UI)
     const calculateHoursWorked = (dateStr: string) => {
-        // best-effort: if we have check-in/out times in attendanceData, compute seconds difference
-        const entry = attendanceData[dateStr];
-        if (entry?.punch_in_time && entry?.punch_out_time) {
-            const inT = new Date(entry.punch_in_time).getTime();
-            const outT = new Date(entry.punch_out_time).getTime();
-            return Math.max(0, Math.floor((outT - inT) / 3600)); // hours as integer (used by formatHoursWorked)
-        }
-        return 0;
-    };
+    const entry = attendanceData[dateStr];
+
+    if (entry?.punch_in_time && entry?.punch_out_time) {
+        const inT = Date.parse(entry.punch_in_time);
+        const outT = Date.parse(entry.punch_out_time);
+
+        const diffMs = outT - inT;
+        const hours = diffMs / (1000 * 60 * 60); // convert ms → hours
+
+        return Math.max(0, hours);
+    }
+
+    return 0;
+};
 
     const calculateLateness = (dateStr: string) => {
         return 0;
@@ -404,8 +424,8 @@ const EmployeeAttendancePage = () => {
         return {
             day: isToday(date) ? "Today" : format(date, "EEE"),
             date: date.getDate(),
-            checkInTime: entry?.punch_in_time,
-            checkOutTime: entry?.punch_out_time,
+            checkInTime: formattedTime(entry?.punch_in_time),
+            checkOutTime: formattedTime(entry?.punch_out_time),
             lateBy: lateness > 0 ? formatMinutesToHHMM(lateness) : undefined,
             earlyBy: earlyLeave > 0 ? formatMinutesToHHMM(earlyLeave) : undefined,
             hoursWorked: formatHoursWorked(hoursWorked),
@@ -460,11 +480,11 @@ const EmployeeAttendancePage = () => {
         return <div className="p-8 text-center">Loading authentication...</div>;
     }
 
-    const timeLabels = ["09AM", "10AM", "11AM", "12PM", "01PM", "02PM", "03PM", "04PM", "05PM", "06PM"];
+    const timeLabels = ["09:30AM", "10AM", "11AM", "12PM", "01PM", "02PM", "03PM", "04PM", "05PM", "06PM", "07PM"];
 
     return (
-        <div className="w-full bg-blueLight-50 p-4 relative">
-            <header className="flex justify-between items-center pb-6 border-b border-gray-300">
+        <div className="w-full p-4">
+            <header className="flex justify-end items-center pb-6 border-b border-gray-300">
                 <button
                     onClick={logout}
                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-150"
@@ -472,51 +492,76 @@ const EmployeeAttendancePage = () => {
                     Logout
                 </button>
             </header>
-            <div className="text-lg">
-
+            <div className="text-lg w-full bg-cyan-50 p-4">
                 {/* MAIN CONTENT */}
-                <div>
-                    <div className="h-screen flex gap-4 items-center justify-center">
-
-                        <div className="w-xl mt-12 relative space-y-4">
-                            <PunchCard
-                                isPunchedIn={isPunchedInUI}
-                                handlePunchAction={handlePunchAction}
-                                punchTime={punchTime}
-                                elapsedSeconds={initialElapsedSeconds}
-                                profileName={user?.name ?? user?.email ?? "Employee"}
-                                imgurl={user?.picture}
-                            />
-
-                            {/* Location display & refresh */}
-                            <div className={`p-4 rounded-md ${locationError ? "bg-red-100 text-red-700" : "bg-green-50 text-green-700"} mb-4`}>
-                                <h3 className="font-semibold">Current Location Status:</h3>
-                                {isProcessing && location === null ? (
-                                    <p>Fetching location...</p>
-                                ) : locationError ? (
-                                    <p>{locationError}</p>
-                                ) : (
-                                    <p>Lat: {location?.lat?.toFixed(6)}, Lon: {location?.lon?.toFixed(6)}</p>
-                                )}
-
-                                <div className="mt-3">
-                                    <button
-                                        onClick={fetchGeolocation}
-                                        disabled={isProcessing}
-                                        className="w-full py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition duration-200"
-                                    >
-                                        {isProcessing ? "Updating..." : "Refresh Location"}
-                                    </button>
-                                </div>
+                <div className="flex gap-4">
+                    <div className="w-[80%] min-h-screen space-y-6 pt-12">
+                        {/* <BigCalendar /> */}
+                        <TimesheetHeader
+                            weekStart={currentWeekStart}
+                            weekEnd={weekEnd}
+                            onNavigate={navigateWeek}
+                            onToday={goToToday}
+                            shiftStart={SHIFT_CONFIG.startTime}
+                            shiftEnd={SHIFT_CONFIG.endTime}
+                        />
+                        <div className="bg-card rounded-lg border border-border shadow-sm p-6 pt-2">
+                            <div className="space-y-2">
+                                {weekData.map((entry, index) => (
+                                    <TimeEntryRow key={index} {...{
+                                        ...entry, checkInTime: entry.checkInTime ?? undefined,
+                                        checkOutTime: entry.checkOutTime ?? undefined,
+                                    }} />
+                                ))}
                             </div>
 
-                            {/* Message */}
-                            {message && (
-                                <div className={`p-4 rounded-md ${message.startsWith("Error") || message.includes("failed") ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}>
-                                    {message}
+                            <div className="mt-8 relative">
+                                <div className="flex justify-between text-sm text-muted-foreground px-[120px]">
+                                    {timeLabels.map((time) => (
+                                        <span key={time}>{time}</span>
+                                    ))}
                                 </div>
-                            )}
+                            </div>
                         </div>
+                    </div>
+                    <div className="w-[20%] mt-12 relative space-y-4">
+                        <PunchCard
+                            isPunchedIn={isPunchedInUI}
+                            handlePunchAction={handlePunchAction}
+                            punchTime={punchTime}
+                            elapsedSeconds={initialElapsedSeconds}
+                            profileName={user?.name ?? user?.email ?? "Employee"}
+                            imgurl={user?.picture}
+                        />
+
+                        {/* Location display & refresh */}
+                        <div className={`p-4 rounded-md ${locationError ? "bg-red-100 text-red-700" : "bg-green-50 text-green-700"} mb-4`}>
+                            <h3 className="font-semibold">Current Location Status:</h3>
+                            {isProcessing && location === null ? (
+                                <p>Fetching location...</p>
+                            ) : locationError ? (
+                                <p>{locationError}</p>
+                            ) : (
+                                <p>Lat: {location?.lat?.toFixed(6)}, Lon: {location?.lon?.toFixed(6)}</p>
+                            )}
+
+                            <div className="mt-3">
+                                <button
+                                    onClick={fetchGeolocation}
+                                    disabled={isProcessing}
+                                    className="w-full py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition duration-200"
+                                >
+                                    {isProcessing ? "Updating..." : "Refresh Location"}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Message */}
+                        {message && (
+                            <div className={`p-4 rounded-md ${message.startsWith("Error") || message.includes("failed") ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}>
+                                {message}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

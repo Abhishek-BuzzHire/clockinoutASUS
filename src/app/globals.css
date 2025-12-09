@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@source "./app/**/*.{ts,tsx,js,jsx,mdx}";
+@source "./components/**/*.{ts,tsx,js,jsx}";
+@source "./src/**/*.{ts,tsx,js,jsx,mdx}";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -41,6 +45,24 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  
+  --color-weekend: hsl(var(--weekend));
+  --color-weekend-light: hsl(var(--weekend-light));
+
+  --color-absent: hsl(var(--absent));
+  --color-absent-light: hsl(var(--absent-light));
+
+  --color-late: hsl(var(--late));
+  --color-late-foreground: hsl(var(--late-foreground));
+
+  --color-early: hsl(var(--early));
+  --color-early-foreground: hsl(var(--early-foreground));
+
+  --color-today: hsl(var(--today));
+  --color-today-light: hsl(var(--today-light));
+
+  --color-timeline-bg: hsl(var(--timeline-bg));
+  --color-timeline-inactive: hsl(var(--timeline-inactive));
 }
 
 :root {
@@ -76,6 +98,29 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --weekend: 43 74% 66%;
+    --weekend-light: 43 74% 94%;
+
+    --absent: 0 84% 60%;
+    --absent-light: 0 84% 95%;
+
+    --late: 14 100% 57%;
+    --late-foreground: 0 0% 100%;
+
+    --early: 142 71% 45%;
+    --early-foreground: 0 0% 100%;
+
+    --today: 217 91% 60%;
+    --today-light: 217 91% 95%;
+
+    --timeline-bg: 220 13% 91%;
+    --timeline-inactive: 0 0% 85%;
 }
 
 .dark {
@@ -110,12 +155,36 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 100%;
+
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
+
+  --weekend: 43 74% 66%;
+  --weekend-light: 43 74% 94%;
+
+  --absent: 0 84% 60%;
+  --absent-light: 0 84% 95%;
+
+  --late: 14 100% 57%;
+  --late-foreground: 0 0% 100%;
+
+  --early: 142 71% 45%;
+  --early-foreground: 0 0% 100%;
+
+  --today: 217 91% 60%;
+  --today-light: 217 91% 95%;
+
+  --timeline-bg: 220 13% 91%;
+  --timeline-inactive: 0 0% 85%;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
