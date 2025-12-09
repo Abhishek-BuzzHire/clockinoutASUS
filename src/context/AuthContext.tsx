@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         id: decoded.user_id,
         email: decoded.email,
         name: decoded.name, // Use 'name' if available in the token
-        // picture: decoded.picture
+        picture: decoded.picture
       });
     } catch (error) {
       console.error("Token decoding failed or token is invalid.", error);

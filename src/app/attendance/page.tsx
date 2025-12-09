@@ -9,7 +9,6 @@ import axios, { AxiosError } from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { TimesheetLegend } from "@/components/attendance/TimeSheetLegend";
 import { TimeEntryRow } from "@/components/attendance/TimeEntryRow";
 import { TimesheetHeader } from "@/components/attendance/TimeSheetHeader";
 import { ShiftConfig } from "@/lib/types";
@@ -52,15 +51,15 @@ const formatTime = (totalSeconds: number): string => {
 };
 
 const formattedTime = (isoString: any) => {
-        if (!isoString) return undefined;
+    if (!isoString) return undefined;
 
-        return new Date(isoString).toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-            timeZone: "UTC"   // <-- Keeps the exact time sent from backend
-        });
-    };
+    return new Date(isoString).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "UTC"   // <-- Keeps the exact time sent from backend
+    });
+};
 
 const PunchCard: React.FC<{
     isPunchedIn: boolean;
@@ -306,7 +305,7 @@ const EmployeeAttendancePage = () => {
                         setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" }));
                     } else if (type === "out" && data.data.punch_out_time) {
                         setInitialElapsedSeconds(0);
-                        setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit",  hour12: true, timeZone: "UTC" }));
+                        setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" }));
                     }
                 } else {
                     // fallback: refresh today's attendance
@@ -380,20 +379,20 @@ const EmployeeAttendancePage = () => {
 
     // Helpers (minimal replacements for original utilities used in UI)
     const calculateHoursWorked = (dateStr: string) => {
-    const entry = attendanceData[dateStr];
+        const entry = attendanceData[dateStr];
 
-    if (entry?.punch_in_time && entry?.punch_out_time) {
-        const inT = Date.parse(entry.punch_in_time);
-        const outT = Date.parse(entry.punch_out_time);
+        if (entry?.punch_in_time && entry?.punch_out_time) {
+            const inT = Date.parse(entry.punch_in_time);
+            const outT = Date.parse(entry.punch_out_time);
 
-        const diffMs = outT - inT;
-        const hours = diffMs / (1000 * 60 * 60); // convert ms → hours
+            const diffMs = outT - inT;
+            const hours = diffMs / (1000 * 60 * 60); // convert ms → hours
 
-        return Math.max(0, hours);
-    }
+            return Math.max(0, hours);
+        }
 
-    return 0;
-};
+        return 0;
+    };
 
     const calculateLateness = (dateStr: string) => {
         return 0;
@@ -493,9 +492,11 @@ const EmployeeAttendancePage = () => {
                 </button>
             </header>
             <div className="text-lg w-full bg-cyan-50 p-4">
-                {/* MAIN CONTENT */}
-                <div className="flex gap-4">
-                    <div className="w-[80%] min-h-screen space-y-6 pt-12">
+                {/* MAIN CONTENT WRAPPER: Column on mobile, Row on Large Screens */}
+                <div className="flex flex-col-reverse lg:flex-row gap-4 pt-8 lg:pt-0">
+
+                    {/* --- LEFT SIDE: TIMESHEET --- */}
+                    <div className="w-full lg:w-[80%] min-h-screen space-y-6 pt-4 lg:pt-12">
                         {/* <BigCalendar /> */}
                         <TimesheetHeader
                             weekStart={currentWeekStart}
@@ -505,8 +506,8 @@ const EmployeeAttendancePage = () => {
                             shiftStart={SHIFT_CONFIG.startTime}
                             shiftEnd={SHIFT_CONFIG.endTime}
                         />
-                        <div className="bg-card rounded-lg border border-border shadow-sm p-6 pt-2">
-                            <div className="space-y-2">
+                        <div className="bg-card rounded-lg border border-border shadow-sm p-4 lg:p-6 pt-2">
+                            <div className="space-y-4 lg:space-y-2">
                                 {weekData.map((entry, index) => (
                                     <TimeEntryRow key={index} {...{
                                         ...entry, checkInTime: entry.checkInTime ?? undefined,
@@ -515,7 +516,8 @@ const EmployeeAttendancePage = () => {
                                 ))}
                             </div>
 
-                            <div className="mt-8 relative">
+                            {/* Timeline Labels: Hidden on mobile (too crowded), visible on Desktop */}
+                            <div className="mt-8 relative hidden lg:block">
                                 <div className="flex justify-between text-sm text-muted-foreground px-[120px]">
                                     {timeLabels.map((time) => (
                                         <span key={time}>{time}</span>
@@ -524,7 +526,9 @@ const EmployeeAttendancePage = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="w-[20%] mt-12 relative space-y-4">
+
+                    {/* --- RIGHT SIDE: PUNCH & LOCATION --- */}
+                    <div className="w-full lg:w-[20%] mt-6 lg:mt-12 relative space-y-4">
                         <PunchCard
                             isPunchedIn={isPunchedInUI}
                             handlePunchAction={handlePunchAction}
@@ -567,6 +571,92 @@ const EmployeeAttendancePage = () => {
             </div>
         </div>
     );
+
+    // return (
+    //     <div className="w-full p-4">
+    //         <header className="flex justify-end items-center pb-6 border-b border-gray-300">
+    //             <button
+    //                 onClick={logout}
+    //                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-150"
+    //             >
+    //                 Logout
+    //             </button>
+    //         </header>
+    //         <div className="text-lg w-full bg-cyan-50 p-4">
+    //             {/* MAIN CONTENT */}
+    //             <div className="flex gap-4">
+    //                 <div className="w-[80%] min-h-screen space-y-6 pt-12">
+    //                     {/* <BigCalendar /> */}
+    //                     <TimesheetHeader
+    //                         weekStart={currentWeekStart}
+    //                         weekEnd={weekEnd}
+    //                         onNavigate={navigateWeek}
+    //                         onToday={goToToday}
+    //                         shiftStart={SHIFT_CONFIG.startTime}
+    //                         shiftEnd={SHIFT_CONFIG.endTime}
+    //                     />
+    //                     <div className="bg-card rounded-lg border border-border shadow-sm p-6 pt-2">
+    //                         <div className="space-y-2">
+    //                             {weekData.map((entry, index) => (
+    //                                 <TimeEntryRow key={index} {...{
+    //                                     ...entry, checkInTime: entry.checkInTime ?? undefined,
+    //                                     checkOutTime: entry.checkOutTime ?? undefined,
+    //                                 }} />
+    //                             ))}
+    //                         </div>
+
+    //                         <div className="mt-8 relative">
+    //                             <div className="flex justify-between text-sm text-muted-foreground px-[120px]">
+    //                                 {timeLabels.map((time) => (
+    //                                     <span key={time}>{time}</span>
+    //                                 ))}
+    //                             </div>
+    //                         </div>
+    //                     </div>
+    //                 </div>
+    //                 <div className="w-[20%] mt-12 relative space-y-4">
+    //                     <PunchCard
+    //                         isPunchedIn={isPunchedInUI}
+    //                         handlePunchAction={handlePunchAction}
+    //                         punchTime={punchTime}
+    //                         elapsedSeconds={initialElapsedSeconds}
+    //                         profileName={user?.name ?? user?.email ?? "Employee"}
+    //                         imgurl={user?.picture}
+    //                     />
+
+    //                     {/* Location display & refresh */}
+    //                     <div className={`p-4 rounded-md ${locationError ? "bg-red-100 text-red-700" : "bg-green-50 text-green-700"} mb-4`}>
+    //                         <h3 className="font-semibold">Current Location Status:</h3>
+    //                         {isProcessing && location === null ? (
+    //                             <p>Fetching location...</p>
+    //                         ) : locationError ? (
+    //                             <p>{locationError}</p>
+    //                         ) : (
+    //                             <p>Lat: {location?.lat?.toFixed(6)}, Lon: {location?.lon?.toFixed(6)}</p>
+    //                         )}
+
+    //                         <div className="mt-3">
+    //                             <button
+    //                                 onClick={fetchGeolocation}
+    //                                 disabled={isProcessing}
+    //                                 className="w-full py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition duration-200"
+    //                             >
+    //                                 {isProcessing ? "Updating..." : "Refresh Location"}
+    //                             </button>
+    //                         </div>
+    //                     </div>
+
+    //                     {/* Message */}
+    //                     {message && (
+    //                         <div className={`p-4 rounded-md ${message.startsWith("Error") || message.includes("failed") ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}>
+    //                             {message}
+    //                         </div>
+    //                     )}
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     </div>
+    // );
 };
 
 export default EmployeeAttendancePage;

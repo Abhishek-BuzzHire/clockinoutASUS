@@ -5,6 +5,7 @@ import axios, { AxiosError } from "axios";
 import { useRouter } from 'next/navigation';
 import { useAuth, UserState } from "@/context/AuthContext"; // Ensure the path is correct
 import Image from "next/image";
+import { useEffect } from "react";
 
 // --- Define Types for Clarity and Safety ---
 
@@ -15,12 +16,19 @@ interface AuthResponseData {
   email: string;
   user_id: string; // The backend uses 'user_id'
   name?: string;
+  picture?: string;
 }
 
 export default function LoginPage() {
   // Hooks should be called at the top of the component
-  const { login } = useAuth();
+  const { user, login, loading } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace('/attendance'); // replace prevents back navigation to login
+    }
+  }, [user, loading, router]);
 
   /**
    * Handles the successful Google sign-in flow.
@@ -42,10 +50,10 @@ export default function LoginPage() {
       );
 
       // 2. Destructure data from the successful response
-      const { access, refresh, email, user_id, name } = response.data;
+      const { access, refresh, email, user_id, name, picture } = response.data;
 
       // 3. Prepare userData object, mapping 'user_id' from backend to 'id' for context
-      const userData: UserState = { id: user_id, email, name };
+      const userData: UserState = { id: user_id, email, name, picture };
 
       // 4. Call the context login function (access, refresh, userData)
       login(access, refresh, userData);
@@ -69,12 +77,12 @@ export default function LoginPage() {
   };
 
   return (
-     <div className="h-screen flex items-center justify-center bg-gray-100">
+    <div className="h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-lg px-10 py-10 text-center space-y-4">
 
         {/* Logo */}
-        <div  className="flex justify-center">
-        <Image src={"/logo.webp"} alt="" height={40} width={40}/>
+        <div className="flex justify-center">
+          <Image src={"/logo.webp"} alt="" height={40} width={40} />
         </div>
 
         {/* Headings */}

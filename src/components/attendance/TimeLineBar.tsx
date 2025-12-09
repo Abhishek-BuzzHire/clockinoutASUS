@@ -69,4 +69,32 @@ export const TimelineBar = ({
       )}
     </div>
   );
+
+  // return (
+  //   <div className="relative h-1 bg-timeline-bg rounded-full w-full">
+  //     <div
+  //       className={cn(
+  //         "absolute h-full rounded-full transition-all",
+  //         status === "weekend" && "bg-weekend",
+  //         status === "absent" && "bg-absent",
+  //         status === "present" && "bg-muted-foreground",
+  //         status === "today" && "bg-background",
+  //         status === "future" && "bg-timeline-inactive"
+  //       )}
+  //       style={barStyle}
+  //     />
+  //     {startTime && (
+  //       <div
+  //         className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-success"
+  //         style={{ left: barStyle.left }}
+  //       />
+  //     )}
+  //     {endTime && (
+  //       <div
+  //         className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-success"
+  //         style={{ right: barStyle.right }}
+  //       />
+  //     )}
+  //   </div>
+  // );
 };
