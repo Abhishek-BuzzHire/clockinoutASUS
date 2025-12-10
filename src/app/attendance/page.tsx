@@ -441,7 +441,7 @@ const EmployeeAttendancePage = () => {
 
     // Punch action used by PunchCard
     const handlePunchAction = () => {
-        const currentTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "IST" });
+        const currentTime = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" });
         setPunchTime(currentTime);
         if (isCheckedIn) {
             handleCheckOut();
