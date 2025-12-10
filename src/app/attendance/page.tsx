@@ -1,4 +1,5 @@
 "use client";
+
 import Image from "next/image";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { format, isToday, isFuture, isWeekend, endOfWeek } from "date-fns";
@@ -12,6 +13,7 @@ import Cookies from "js-cookie";
 import { TimeEntryRow } from "@/components/attendance/TimeEntryRow";
 import { TimesheetHeader } from "@/components/attendance/TimeSheetHeader";
 import { ShiftConfig } from "@/lib/types";
+import { ConfirmClockOutModal } from "@/components/attendance/confirmClockOut";
 
 export const SHIFT_CONFIG: ShiftConfig = {
     startTime: "09:30",
@@ -21,7 +23,7 @@ export const SHIFT_CONFIG: ShiftConfig = {
 
 type DayStatus = "weekend" | "absent" | "present" | "today" | "future";
 
-const apiUrl = "https://buzzhire.trueledgrr.com/"
+const apiUrl = "https://buzzhire.trueledgrr.com"
 
 type AttendanceRecord = {
     id?: number;
@@ -161,6 +163,8 @@ const EmployeeAttendancePage = () => {
     const [punchTime, setPunchTime] = useState<string>("");
     const [initialElapsedSeconds, setInitialElapsedSeconds] = useState<number>(0);
 
+    const [showClockOutModal, setShowClockOutModal] = useState(false);
+    const [workingHours, setWorkingHours] = useState<string | undefined>(undefined);
 
 
     const { toast } = useToast();
@@ -440,15 +444,45 @@ const EmployeeAttendancePage = () => {
     const isPunchedInUI = isCheckedIn; // rename to match earlier UI
 
     // Punch action used by PunchCard
-    const handlePunchAction = () => {
+    const handlePunchAction = async () => {
         const currentTime = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
         setPunchTime(currentTime);
         if (isCheckedIn) {
-            handleCheckOut();
+            // --- USER IS TRYING TO CLOCK OUT ---
+            try {
+                const token = Cookies.get("access");
+                const res = await axios.get(
+                    `${apiUrl}/total-working-time/`,
+                    {
+                        headers: { Authorization: token ? `Bearer ${token}` : "" }
+                    }
+                );
+
+                setWorkingHours(res.data.total_working_time);
+                setShowClockOutModal(true); // 🌟 Show popup
+            } catch (err) {
+                console.error("Error fetching working time:", err);
+                toast({
+                    title: "Error",
+                    description: "Unable to fetch today's working hours.",
+                    variant: "destructive"
+                });
+            }
         } else {
             handleCheckIn();
         }
     };
+
+    const confirmClockOut = () => {
+        setShowClockOutModal(false);
+        handleCheckOut(); // ⬅️ calls your actual punch out API
+    };
+
+    const cancelClockOut = () => {
+        setShowClockOutModal(false);
+    };
+
+
 
     // Redirect if not logged in
     useEffect(() => {
@@ -491,6 +525,13 @@ const EmployeeAttendancePage = () => {
                     Logout
                 </button>
             </header>
+            <ConfirmClockOutModal
+                isOpen={showClockOutModal}
+                workingHours={workingHours}
+                onConfirm={confirmClockOut}
+                onCancel={cancelClockOut}
+            />
+
             <div className="text-lg w-full bg-cyan-50 p-4">
                 {/* MAIN CONTENT WRAPPER: Column on mobile, Row on Large Screens */}
                 <div className="flex flex-col-reverse lg:flex-row gap-4 pt-8 lg:pt-0">
@@ -572,91 +613,111 @@ const EmployeeAttendancePage = () => {
         </div>
     );
 
-    // return (
-    //     <div className="w-full p-4">
-    //         <header className="flex justify-end items-center pb-6 border-b border-gray-300">
-    //             <button
-    //                 onClick={logout}
-    //                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-150"
-    //             >
-    //                 Logout
-    //             </button>
-    //         </header>
-    //         <div className="text-lg w-full bg-cyan-50 p-4">
-    //             {/* MAIN CONTENT */}
-    //             <div className="flex gap-4">
-    //                 <div className="w-[80%] min-h-screen space-y-6 pt-12">
-    //                     {/* <BigCalendar /> */}
-    //                     <TimesheetHeader
-    //                         weekStart={currentWeekStart}
-    //                         weekEnd={weekEnd}
-    //                         onNavigate={navigateWeek}
-    //                         onToday={goToToday}
-    //                         shiftStart={SHIFT_CONFIG.startTime}
-    //                         shiftEnd={SHIFT_CONFIG.endTime}
-    //                     />
-    //                     <div className="bg-card rounded-lg border border-border shadow-sm p-6 pt-2">
-    //                         <div className="space-y-2">
-    //                             {weekData.map((entry, index) => (
-    //                                 <TimeEntryRow key={index} {...{
-    //                                     ...entry, checkInTime: entry.checkInTime ?? undefined,
-    //                                     checkOutTime: entry.checkOutTime ?? undefined,
-    //                                 }} />
-    //                             ))}
-    //                         </div>
-
-    //                         <div className="mt-8 relative">
-    //                             <div className="flex justify-between text-sm text-muted-foreground px-[120px]">
-    //                                 {timeLabels.map((time) => (
-    //                                     <span key={time}>{time}</span>
-    //                                 ))}
-    //                             </div>
-    //                         </div>
-    //                     </div>
-    //                 </div>
-    //                 <div className="w-[20%] mt-12 relative space-y-4">
-    //                     <PunchCard
-    //                         isPunchedIn={isPunchedInUI}
-    //                         handlePunchAction={handlePunchAction}
-    //                         punchTime={punchTime}
-    //                         elapsedSeconds={initialElapsedSeconds}
-    //                         profileName={user?.name ?? user?.email ?? "Employee"}
-    //                         imgurl={user?.picture}
-    //                     />
-
-    //                     {/* Location display & refresh */}
-    //                     <div className={`p-4 rounded-md ${locationError ? "bg-red-100 text-red-700" : "bg-green-50 text-green-700"} mb-4`}>
-    //                         <h3 className="font-semibold">Current Location Status:</h3>
-    //                         {isProcessing && location === null ? (
-    //                             <p>Fetching location...</p>
-    //                         ) : locationError ? (
-    //                             <p>{locationError}</p>
-    //                         ) : (
-    //                             <p>Lat: {location?.lat?.toFixed(6)}, Lon: {location?.lon?.toFixed(6)}</p>
-    //                         )}
-
-    //                         <div className="mt-3">
-    //                             <button
-    //                                 onClick={fetchGeolocation}
-    //                                 disabled={isProcessing}
-    //                                 className="w-full py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition duration-200"
-    //                             >
-    //                                 {isProcessing ? "Updating..." : "Refresh Location"}
-    //                             </button>
-    //                         </div>
-    //                     </div>
-
-    //                     {/* Message */}
-    //                     {message && (
-    //                         <div className={`p-4 rounded-md ${message.startsWith("Error") || message.includes("failed") ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}>
-    //                             {message}
-    //                         </div>
-    //                     )}
-    //                 </div>
-    //             </div>
-    //         </div>
-    //     </div>
-    // );
 };
 
 export default EmployeeAttendancePage;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// return (
+//     <div className="w-full p-4">
+//         <header className="flex justify-end items-center pb-6 border-b border-gray-300">
+//             <button
+//                 onClick={logout}
+//                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-150"
+//             >
+//                 Logout
+//             </button>
+//         </header>
+//         <div className="text-lg w-full bg-cyan-50 p-4">
+//             {/* MAIN CONTENT */}
+//             <div className="flex gap-4">
+//                 <div className="w-[80%] min-h-screen space-y-6 pt-12">
+//                     {/* <BigCalendar /> */}
+//                     <TimesheetHeader
+//                         weekStart={currentWeekStart}
+//                         weekEnd={weekEnd}
+//                         onNavigate={navigateWeek}
+//                         onToday={goToToday}
+//                         shiftStart={SHIFT_CONFIG.startTime}
+//                         shiftEnd={SHIFT_CONFIG.endTime}
+//                     />
+//                     <div className="bg-card rounded-lg border border-border shadow-sm p-6 pt-2">
+//                         <div className="space-y-2">
+//                             {weekData.map((entry, index) => (
+//                                 <TimeEntryRow key={index} {...{
+//                                     ...entry, checkInTime: entry.checkInTime ?? undefined,
+//                                     checkOutTime: entry.checkOutTime ?? undefined,
+//                                 }} />
+//                             ))}
+//                         </div>
+
+//                         <div className="mt-8 relative">
+//                             <div className="flex justify-between text-sm text-muted-foreground px-[120px]">
+//                                 {timeLabels.map((time) => (
+//                                     <span key={time}>{time}</span>
+//                                 ))}
+//                             </div>
+//                         </div>
+//                     </div>
+//                 </div>
+//                 <div className="w-[20%] mt-12 relative space-y-4">
+//                     <PunchCard
+//                         isPunchedIn={isPunchedInUI}
+//                         handlePunchAction={handlePunchAction}
+//                         punchTime={punchTime}
+//                         elapsedSeconds={initialElapsedSeconds}
+//                         profileName={user?.name ?? user?.email ?? "Employee"}
+//                         imgurl={user?.picture}
+//                     />
+
+//                     {/* Location display & refresh */}
+//                     <div className={`p-4 rounded-md ${locationError ? "bg-red-100 text-red-700" : "bg-green-50 text-green-700"} mb-4`}>
+//                         <h3 className="font-semibold">Current Location Status:</h3>
+//                         {isProcessing && location === null ? (
+//                             <p>Fetching location...</p>
+//                         ) : locationError ? (
+//                             <p>{locationError}</p>
+//                         ) : (
+//                             <p>Lat: {location?.lat?.toFixed(6)}, Lon: {location?.lon?.toFixed(6)}</p>
+//                         )}
+
+//                         <div className="mt-3">
+//                             <button
+//                                 onClick={fetchGeolocation}
+//                                 disabled={isProcessing}
+//                                 className="w-full py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition duration-200"
+//                             >
+//                                 {isProcessing ? "Updating..." : "Refresh Location"}
+//                             </button>
+//                         </div>
+//                     </div>
+
+//                     {/* Message */}
+//                     {message && (
+//                         <div className={`p-4 rounded-md ${message.startsWith("Error") || message.includes("failed") ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}>
+//                             {message}
+//                         </div>
+//                     )}
+//                 </div>
+//             </div>
+//         </div>
+//     </div>
+// );
