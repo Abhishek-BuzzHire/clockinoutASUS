@@ -329,7 +329,7 @@ const EmployeeAttendancePage = () => {
         handlePunch("in");
         toast({
             title: "Checked In",
-            description: `You checked in at ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" })}`,
+            description: `You checked in at ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
         });
     };
 
@@ -337,7 +337,7 @@ const EmployeeAttendancePage = () => {
         handlePunch("out");
         toast({
             title: "Checked Out",
-            description: `You checked out at ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" })}`,
+            description: `You checked out at ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
         });
     };
 
@@ -441,7 +441,7 @@ const EmployeeAttendancePage = () => {
 
     // Punch action used by PunchCard
     const handlePunchAction = () => {
-        const currentTime = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" });
+        const currentTime = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
         setPunchTime(currentTime);
         if (isCheckedIn) {
             handleCheckOut();
