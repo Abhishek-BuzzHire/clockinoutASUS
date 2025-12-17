@@ -23,7 +23,7 @@ export const SHIFT_CONFIG: ShiftConfig = {
 
 type DayStatus = "weekend" | "absent" | "present" | "today" | "future";
 
-const apiUrl = "https://buzzhire.trueledgrr.com"
+const apiUrl = "http://localhost:8000"
 
 type AttendanceRecord = {
     id?: number;
@@ -59,7 +59,7 @@ const formattedTime = (isoString: any) => {
         hour: "2-digit",
         minute: "2-digit",
         hour12: true,
-        timeZone: "UTC"   // <-- Keeps the exact time sent from backend
+        timeZone: "Asia/Kolkata"   // <-- Keeps the exact time sent from backend
     });
 };
 
@@ -232,6 +232,7 @@ const EmployeeAttendancePage = () => {
             });
 
             const data = response.data;
+            console.log("today Data: ", data)
             if (data.status === "success" && data.data) {
                 setAttendanceStatus(data.data);
                 setAttendanceData((prev) => ({ ...prev, [todayStr]: data.data }));
@@ -242,10 +243,10 @@ const EmployeeAttendancePage = () => {
                     const now = Date.now();
                     const elapsed = Math.max(0, Math.floor((now - punchIn) / 1000));
                     setInitialElapsedSeconds(elapsed);
-                    setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" }));
+                    setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
                     console.log("FetchToday Api Punch In","Raw:",data.data.punch_in_time,"&","Processed:",punchTime)
                 } else if (data.data.punch_out_time) {
-                    setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" }));
+                    setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
                     console.log("FetchToday Api Punch Out","Raw:",data.data.punch_out_time,"&","Processed:",punchTime)
                     setInitialElapsedSeconds(0);
                 } else {
@@ -308,11 +309,11 @@ const EmployeeAttendancePage = () => {
                         const pIn = new Date(data.data.punch_in_time).getTime();
                         const elapsed = Math.max(0, Math.floor((Date.now() - pIn) / 1000));
                         setInitialElapsedSeconds(elapsed);
-                        setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" }));
+                        setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
                         console.log("handlePunch Api Punch In","Raw:",data.data.punch_in_time,"&","Processed:",punchTime)
                     } else if (type === "out" && data.data.punch_out_time) {
                         setInitialElapsedSeconds(0);
-                        setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" }));
+                        setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
                         console.log("handlePunch Api Punch Out","Raw:",data.data.punch_out_time,"&","Processed:",punchTime)
                     }
                 } else {
@@ -449,7 +450,7 @@ const EmployeeAttendancePage = () => {
 
     // Punch action used by PunchCard
     const handlePunchAction = async () => {
-        const currentTime = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+        const currentTime = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata"   });
         setPunchTime(currentTime);
         console.log("CurrentTIme Component",currentTime)
         if (isCheckedIn) {

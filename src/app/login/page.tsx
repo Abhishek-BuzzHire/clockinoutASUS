@@ -45,7 +45,7 @@ export default function LoginPage() {
     try {
       // 1. Send ID token to your Django backend
       const response = await axios.post<AuthResponseData>(
-        "https://buzzhire.trueledgrr.com/auth/google/", // Use the full URL for now
+        "http://localhost:8000/auth/google/", // Use the full URL for now
         { id_token: idToken }
       );
 
