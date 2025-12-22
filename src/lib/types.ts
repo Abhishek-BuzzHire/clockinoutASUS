@@ -56,12 +56,12 @@ export type AttendanceStatus =
   | 'weekend'
   | 'late'
   | 'early'
+  | 'missing-punch-out'
   | 'on-leave';
 
 export type NewEmployee = {
   id: string;
   name: string;
-  avatarUrl: string;
 };
 
 export type AttendanceRecord = {

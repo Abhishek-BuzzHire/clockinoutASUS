@@ -20,21 +20,21 @@ const EmployeeListItem = ({ record, employee }: { record: AttendanceRecord; empl
     <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
       <div className="flex items-center gap-3">
         <Avatar className="h-9 w-9">
-          <AvatarImage src={employee.avatarUrl} alt={employee.name} />
+          {/* <AvatarImage src={employee.avatarUrl} alt={employee.name} /> */}
           <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
         </Avatar>
         <div>
-          <p className="font-medium text-sm">{employee.name}</p>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <p className="font-medium text-md">{employee.name}</p>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
             {record.checkInTime && <span>In: {record.checkInTime}</span>}
-            {record.checkOutTime && <span>Out: {record.checkOutTime}</span>}
-            {record.hoursWorked != null && <span>Hrs: {record.hoursWorked.toFixed(1)}</span>}
+            {record.checkOutTime ? <span>Out: {record.checkOutTime}</span> : <span className="text-red-500">No Clock Out</span>}
+            {record.hoursWorked != null && <span>Hrs: {record.hoursWorked}</span>}
           </div>
         </div>
       </div>
       {record.status === 'late' && (
-        <div className="flex items-center gap-1 text-yellow-500 text-xs">
-          <AlertTriangle className="h-3 w-3" />
+        <div className="flex items-center gap-1 text-orange-500 text-sm">
+          <AlertTriangle className="h-4 w-4" />
           <span>Late</span>
         </div>
       )}
