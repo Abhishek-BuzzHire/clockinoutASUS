@@ -62,6 +62,7 @@ export type AttendanceStatus =
 export type NewEmployee = {
   id: string;
   name: string;
+  avatarUrl?: string;
 };
 
 export type AttendanceRecord = {
