@@ -52,6 +52,9 @@
   --color-absent: hsl(var(--absent));
   --color-absent-light: hsl(var(--absent-light));
 
+  --color-success: hsl(var(--success));
+  --color-success-light: hsl(var(--success-light));
+
   --color-late: hsl(var(--late));
   --color-late-foreground: hsl(var(--late-foreground));
 
@@ -99,7 +102,7 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
   --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
+    --success-light: 142 76% 85%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
@@ -156,7 +159,7 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
   --success: 142 76% 36%;
-  --success-foreground: 0 0% 100%;
+  --success-light: 0 0% 100%;
 
   --warning: 38 92% 50%;
   --warning-foreground: 0 0% 100%;

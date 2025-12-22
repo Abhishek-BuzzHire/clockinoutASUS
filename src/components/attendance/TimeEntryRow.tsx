@@ -43,51 +43,27 @@ export const TimeEntryRow = ({
 
         if (status === "weekend") {
             badges.push(
-                <Badge key="weekend" className="bg-weekend-light text-weekend border-0 hover:bg-weekend-light">
+                <Badge key="weekend" className="bg-weekend-light text-weekend border-0">
                     Weekend
                 </Badge>
             );
         }
         if (status === "absent") {
             badges.push(
-                <Badge key="absent" className="bg-absent-light text-absent border-0 hover:bg-absent-light">
+                <Badge key="absent" className="bg-absent-light text-absent border-0">
                     Absent
                 </Badge>
             );
         }
         if (status === "present") {
             badges.push(
-                <Badge key="present" className="bg-success-light text-success border-0 hover:bg-success-light">
+                <Badge key="present" className="bg-success-light text-success border-0">
                     Present
                 </Badge>
             );
         }
 
         return badges.length > 0 ? <div className="flex gap-2">{badges}</div> : null;
-
-        // old code commented out
-        // if (status === "weekend") {
-        //     return (
-        //         <Badge className="bg-weekend-light text-weekend border-0 hover:bg-weekend-light">
-        //             Weekend
-        //         </Badge>
-        //     );
-        // }
-        // if (status === "absent") {
-        //     return (
-        //         <Badge className="bg-absent-light text-absent border-0 hover:bg-absent-light">
-        //             Absent
-        //         </Badge>
-        //     );
-        // }
-        // if (status === "present") {
-        //     return (
-        //         <Badge className="bg-green-500 text-absent border-0 hover:bg-absent-light">
-        //             Present
-        //         </Badge>
-        //     );
-        // }
-        // return null;
     };
 
     return (

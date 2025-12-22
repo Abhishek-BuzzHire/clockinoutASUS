@@ -39,7 +39,7 @@ export const TimesheetHeader = ({
                         </span>
                     </div>
 
-                    <Button variant="ghost" size="icon" onClick={() => onNavigate("next")}>
+                    <Button variant="ghost" size="icon" className="ml-1" onClick={() => onNavigate("next")}>
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>

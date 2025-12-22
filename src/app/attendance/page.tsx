@@ -3,8 +3,6 @@
 import Image from "next/image";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { format, isToday, isFuture, isWeekend, endOfWeek } from "date-fns";
-import { formatHoursWorked, formatMinutesToHHMM } from "@/utils/timeUtils";
-
 import { useToast } from "@/hooks/use-toast";
 import axios, { AxiosError } from "axios";
 import { useAuth } from "@/context/AuthContext";
@@ -18,6 +16,13 @@ import { ConfirmClockOutModal } from "@/components/attendance/confirmClockOut";
 export const SHIFT_CONFIG: ShiftConfig = {
     startTime: "09:30",
     endTime: "19:00",
+};
+
+type WeeklyAttendance = {
+    date: string;
+    punch_in_time: string | null;
+    punch_out_time: string | null;
+    working_time: string | null;
 };
 
 
@@ -40,27 +45,6 @@ type PunchResponse = {
     status: "success" | "failed";
     message: string;
     data?: AttendanceRecord;
-};
-
-const formatTime = (totalSeconds: number): string => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    return [hours, minutes, seconds]
-        .map((v) => (v < 10 ? "0" + v : v))
-        .join(" : ");
-};
-
-const formattedTime = (isoString: any) => {
-    if (!isoString) return undefined;
-
-    return new Date(isoString).toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: "Asia/Kolkata"   // <-- Keeps the exact time sent from backend
-    });
 };
 
 const PunchCard: React.FC<{
@@ -166,6 +150,7 @@ const EmployeeAttendancePage = () => {
     const [showClockOutModal, setShowClockOutModal] = useState(false);
     const [workingHours, setWorkingHours] = useState<string | undefined>(undefined);
 
+    const [weeklyAttendance, setWeeklyAttendance] = useState<WeeklyAttendance[]>([]);
 
     const { toast } = useToast();
 
@@ -244,10 +229,10 @@ const EmployeeAttendancePage = () => {
                     const elapsed = Math.max(0, Math.floor((now - punchIn) / 1000));
                     setInitialElapsedSeconds(elapsed);
                     setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
-                    console.log("FetchToday Api Punch In","Raw:",data.data.punch_in_time,"&","Processed:",punchTime)
+                    console.log("FetchToday Api Punch In", "Raw:", data.data.punch_in_time, "&", "Processed:", punchTime)
                 } else if (data.data.punch_out_time) {
                     setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
-                    console.log("FetchToday Api Punch Out","Raw:",data.data.punch_out_time,"&","Processed:",punchTime)
+                    console.log("FetchToday Api Punch Out", "Raw:", data.data.punch_out_time, "&", "Processed:", punchTime)
                     setInitialElapsedSeconds(0);
                 } else {
                     setPunchTime("");
@@ -267,6 +252,36 @@ const EmployeeAttendancePage = () => {
             setIsProcessing(false);
         }
     }, []);
+
+    // fetch week data from TotalHoursView
+
+    const fetchWeeklyAttendance = useCallback(
+        async (start: Date, end: Date) => {
+            try {
+                const token = Cookies.get("access");
+
+                const response = await axios.get(
+                    `${apiUrl}/total-hours/`,
+                    {
+                        headers: {
+                            Authorization: token ? `Bearer ${token}` : "",
+                        },
+                        params: {
+                            start_date: format(start, "yyyy-MM-dd"),
+                            end_date: format(end, "yyyy-MM-dd"),
+                        },
+                    }
+                );
+
+                if (response.data.status === "success") {
+                    setWeeklyAttendance(response.data.data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch weekly attendance", err);
+            }
+        },
+        []
+    );
 
     // --- Punch API calls (in/out) ---
     const handlePunch = async (type: "in" | "out") => {
@@ -310,11 +325,11 @@ const EmployeeAttendancePage = () => {
                         const elapsed = Math.max(0, Math.floor((Date.now() - pIn) / 1000));
                         setInitialElapsedSeconds(elapsed);
                         setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
-                        console.log("handlePunch Api Punch In","Raw:",data.data.punch_in_time,"&","Processed:",punchTime)
+                        console.log("handlePunch Api Punch In", "Raw:", data.data.punch_in_time, "&", "Processed:", punchTime)
                     } else if (type === "out" && data.data.punch_out_time) {
                         setInitialElapsedSeconds(0);
                         setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
-                        console.log("handlePunch Api Punch Out","Raw:",data.data.punch_out_time,"&","Processed:",punchTime)
+                        console.log("handlePunch Api Punch Out", "Raw:", data.data.punch_out_time, "&", "Processed:", punchTime)
                     }
                 } else {
                     // fallback: refresh today's attendance
@@ -386,57 +401,27 @@ const EmployeeAttendancePage = () => {
 
     const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 0 });
 
-    // Helpers (minimal replacements for original utilities used in UI)
-    const calculateHoursWorked = (dateStr: string) => {
-        const entry = attendanceData[dateStr];
-
-        if (entry?.punch_in_time && entry?.punch_out_time) {
-            const inT = Date.parse(entry.punch_in_time);
-            const outT = Date.parse(entry.punch_out_time);
-
-            const diffMs = outT - inT;
-            const hours = diffMs / (1000 * 60 * 60); // convert ms → hours
-
-            return Math.max(0, hours);
-        }
-
-        return 0;
-    };
-
-    const calculateLateness = (dateStr: string) => {
-        return 0;
-    };
-    const calculateEarlyLeave = (dateStr: string) => {
-        return 0;
-    };
-
-    const getDayStatus = (date: Date): DayStatus => {
-        if (isToday(date)) return "today";
-        if (isFuture(date)) return "future";
-        if (isWeekend(date)) return "weekend";
-
-        const dateStr = format(date, "yyyy-MM-dd");
-        const entry = attendanceData[dateStr];
-        if (!entry?.punch_in_time) return "absent";
-        return "present";
-    };
-
     const weekData = weekDates.map((date) => {
         const dateStr = format(date, "yyyy-MM-dd");
-        const entry = attendanceData[dateStr];
-        const status = getDayStatus(date);
-        const hoursWorked = calculateHoursWorked(dateStr);
-        const lateness = calculateLateness(dateStr);
-        const earlyLeave = calculateEarlyLeave(dateStr);
+        const apiEntry = weeklyAttendance.find(d => d.date === dateStr);
+        const status: DayStatus = isToday(date)
+            ? "today"
+            : isFuture(date)
+                ? "future"
+                : isWeekend(date)
+                    ? "weekend"
+                    : apiEntry?.punch_in_time
+                        ? "present"
+                        : "absent";
 
         return {
             day: isToday(date) ? "Today" : format(date, "EEE"),
             date: date.getDate(),
-            checkInTime: formattedTime(entry?.punch_in_time),
-            checkOutTime: formattedTime(entry?.punch_out_time),
-            lateBy: lateness > 0 ? formatMinutesToHHMM(lateness) : undefined,
-            earlyBy: earlyLeave > 0 ? formatMinutesToHHMM(earlyLeave) : undefined,
-            hoursWorked: formatHoursWorked(hoursWorked),
+            checkInTime: apiEntry?.punch_in_time || undefined,
+            checkOutTime: apiEntry?.punch_out_time || undefined,
+            lateBy: undefined,
+            earlyBy: undefined,
+            hoursWorked: apiEntry?.working_time ?? "0:00",
             status,
             isToday: isToday(date),
             isFuture: isFuture(date),
@@ -444,15 +429,14 @@ const EmployeeAttendancePage = () => {
     });
 
     // Derived flags
-    const todayStr = format(new Date(), "yyyy-MM-dd");
     const isCheckedIn = Boolean(attendanceStatus?.punch_in_time && !attendanceStatus?.punch_out_time);
     const isPunchedInUI = isCheckedIn; // rename to match earlier UI
 
     // Punch action used by PunchCard
     const handlePunchAction = async () => {
-        const currentTime = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata"   });
+        const currentTime = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" });
         setPunchTime(currentTime);
-        console.log("CurrentTIme Component",currentTime)
+        console.log("CurrentTIme Component", currentTime)
         if (isCheckedIn) {
             // --- USER IS TRYING TO CLOCK OUT ---
             try {
@@ -488,8 +472,6 @@ const EmployeeAttendancePage = () => {
         setShowClockOutModal(false);
     };
 
-
-
     // Redirect if not logged in
     useEffect(() => {
         if (!loading && !user) {
@@ -513,6 +495,11 @@ const EmployeeAttendancePage = () => {
             setInitialElapsedSeconds(0);
         }
     }, [attendanceStatus]);
+
+    useEffect(() => {
+        const end = endOfWeek(currentWeekStart, { weekStartsOn: 0 });
+        fetchWeeklyAttendance(currentWeekStart, end);
+    }, [currentWeekStart, fetchWeeklyAttendance]);
 
     // UI rendering
     if (loading || !user) {
