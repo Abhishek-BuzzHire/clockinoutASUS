@@ -20,7 +20,6 @@ const EmployeeListItem = ({ record, employee }: { record: AttendanceRecord; empl
     <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
       <div className="flex items-center gap-3">
         <Avatar className="h-9 w-9">
-          {/* <AvatarImage src={employee.avatarUrl} alt={employee.name} /> */}
           <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
         </Avatar>
         <div>
