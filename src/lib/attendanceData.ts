@@ -95,9 +95,9 @@ const generateLeaveRequests = (monthDate: Date): AdminLeaveRequest[] => {
 const getCompanyHolidays = (year: number): CompanyHoliday[] => {
     // This is a static list, but could be dynamic in a real app
     return [
-        { date: `${year}-01-01`, name: "New Year's Day" },
-        { date: `${year}-07-04`, name: "Independence Day" },
         { date: `${year}-12-25`, name: "Christmas Day" },
+        { date: "2026-01-26", name: "Republic Day" },
+        { date: "2026-03-04", name: "Holi"},
     ];
 };
 

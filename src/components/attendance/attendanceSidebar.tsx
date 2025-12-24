@@ -25,7 +25,7 @@ const EmployeeListItem = ({ record, employee }: { record: AttendanceRecord; empl
         <div>
           <p className="font-medium text-md">{employee.name}</p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            {record.checkInTime && <span>In: {record.checkInTime}</span>}
+            {record.checkInTime ? <span>In: {record.checkInTime}</span> : <span className="text-red-500">No Clock In</span>}
             {record.checkOutTime ? <span>Out: {record.checkOutTime}</span> : <span className="text-red-500">No Clock Out</span>}
             {record.hoursWorked != null && <span>Hrs: {record.hoursWorked}</span>}
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, isAfter, isWeekend } from "date-fns";
+import { format, startOfMonth, endOfMonth, isAfter, isWeekend, isToday, isBefore, startOfDay  } from "date-fns";
 import axios from "axios";
 import Cookies from "js-cookie";
 
@@ -40,7 +40,7 @@ const AdminAttendancePage = () => {
       router.push("/login");
       return;
     }
-    
+
     if (user?.email && !ADMIN_EMAIL_WHITELIST.has(user?.email)) {
       router.push("/attendance");   // <-- create this page OR redirect home
       return;
@@ -114,9 +114,22 @@ const AdminAttendancePage = () => {
             date: dateKey,   // ⬅️ REQUIRED
 
             status: (() => {
-              // 1️⃣ ABSENT — no punch in
-              if (!day.punch_in) return "absent";
+              const thisDate = new Date(dateKey);
+              const today = new Date();
 
+              const isTodayDate = isToday(thisDate);
+              const isPastDay =
+                isBefore(
+                  startOfDay(thisDate),
+                  startOfDay(today)
+                );
+
+
+              if (isPastDay && !day.punch_out) {
+                return "absent"
+              }
+              // 1️⃣ ABSENT — no punch in
+              if (!day.punch_in) { return "absent"; };
 
               // 3️⃣ SHIFT BASED LATE CHECK
               const shiftStart = toMinutes(SHIFT_CONFIG.startTime);  // 09:30 → 570 mins
