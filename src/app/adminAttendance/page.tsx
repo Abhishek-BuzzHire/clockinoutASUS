@@ -11,7 +11,9 @@ import AttendanceSidebar from "@/components/attendance/attendanceSidebar";
 import CompanyHolidays from "@/components/attendance/CompanyHolidays";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import AdminAttendancePopup from "@/components/attendance/adminAttendancePopupDate";
+import AdminAttendancePopupByDate from "@/components/attendance/adminAttendancePopupDate";
+import AdminAttendancePopupByName from "@/components/attendance/adminAttendancePopupName";
+import AdminAttendancePopupTotals from "@/components/attendance/AdminAttendancePopupTotals";
 import { Button } from "@/components/ui/button";
 
 const ADMIN_EMAIL_WHITELIST = new Set<string>([
@@ -55,7 +57,9 @@ const AdminAttendancePage = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [employees, setEmployees] = useState<NewEmployee[]>([]);
-  const [openPopup, setOpenPopup] = useState(false);
+  const [openPopupDate, setOpenPopupDate] = useState(false);
+  const [openPopupName, setOpenPopupName] = useState(false);
+  const [openPopupTotal, setOpenPopupTotal] = useState(false);
 
 
   // 🔥 This now stores REAL backend attendance
@@ -184,11 +188,24 @@ const AdminAttendancePage = () => {
           <div className="flex flex-col min-h-screen gap-8">
             <div className="text-2xl text-gray-900 space-x-4 flex justify-between">
               Attendance Manangement
-              <Button variant={"default"} onClick={() => setOpenPopup(true)}>
-                View Full Attendance
-              </Button>
+              <div className="flex gap-4">
+                <Button variant={"default"} onClick={() => setOpenPopupDate(true)}>
+                  View Full Attendance Grouped By Date
+                </Button>
 
-              {openPopup && <AdminAttendancePopup onClose={() => setOpenPopup(false)} />}
+                {openPopupDate && <AdminAttendancePopupByDate onClose={() => setOpenPopupDate(false)} />}
+
+                <Button variant={"default"} onClick={() => setOpenPopupName(true)}>
+                  View Full Attendance Grouped By Name
+                </Button>
+
+                {openPopupName && <AdminAttendancePopupByName onClose={() => setOpenPopupName(false)} />}
+                <Button variant={"outline"} onClick={() => setOpenPopupTotal(true)}>
+                  View Total Working Hours
+                </Button>
+
+                {openPopupTotal && <AdminAttendancePopupTotals onClose={() => setOpenPopupTotal(false)} />}
+              </div>
             </div>
 
             <div className="flex-1 w-full">

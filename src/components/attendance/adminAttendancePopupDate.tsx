@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { format } from "date-fns";
 // Optional: If you use lucide-react for icons
-import { Calendar, FileText, X, Clock, User, Download } from "lucide-react";
+import { Calendar, FileText, X, Clock, User, Download, Users, Search, CheckCircle2, ChevronDown } from "lucide-react";
 
 interface AttendanceDay {
     date: string;
@@ -23,6 +23,37 @@ export default function AdminAttendancePopupByDate({ onClose }: { onClose: () =>
     const [endDate, setEndDate] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [grouped, setGrouped] = useState<Record<string, any[]>>({});
+    const [employees, setEmployees] = useState<{ id: number, name: string }[]>([]);
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const loadEmployees = async () => {
+            const token = Cookies.get("access");
+            const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
+
+            const res = await axios.get(
+                "https://buzzhire.trueledgrr.com/api/admin/emp-total-details/",
+                {
+                    headers: { Authorization: token ? `Bearer ${token}` : "" },
+                    params: { start_date: "2025-01-01" } // any valid — just to get list
+                }
+            );
+
+            const list = res.data.emps
+                .filter((e: any) => !EXCLUDED_EMP_IDS.has(e.emp_id))   // ⬅️ filter here
+                .map((e: any) => ({
+                    id: e.emp_id,
+                    name: e.employee_name
+                }));
+
+            setEmployees(list);
+        };
+
+        loadEmployees();
+    }, []);
+
 
     const downloadCSV = () => {
         if (Object.keys(grouped).length === 0) return;
@@ -61,22 +92,32 @@ export default function AdminAttendancePopupByDate({ onClose }: { onClose: () =>
     };
 
     const fetchAttendance = async () => {
-        if (!startDate || !endDate) return alert("Select both start & end date");
+        if (!startDate) return alert("Select start date");
 
         try {
             const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
             setLoading(true);
             const token = Cookies.get("access");
 
+            const params: any = {
+                start_date: format(new Date(startDate), "yyyy-MM-dd"),
+            };
+
+            if (endDate) {
+                params.end_date = format(new Date(endDate), "yyyy-MM-dd");
+            }
+
+            if (selectedIds.length > 0) {
+                params.ids = selectedIds.join(",");
+            } else {
+                params.ids = "";   // fetch all
+            }
+
             const res = await axios.get(
                 "https://buzzhire.trueledgrr.com/api/admin/emp-total-details/",
                 {
                     headers: { Authorization: token ? `Bearer ${token}` : "" },
-                    params: {
-                        start_date: format(new Date(startDate), "yyyy-MM-dd"),
-                        end_date: format(new Date(endDate), "yyyy-MM-dd"),
-                        ids: ""
-                    }
+                    params
                 }
             );
 
@@ -150,7 +191,95 @@ export default function AdminAttendancePopupByDate({ onClose }: { onClose: () =>
                                 onChange={e => setEndDate(e.target.value)}
                             />
                         </div>
+                        <div className="flex flex-col gap-1.5 w-full max-w-xs relative" ref={dropdownRef}>
+                            {/* 1. Label & Counter */}
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                    <Users className="w-3.5 h-3.5" />
+                                    Select Employees
+                                </label>
+                                <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full uppercase">
+                                    {selectedIds.length} Selected
+                                </span>
+                            </div>
 
+                            {/* 2. Dropdown Trigger Button */}
+                            <button
+                                type="button"
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                className={`w-full flex items-center justify-between px-3 py-2 text-sm border rounded-lg bg-white transition-all shadow-sm
+      ${isDropdownOpen ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-300 hover:border-slate-400'}`}
+                            >
+                                <span className="text-slate-700 truncate">
+                                    {selectedIds.length === 0 ? 'Choose team members...' : `${selectedIds.length} employees selected`}
+                                </span>
+                                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {/* 3. The Floating List (Pops up when isDropdownOpen is true) */}
+                            {isDropdownOpen && (
+                                <div className="absolute z-50 top-[calc(100%+4px)] left-0 w-full overflow-hidden border border-slate-200 rounded-xl bg-white shadow-xl animate-in fade-in zoom-in-95 duration-100">
+
+                                    {/* Search Header */}
+                                    <div className="px-3 py-2 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
+                                        <Search className="w-3.5 h-3.5 text-slate-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search team..."
+                                            className="bg-transparent text-xs outline-none w-full text-slate-600"
+                                            autoFocus
+                                        />
+                                    </div>
+
+                                    {/* Scrollable List */}
+                                    <div className="max-h-[220px] overflow-y-auto custom-scrollbar p-1">
+                                        {employees.map((emp) => {
+                                            const isSelected = selectedIds.includes(emp.id);
+                                            return (
+                                                <label
+                                                    key={emp.id}
+                                                    className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-all mb-0.5
+                ${isSelected ? "bg-blue-50 text-blue-700 font-medium" : "hover:bg-slate-50 text-slate-600 hover:text-slate-900"}`}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 transition-all cursor-pointer"
+                                                            checked={isSelected}
+                                                            onChange={() => {
+                                                                if (isSelected) {
+                                                                    setSelectedIds(selectedIds.filter(id => id !== emp.id));
+                                                                } else {
+                                                                    setSelectedIds([...selectedIds, emp.id]);
+                                                                }
+                                                            }}
+                                                        />
+                                                        <span className="text-sm">{emp.name}</span>
+                                                    </div>
+                                                    {isSelected && <CheckCircle2 className="w-4 h-4 text-blue-500 shadow-sm" />}
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Footer / Quick Actions */}
+                                    <div className="px-3 py-2 border-t border-slate-100 bg-slate-50/30 flex justify-between items-center">
+                                        <button
+                                            onClick={() => setSelectedIds([])}
+                                            className="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors uppercase px-2 py-1"
+                                        >
+                                            Clear All
+                                        </button>
+                                        <button
+                                            onClick={() => setSelectedIds(employees.map(e => e.id))}
+                                            className="text-[10px] font-bold text-blue-600 hover:text-blue-700 transition-colors uppercase px-2 py-1"
+                                        >
+                                            Select All
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                         <button
                             onClick={fetchAttendance}
                             disabled={loading}
@@ -159,6 +288,7 @@ export default function AdminAttendancePopupByDate({ onClose }: { onClose: () =>
                             {loading ? "Fetching..." : "Fetch Data"}
                         </button>
                     </div>
+
                 </div>
 
                 {/* SCROLLABLE DATA AREA */}
@@ -250,204 +380,3 @@ export default function AdminAttendancePopupByDate({ onClose }: { onClose: () =>
         </div>
     );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { useState } from "react";
-// import axios from "axios";
-// import Cookies from "js-cookie";
-// import { format } from "date-fns";
-
-// interface AttendanceDay {
-//     date: string;
-//     punch_in: string | null;
-//     punch_out: string | null;
-//     total_time: string | null;
-// }
-
-// interface EmployeeAttendance {
-//     emp_id: number;
-//     employee_name: string;
-//     attendance: AttendanceDay[];
-// }
-
-// export default function AdminAttendancePopupByDate({ onClose }: { onClose: () => void }) {
-//     const [startDate, setStartDate] = useState<string>("");
-//     const [endDate, setEndDate] = useState<string>("");
-//     const [loading, setLoading] = useState(false);
-//     const [grouped, setGrouped] = useState<Record<string, any[]>>({});
-
-//     const fetchAttendance = async () => {
-//         if (!startDate || !endDate) return alert("Select both start & end date");
-
-//         try {
-//             const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
-//             setLoading(true);
-//             const token = Cookies.get("access");
-
-//             const res = await axios.get(
-//                 "https://buzzhire.trueledgrr.com/api/admin/emp-total-details/",
-//                 {
-//                     headers: { Authorization: token ? `Bearer ${token}` : "" },
-//                     params: {
-//                         start_date: format(new Date(startDate), "yyyy-MM-dd"),
-//                         end_date: format(new Date(endDate), "yyyy-MM-dd"),
-//                         ids: "" // fetch all employees
-//                     }
-//                 }
-//             );
-
-//             const emps: EmployeeAttendance[] = res.data.emps || [];
-
-//             // ---------- GROUP BY DATE ----------
-//             const byDate: Record<string, any[]> = {};
-
-//             emps.forEach(emp => {
-//                 if (EXCLUDED_EMP_IDS.has(emp.emp_id)) return;
-//                 emp.attendance.forEach(day => {
-//                     if (!byDate[day.date]) byDate[day.date] = [];
-
-//                     byDate[day.date].push({
-//                         emp_id: emp.emp_id,
-//                         employee_name: emp.employee_name,
-//                         punch_in: day.punch_in,
-//                         punch_out: day.punch_out,
-//                         total_time: day.total_time
-//                     });
-//                 });
-//             });
-
-//             setGrouped(byDate);
-//         } catch (err) {
-//             console.error(err);
-//             alert("Failed to fetch attendance");
-//         } finally {
-//             setLoading(false);
-//         }
-//     };
-
-//     return (
-//         <div style={overlay}>
-//             <div style={popupBox}>
-//                 <h2>Attendance Report (Grouped by Date)</h2>
-
-//                 {/* DATE FILTERS */}
-//                 <div style={filters}>
-//                     <div>
-//                         <label>Start Date</label>
-//                         <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
-//                     </div>
-
-//                     <div>
-//                         <label>End Date</label>
-//                         <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
-//                     </div>
-
-//                     <button onClick={fetchAttendance} disabled={loading}>
-//                         {loading ? "Loading..." : "Fetch"}
-//                     </button>
-
-//                     <button onClick={onClose}>Close</button>
-//                 </div>
-
-//                 {/* DATA */}
-//                 <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-//                     {Object.keys(grouped).length === 0 && <p>No Data Loaded</p>}
-
-//                     {Object.keys(grouped)
-//                         .sort() // ensures chronological order
-//                         .map(date => (
-//                             <div key={date} style={{ marginBottom: 30 }}>
-//                                 <h3>{date}</h3>
-
-//                                 <table style={table}>
-//                                     <thead>
-//                                         <tr>
-//                                             <th>Employee</th>
-//                                             <th>Punch In</th>
-//                                             <th>Punch Out</th>
-//                                             <th>Hours Worked</th>
-//                                         </tr>
-//                                     </thead>
-
-//                                     <tbody>
-//                                         {grouped[date].map((rec: any, idx) => (
-//                                             <tr key={idx}>
-//                                                 <td>{rec.employee_name}</td>
-//                                                 <td>{rec.punch_in || "-"}</td>
-//                                                 <td>{rec.punch_out || "-"}</td>
-//                                                 <td>{rec.total_time || "-"}</td>
-//                                             </tr>
-//                                         ))}
-//                                     </tbody>
-//                                 </table>
-//                             </div>
-//                         ))}
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// }
-
-// /* STYLES */
-// const overlay: React.CSSProperties = {
-//     position: "fixed",
-//     inset: 0,
-//     background: "rgba(0,0,0,.5)",
-//     display: "flex",
-//     justifyContent: "center",
-//     alignItems: "center",
-//     zIndex: 999,
-// };
-
-// const popupBox: React.CSSProperties = {
-//     width: "80%",
-//     background: "#fff",
-//     borderRadius: 8,
-//     padding: 20,
-// };
-
-// const filters: React.CSSProperties = {
-//     display: "flex",
-//     gap: 15,
-//     alignItems: "center",
-//     marginBottom: 20,
-// };
-
-// const table: React.CSSProperties = {
-//     width: "100%",
-//     borderCollapse: "collapse",
-// };
