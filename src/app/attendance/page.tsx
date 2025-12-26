@@ -128,6 +128,23 @@ const PunchCard: React.FC<{
     );
 };
 
+const sumWorkingTime = (data: WeeklyAttendance[]) => {
+    let totalMinutes = 0;
+
+    data.forEach(item => {
+        if (!item.working_time) return;
+
+        const [hours, minutes] = item.working_time.split(":").map(Number);
+        totalMinutes += hours * 60 + minutes;
+    });
+
+    const totalHours = Math.floor(totalMinutes / 60);
+    const remainingMinutes = totalMinutes % 60;
+
+    return `${totalHours}:${remainingMinutes.toString().padStart(2, "0")}`;
+};
+
+
 const EmployeeAttendancePage = () => {
     // Auth + router
     const { user, loading, logout } = useAuth();
@@ -151,6 +168,8 @@ const EmployeeAttendancePage = () => {
     const [workingHours, setWorkingHours] = useState<string | undefined>(undefined);
 
     const [weeklyAttendance, setWeeklyAttendance] = useState<WeeklyAttendance[]>([]);
+    const [totalWeeklyHours, setTotalWeeklyHours] = useState<string>("0:00");
+
 
     const { toast } = useToast();
 
@@ -275,7 +294,11 @@ const EmployeeAttendancePage = () => {
 
                 if (response.data.status === "success") {
                     setWeeklyAttendance(response.data.data);
+                    console.log("Weekly Attendance Data:", response.data.data);
                 }
+
+                const total = sumWorkingTime(response.data.data);
+                setTotalWeeklyHours(total);
             } catch (err) {
                 console.error("Failed to fetch weekly attendance", err);
             }
@@ -548,6 +571,16 @@ const EmployeeAttendancePage = () => {
                                         checkOutTime: entry.checkOutTime ?? undefined,
                                     }} />
                                 ))}
+                            </div>
+
+                            <div className="w-full bg-white p-4 text-sm flex justify-between">
+                                <p>
+                                Weekly Working Time: 47:30
+                                </p>
+                                
+                                <p>
+                                Your Weekly Working Time: {totalWeeklyHours}
+                                </p>
                             </div>
 
                             {/* Timeline Labels: Hidden on mobile (too crowded), visible on Desktop */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, isAfter, isWeekend, isToday, isBefore, startOfDay  } from "date-fns";
+import { format, startOfMonth, endOfMonth, isAfter, isWeekend, isToday, isBefore, startOfDay } from "date-fns";
 import axios from "axios";
 import Cookies from "js-cookie";
 
@@ -11,6 +11,8 @@ import AttendanceSidebar from "@/components/attendance/attendanceSidebar";
 import CompanyHolidays from "@/components/attendance/CompanyHolidays";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import AdminAttendancePopup from "@/components/attendance/adminAttendancePopupDate";
+import { Button } from "@/components/ui/button";
 
 const ADMIN_EMAIL_WHITELIST = new Set<string>([
   "atul.s.kant@gmail.com",
@@ -53,6 +55,7 @@ const AdminAttendancePage = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [employees, setEmployees] = useState<NewEmployee[]>([]);
+  const [openPopup, setOpenPopup] = useState(false);
 
 
   // 🔥 This now stores REAL backend attendance
@@ -153,6 +156,7 @@ const AdminAttendancePage = () => {
       });
 
       setAttendanceRecords(mapped);
+      console.log("Admin Attendance Fetched", mapped);
     } catch (err) {
       console.error("Admin Attendance Fetch Failed", err);
     }
@@ -178,8 +182,13 @@ const AdminAttendancePage = () => {
       case "Attendance Management":
         return (
           <div className="flex flex-col min-h-screen gap-8">
-            <div className="text-2xl text-gray-900 space-x-4">
+            <div className="text-2xl text-gray-900 space-x-4 flex justify-between">
               Attendance Manangement
+              <Button variant={"default"} onClick={() => setOpenPopup(true)}>
+                View Full Attendance
+              </Button>
+
+              {openPopup && <AdminAttendancePopup onClose={() => setOpenPopup(false)} />}
             </div>
 
             <div className="flex-1 w-full">
