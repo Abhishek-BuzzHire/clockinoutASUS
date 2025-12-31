@@ -781,7 +781,7 @@ const EmployeeAttendancePage = () => {
                                         </div>
                                     )}
 
-                                    <div className="flex flex-col gap-4 justify-between">
+                                    <div className="flex flex-col gap-4 justify-between h-[32%]">
                                         <div className="space-y-2">
                                             {/* Regularize Attendance */}
                                             <button
@@ -839,7 +839,7 @@ const EmployeeAttendancePage = () => {
 
                                         <button
                                             onClick={logout}
-                                            className="flex items-center justify-center gap-2 w-full px-4 py-3.5 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-100 hover:border-rose-600 font-semibold text-xs uppercase tracking-widest rounded-2xl transition-all duration-300 active:scale-[0.98]"
+                                            className="flex items-center justify-center gap-2 w-full px-4 py-3.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-100 hover:border-red-600 font-semibold text-xs uppercase tracking-widest rounded-2xl transition-all duration-300 active:scale-[0.98]"
                                         >
                                             <LogOut className="w-4 h-4" />
                                             Logout System
@@ -960,7 +960,7 @@ const EmployeeAttendancePage = () => {
 
                         <button
                             onClick={logout}
-                            className="flex items-center justify-center gap-2 w-full px-4 py-3.5 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-100 hover:border-rose-600 font-semibold text-xs uppercase tracking-widest rounded-2xl transition-all duration-300 active:scale-[0.98]"
+                            className="flex items-center justify-center gap-2 w-full px-4 py-3.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-100 hover:border-red-600 font-semibold text-xs uppercase tracking-widest rounded-2xl transition-all duration-300 active:scale-[0.98]"
                         >
                             <LogOut className="w-4 h-4" />
                             Logout System
