@@ -24,7 +24,7 @@ import AdminWFHDetailModal from "@/components/attendance/AdminWFHDetailModal";
 import AdminWFHListTable from "@/components/attendance/AdminWFHListTable";
 import { CheckSquare, ChevronRight, ClipboardList, Filter, Home, Search, Settings2 } from "lucide-react";
 
-const apiUrl = "http://localhost:8000"
+const apiUrl = "https://buzzhire.trueledgrr.com"
 
 const ADMIN_EMAIL_WHITELIST = new Set<string>([
   "atul.s.kant@gmail.com",

@@ -36,7 +36,7 @@ type WeeklyAttendance = {
 
 type DayStatus = "weekend" | "absent" | "present" | "today" | "future";
 
-const apiUrl = "http://localhost:8000"
+const apiUrl = "https://buzzhire.trueledgrr.com"
 
 type AttendanceRecord = {
     id?: number;
