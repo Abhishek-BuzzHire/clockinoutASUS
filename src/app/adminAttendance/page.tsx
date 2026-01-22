@@ -32,6 +32,7 @@ const ADMIN_EMAIL_WHITELIST = new Set<string>([
   "ankit@buzzhire.in",
   "saurabh@buzzhire.in",
   "abhishek.buzzhire@gmail.com",
+  "aggarwal0714@gmail.com",
 ]);
 
 
