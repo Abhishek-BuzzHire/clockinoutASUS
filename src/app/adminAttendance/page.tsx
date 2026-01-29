@@ -62,8 +62,8 @@ const AdminAttendancePage = () => {
     }
   }, [user, loading, router]);
 
-  const tabs = ["Attendance Management", "Leaves Management", "Regulizer Management"];
-  const [activeTab, setActiveTab] = useState("Attendance Management");
+  const tabs = ["Attendance", "Leave", "Regularization"];
+  const [activeTab, setActiveTab] = useState("Attendance");
   const [loadingPage, setLoadingPage] = useState(false);
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -74,18 +74,18 @@ const AdminAttendancePage = () => {
   const [openPopupTotal, setOpenPopupTotal] = useState(false);
 
   const [list, setList] = useState<any[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("PENDING");
 
   const [selected, setSelected] = useState<any | null>(null);
   const [detail, setDetail] = useState<any | null>(null);
 
   const [leaves, setLeaves] = useState<any[]>([]);
-  const [statusFilterLeaves, setStatusFilterLeaves] = useState<string>("");
+  const [statusFilterLeaves, setStatusFilterLeaves] = useState<string>("PENDING");
 
   const [selectedLeave, setSelectedLeave] = useState<any | null>(null);
 
   const [wfhList, setWfhList] = useState<any[]>([]);
-  const [statusFilterWfh, setStatusFilterWfh] = useState("");
+  const [statusFilterWfh, setStatusFilterWfh] = useState("PENDING");
   const [selectedWFH, setSelectedWFH] = useState<any | null>(null);
 
   // 🔥 This now stores REAL backend attendance
@@ -363,25 +363,25 @@ const AdminAttendancePage = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "Attendance Management":
+      case "Attendance":
         return (
           <div className="flex flex-col min-h-screen gap-8">
             <div className="text-2xl text-gray-900 space-x-4 flex justify-between">
               Attendance Manangement
               <div className="flex gap-4">
                 <Button variant={"default"} onClick={() => setOpenPopupDate(true)} className="bg-blue-700 text-white">
-                  View Full Attendance Grouped By Date
+                  Attendnace Report (Date Wise)
                 </Button>
 
                 {openPopupDate && <AdminAttendancePopupByDate onClose={() => setOpenPopupDate(false)} />}
 
                 <Button variant={"default"} onClick={() => setOpenPopupName(true)} className="bg-blue-700 text-white">
-                  View Full Attendance Grouped By Name
+                  Attendance Report (Name Wise)
                 </Button>
 
                 {openPopupName && <AdminAttendancePopupByName onClose={() => setOpenPopupName(false)} />}
                 <Button variant={"outline"} onClick={() => setOpenPopupTotal(true)} className="bg-blue-700 text-white">
-                  View Total Working Hours
+                  Total Logged Hours
                 </Button>
 
                 {openPopupTotal && <AdminAttendancePopupTotals onClose={() => setOpenPopupTotal(false)} />}
@@ -415,7 +415,7 @@ const AdminAttendancePage = () => {
           </div>
         );
 
-      case "Leaves Management":
+      case "Leave":
 
         return (
           <div className="flex flex-col min-h-screen gap-6 bg-slate-50/50 p-6">
@@ -502,7 +502,7 @@ const AdminAttendancePage = () => {
           </div>
         );
 
-      case "Regulizer Management":
+      case "Regularization":
         return (
           <div className="flex flex-col min-h-screen gap-8 bg-slate-50/50 p-6">
 
