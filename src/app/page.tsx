@@ -5,7 +5,8 @@ import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -14,13 +15,24 @@ interface AuthResponseData {
   refresh: string;
 }
 
+interface TokenPayload {
+  id: string | number;
+  username: string;
+  role: string;
+}
+
 export default function LoginPage() {
   const { user, login, loading } = useAuth();
   const router = useRouter();
 
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
   useEffect(() => {
     if (!loading && user) {
-      const home = user.role === "admin" ? "/list/attendance/admin" : "/attendance";
+      const home = user.role === "admin" ? "/list/attendance/admin" : "/list/attendance/employee";
       router.replace(home);
     }
   }, [user, loading, router]);
@@ -33,7 +45,7 @@ export default function LoginPage() {
     }
 
     try {
-      const response = await axios.post<AuthResponseData & { access: string; refresh: string }>(
+      const response = await axios.post<AuthResponseData>(
         `${apiUrl}/auth/google/`,
         { id_token: idToken }
       );
@@ -41,13 +53,9 @@ export default function LoginPage() {
       const { access, refresh } = response.data;
       login(access, refresh);
 
-      const decoded = response.data as { role?: string };
-      const role = decoded.role;
-      if (role === "admin") {
-        router.push("/list/attendance/admin");
-      } else {
-        router.push("/list/attendance/employee");
-      }
+      const decoded = jwtDecode<TokenPayload>(access);
+      const home = decoded.role === "admin" ? "/list/attendance/admin" : "/attendance";
+      router.push(home);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<{ error?: string }>;
@@ -59,8 +67,66 @@ export default function LoginPage() {
     }
   };
 
+  const handleUsernameLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+
+    try {
+      const response = await axios.post<{ access: string; refresh: string }>(
+        `${apiUrl}/login/`,
+        { username, password }
+      );
+
+      const { access, refresh } = response.data;
+      login(access, refresh);
+
+      const decoded = jwtDecode<TokenPayload>(access);
+      const home = decoded.role === "admin" ? "/list/attendance/admin" : "/attendance";
+      router.push(home);
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Invalid username or password");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100">
+    <div className="h-screen flex gap-8 items-center justify-center bg-gray-100">
+      <form onSubmit={handleUsernameLogin} className="space-y-4 mt-6">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg py-2 px-3">
+            {error}
+          </div>
+        )}
+
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        />
+
+        <button
+          type="submit"
+          disabled={submitting}
+          className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition disabled:opacity-60"
+        >
+          {submitting ? "Logging in..." : "Login"}
+        </button>
+      </form>
+
       <div className="bg-white w-full max-w-md rounded-2xl shadow-lg px-10 py-10 text-center space-y-4">
         <div className="flex justify-center">
           <Image src="/logo.webp" alt="" height={40} width={40} />
