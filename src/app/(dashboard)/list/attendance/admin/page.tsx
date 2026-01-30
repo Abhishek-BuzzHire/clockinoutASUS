@@ -80,16 +80,19 @@ const AdminAttendancePage = () => {
 
   const [list, setList] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("PENDING");
+  const [statusFilter, setStatusFilter] = useState<string>("PENDING");
 
   const [selected, setSelected] = useState<any | null>(null);
   const [detail, setDetail] = useState<any | null>(null);
 
   const [leaves, setLeaves] = useState<any[]>([]);
   const [statusFilterLeaves, setStatusFilterLeaves] = useState<string>("PENDING");
+  const [statusFilterLeaves, setStatusFilterLeaves] = useState<string>("PENDING");
 
   const [selectedLeave, setSelectedLeave] = useState<any | null>(null);
 
   const [wfhList, setWfhList] = useState<any[]>([]);
+  const [statusFilterWfh, setStatusFilterWfh] = useState("PENDING");
   const [statusFilterWfh, setStatusFilterWfh] = useState("PENDING");
   const [selectedWFH, setSelectedWFH] = useState<any | null>(null);
 
@@ -454,12 +457,14 @@ const AdminAttendancePage = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "Attendance":
+      case "Attendance":
         return (
           <div className="flex flex-col min-h-screen gap-8">
             <div className="text-2xl text-gray-900 space-x-4 flex justify-between">
               Attendance Management
               <div className="flex gap-4">
                 <Button variant={"default"} onClick={() => setOpenPopupDate(true)} className="bg-blue-700 text-white">
+                  Attendnace Report (Date Wise)
                   Attendnace Report (Date Wise)
                 </Button>
                 {openPopupDate && <AdminAttendancePopupByDate onClose={() => setOpenPopupDate(false)} />}
@@ -470,6 +475,7 @@ const AdminAttendancePage = () => {
                 {openPopupName && <AdminAttendancePopupByName onClose={() => setOpenPopupName(false)} />}
 
                 <Button variant={"outline"} onClick={() => setOpenPopupTotal(true)} className="bg-blue-700 text-white">
+                  Total Logged Hours
                   Total Logged Hours
                 </Button>
                 {openPopupTotal && <AdminAttendancePopupTotals onClose={() => setOpenPopupTotal(false)} />}
@@ -509,6 +515,7 @@ const AdminAttendancePage = () => {
           </div>
         );
 
+      case "Leave":
       case "Leave":
 
         return (
@@ -596,6 +603,7 @@ const AdminAttendancePage = () => {
           </div>
         );
 
+      case "Regularization":
       case "Regularization":
         return (
           <div className="flex flex-col min-h-screen gap-8 bg-slate-50/50 p-6">
