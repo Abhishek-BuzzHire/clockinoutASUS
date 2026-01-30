@@ -2,7 +2,7 @@ name: Deploy HRMS Frontend (Next.js)
 
 on:
   push:
-    branches: ["main"]
+    branches: ["master"]
   workflow_dispatch: {}
 
 jobs:
@@ -19,7 +19,7 @@ jobs:
           set -e
           cd /home/abhishek/crm-next-frontend/hrms-frontend
           git fetch --all
-          git reset --hard origin/main
+          git reset --hard origin/master
           git clean -fd
 
       - name: Install, build, restart
