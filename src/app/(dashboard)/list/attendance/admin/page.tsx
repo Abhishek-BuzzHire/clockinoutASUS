@@ -80,19 +80,16 @@ const AdminAttendancePage = () => {
 
   const [list, setList] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("PENDING");
-  const [statusFilter, setStatusFilter] = useState<string>("PENDING");
 
   const [selected, setSelected] = useState<any | null>(null);
   const [detail, setDetail] = useState<any | null>(null);
 
   const [leaves, setLeaves] = useState<any[]>([]);
   const [statusFilterLeaves, setStatusFilterLeaves] = useState<string>("PENDING");
-  const [statusFilterLeaves, setStatusFilterLeaves] = useState<string>("PENDING");
 
   const [selectedLeave, setSelectedLeave] = useState<any | null>(null);
 
   const [wfhList, setWfhList] = useState<any[]>([]);
-  const [statusFilterWfh, setStatusFilterWfh] = useState("PENDING");
   const [statusFilterWfh, setStatusFilterWfh] = useState("PENDING");
   const [selectedWFH, setSelectedWFH] = useState<any | null>(null);
 
