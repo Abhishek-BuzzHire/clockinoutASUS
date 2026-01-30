@@ -163,7 +163,7 @@ export const generateAttendanceData = (
     if (holidaysMap.has(date)) {
         // It's a company holiday, everyone is on leave
         EMPLOYEES.forEach(employee => {
-            recordsByDate[date].push({ employeeId: employee.id, date, status: 'on-leave' });
+            recordsByDate[date].push({ employeeId: employee.id, date, status: 'leave' });
         });
         return;
     }
@@ -184,7 +184,7 @@ export const generateAttendanceData = (
 
     EMPLOYEES.forEach(employee => {
       if (employeesOnLeaveToday.includes(employee.id)) {
-        recordsByDate[date].push({ employeeId: employee.id, date, status: 'on-leave' });
+        recordsByDate[date].push({ employeeId: employee.id, date, status: 'leave' });
         return;
       }
 
