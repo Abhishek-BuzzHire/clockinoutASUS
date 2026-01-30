@@ -4,6 +4,8 @@ import Cookies from "js-cookie";
 import { format } from "date-fns";
 import { FileText, X, Calendar, Clock, Users, Search, CheckCircle2, ChevronDown, Download } from "lucide-react";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 interface AttendanceDay {
   date: string;
   punch_in: string | null;
@@ -35,7 +37,7 @@ export default function AdminAttendancePopupByName({ onClose }: { onClose: () =>
       const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
 
       const res = await axios.get(
-        "https://buzzhire.trueledgrr.com/api/admin/emp-total-details/",
+        `${apiUrl}/api/admin/emp-total-details/`,
         {
           headers: { Authorization: token ? `Bearer ${token}` : "" },
           params: { start_date: "2025-01-01" }
@@ -73,7 +75,7 @@ export default function AdminAttendancePopupByName({ onClose }: { onClose: () =>
       else params.ids = "";
 
       const res = await axios.get(
-        "https://buzzhire.trueledgrr.com/api/admin/emp-total-details/",
+        `${apiUrl}/api/admin/emp-total-details/`,
         {
           headers: { Authorization: token ? `Bearer ${token}` : "" },
           params

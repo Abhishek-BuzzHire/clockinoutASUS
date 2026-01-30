@@ -4,6 +4,16 @@ const nextConfig: NextConfig = {
   /* config options here */
   images: {
     domains: ["lh3.googleusercontent.com"],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.pravatar.cc',
+      },
+      {
+        protocol: 'https',
+        hostname: 'randomuser.me',
+      }
+    ],
   },
 };
 

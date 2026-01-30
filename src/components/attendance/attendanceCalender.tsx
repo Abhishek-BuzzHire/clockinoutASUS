@@ -12,22 +12,26 @@ import {
   startOfWeek,
   addMonths,
   subMonths,
+  isAfter,
+  startOfDay,
 } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo } from 'react';
-import type { AttendanceRecord } from '@/lib/types';
+import type { AttendanceRecord, CalendarDay } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 // import { TimeTrackLogo } from '@/components/icons';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { AttendanceDay } from '@/app/(dashboard)/list/attendance/admin/page';
 
 type AttendanceCalendarProps = {
   currentDate: Date;
   selectedDate: Date;
-  attendanceRecords: Record<string, AttendanceRecord[]>;
+  attendanceRecords: Record<string, AttendanceDay>;
   onSelectDate: (date: Date) => void;
   onMonthChange: (date: Date) => void;
   totalEmployees: number;
+  calendarMap: Record<string, CalendarDay>;
 };
 
 const AttendanceStat = ({
@@ -53,7 +57,8 @@ export default function AttendanceCalendar({
   attendanceRecords,
   onSelectDate,
   onMonthChange,
-  totalEmployees
+  totalEmployees,
+  calendarMap
 }: AttendanceCalendarProps) {
   const firstDayOfMonth = startOfMonth(currentDate);
 
@@ -100,18 +105,20 @@ export default function AttendanceCalendar({
         <div className="grid grid-cols-7 gap-1">
           {daysInMonth.map((day) => {
             const dateKey = format(day, 'yyyy-MM-dd');
-            const records = attendanceRecords[dateKey] || [];
+            const dayData = attendanceRecords[dateKey];
+            const records = dayData?.records || [];
+            const summary = dayData?.summary;
             const isCurrentMonth = isSameMonth(day, currentDate);
             const isSelected = isSameDay(day, selectedDate);
             const isTodaysDate = isToday(day);
-            
-            const summary = {
-              present: records.filter(r => r.status === 'present' || r.status === 'early').length,
-              absent: records.filter(r => r.status === 'absent').length,
-              late: records.filter(r => r.status === 'late').length,
-            };
-            
-            const isWeekend = records.some(r => r.status === 'weekend');
+
+            const calendarDay = calendarMap[dateKey];
+            const isWeekend = calendarDay?.calendar_type === "WEEKEND";
+            const isHoliday = calendarDay?.calendar_type === "HOLIDAY";
+            const isOverride = calendarDay?.calendar_type === "OVERRIDE";
+            const isWorkingDay = calendarDay?.is_working_day;
+            const isFutureDay = isAfter(startOfDay(day), startOfDay(new Date()));
+            const presentCount = summary?.present || 0;
 
             return (
               <button
@@ -129,20 +136,42 @@ export default function AttendanceCalendar({
                   dateTime={dateKey}
                   className={cn(
                     'text-md font-semibold',
-                    isTodaysDate && 'flex items-center justify-center h-6 w-6 rounded-full p-4 bg-brand-600 text-blue-600'
+                    isTodaysDate && 'flex items-center justify-center h-5 w-5 rounded-full p-5 bg-indigo-600 text-white'
                   )}
                 >
                   {format(day, 'd')}
                 </time>
-                {isCurrentMonth && !isWeekend && records.length > 0 && (
+                {isCurrentMonth && isWorkingDay && summary && !isFutureDay && (
                   <div className="flex flex-col items-start gap-1 w-full">
-                    <AttendanceStat label="Present" value={summary.present + summary.late} color="bg-green-500" />
+                    <AttendanceStat label="Present" value={summary.present} color="bg-green-500" />
                     <AttendanceStat label="Absent" value={summary.absent} color="bg-red-500" />
-                    <AttendanceStat label="Late" value={summary.late} color="bg-yellow-500" />
+                    {summary.leave > 0 && (
+                      <AttendanceStat label="Leave" value={summary.leave} color="bg-blue-500" />
+                    )}
                   </div>
                 )}
-                 {isWeekend && isCurrentMonth && (
-                    <div className="text-xs text-muted-foreground self-center">Weekend</div>
+                {isCurrentMonth && isWorkingDay && summary?.leave > 0 && isFutureDay && (
+                      <AttendanceStat label="Leave" value={summary.leave} color="bg-blue-500" />            
+                )}
+
+                {isCurrentMonth && !isFutureDay && (isWeekend || isHoliday) && summary?.present! > 0 && (
+                  <div className="flex flex-col items-start gap-1 w-full gap-4">
+                    <AttendanceStat label="Present" value={presentCount} color="bg-green-500" />
+                    {isWeekend ? <div className="text-xs text-muted-foreground self-center">Weekend</div> : <div className="text-md text-red-500 self-center">{calendarDay.holiday_name}</div>}
+                  </div>
+                )}
+                {isWeekend && (!summary || summary.present === 0) && isCurrentMonth && (
+                  <div className="text-xs text-muted-foreground self-center">Weekend</div>
+                )}
+                {isHoliday && (!summary || summary.present === 0) && isCurrentMonth && (
+                  <div className="text-md text-red-500 self-center">
+                    {calendarDay.holiday_name}
+                  </div>
+                )}
+                {isOverride && (
+                  <div className="text-xs text-yellow-600 self-center">
+                    Working Day
+                  </div>
                 )}
               </button>
             );

@@ -1,0 +1,39 @@
+name: Deploy HRMS Frontend (Next.js)
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Optional skip deploy
+        run: |
+          echo "${{ github.event.head_commit.message }}" | grep -qi "\[skip deploy\]" && exit 1 || exit 0
+
+      - name: Update source code
+        run: |
+          set -e
+          cd /home/abhishek/crm-next-frontend/hrms-frontend
+          git fetch --all
+          git reset --hard origin/main
+          git clean -fd
+
+      - name: Install, build, restart
+        run: |
+          set -e
+          cd /home/abhishek/crm-next-frontend/hrms-frontend
+
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+          npm run build
+
+          pm2 restart hrms-frontend
+          pm2 save

@@ -1,12 +1,15 @@
 import { cn } from "@/lib/utils";
 import { TimelineBar } from "./TimeLineBar";
 import { Badge } from "@/components/ui/badge";
-import { DayStatus } from "@/lib/types";
-import { SHIFT_CONFIG } from "@/app/attendance/page";
+import { CalendarDay, DayStatus } from "@/lib/types";
+import { SHIFT_CONFIG } from "@/app/(dashboard)/list/attendance/admin/page";
+import { useState } from "react";
 
 interface TimeEntryRowProps {
     day: string;
     date: number;
+    dateStr: string;          // 👈 add this
+    calendarDay?: CalendarDay;
     checkInTime?: string;
     checkOutTime?: string;
     lateBy?: string;
@@ -20,6 +23,8 @@ interface TimeEntryRowProps {
 export const TimeEntryRow = ({
     day,
     date,
+    dateStr,
+    calendarDay,
     checkInTime,
     checkOutTime,
     lateBy,
@@ -41,7 +46,17 @@ export const TimeEntryRow = ({
             );
         }
 
-        if (status === "weekend") {
+        // Holiday name
+        if (calendarDay?.calendar_type === "HOLIDAY") {
+            badges.push(
+                <Badge key="holiday" className="bg-yellow-200 text-black border-0">
+                    {calendarDay.holiday_name}
+                </Badge>
+            );
+        }
+
+        // Weekend
+        if (calendarDay?.calendar_type === "WEEKEND") {
             badges.push(
                 <Badge key="weekend" className="bg-weekend-light text-weekend border-0">
                     Weekend
@@ -52,6 +67,13 @@ export const TimeEntryRow = ({
             badges.push(
                 <Badge key="absent" className="bg-absent-light text-absent border-0">
                     Absent
+                </Badge>
+            );
+        }
+        if (status === "leave") {
+            badges.push(
+                <Badge key="leave" className="bg-absent-light text-absent border-0">
+                    Leave
                 </Badge>
             );
         }
@@ -93,7 +115,7 @@ export const TimeEntryRow = ({
 
             {/* 2. CHECK IN TIME */}
             <div className="flex flex-row justify-between items-center lg:flex-col lg:items-start gap-1">
-                <span className="text-xs text-gray-500 font-bold lg:hidden">CHECK IN</span>
+                <span className="text-xs text-gray-500 font-bold lg:hidden">Clock In</span>
                 {checkInTime && (
                     <div className="text-sm text-right lg:text-left">
                         <span className="font-medium">{checkInTime}</span>
@@ -127,7 +149,7 @@ export const TimeEntryRow = ({
 
             {/* 4. CHECK OUT TIME */}
             <div className="flex flex-row justify-between items-center text-sm lg:block lg:text-right lg:ml-8">
-                <span className="text-xs text-gray-500 font-bold lg:hidden">CHECK OUT</span>
+                <span className="text-xs text-gray-500 font-bold lg:hidden">Clock Out</span>
                 {checkOutTime && (
                     <div className="text-sm text-right lg:text-left">
                         <span className="font-medium">{checkOutTime}</span>

@@ -1,7 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { User, Clock, AlertTriangle, UserX } from 'lucide-react';
+import { User, Clock, AlertTriangle, UserX, FileEdit } from 'lucide-react';
 import type { AttendanceRecord, NewEmployee } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -23,7 +23,16 @@ const EmployeeListItem = ({ record, employee }: { record: AttendanceRecord; empl
           <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
         </Avatar>
         <div>
-          <p className="font-medium text-md">{employee.name}</p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-md">{employee.name}</p>
+
+            {record.workStatus === "WFH" && (
+              <span className="p-1 text-xs rounded-sm bg-blue-600 text-white font-medium">
+                WFH
+              </span>
+            )}
+          </div>
+
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             {record.checkInTime ? <span>In: {record.checkInTime}</span> : <span className="text-red-500">No Clock In</span>}
             {record.checkOutTime ? <span>Out: {record.checkOutTime}</span> : <span className="text-red-500">No Clock Out</span>}
@@ -31,10 +40,10 @@ const EmployeeListItem = ({ record, employee }: { record: AttendanceRecord; empl
           </div>
         </div>
       </div>
-      {record.status === 'late' && (
+      {record.lateBy && (
         <div className="flex items-center gap-1 text-orange-500 text-sm">
           <AlertTriangle className="h-4 w-4" />
-          <span>Late</span>
+          <span>Late by {record.lateBy}</span>
         </div>
       )}
     </div>
@@ -46,13 +55,14 @@ export default function AttendanceSidebar({
   dailyRecords,
   employees,
 }: AttendanceSidebarProps) {
-  
+
   const employeeMap = new Map(employees.map(e => [e.id, e]));
 
-  const presentEmployees = dailyRecords.filter(r => r.status === 'present' || r.status === 'early' || r.status === 'late');
+  const presentEmployees = dailyRecords.filter(r => r.status === 'present')
   const absentEmployees = dailyRecords.filter(r => r.status === 'absent');
-  const lateEmployees = dailyRecords.filter(r => r.status === 'late');
-  
+  // const lateEmployees = dailyRecords.filter(r => r.status === 'late');
+  const leaveEmployees = dailyRecords.filter(r => r.status === 'leave');
+
   const getEmployee = (id: string) => employeeMap.get(id);
 
   return (
@@ -63,9 +73,9 @@ export default function AttendanceSidebar({
           <CardDescription>{format(selectedDate, 'EEEE, MMMM do, yyyy')}</CardDescription>
         </CardHeader>
         <CardContent>
-          {dailyRecords.length === 0 || dailyRecords.every(r => r.status === 'weekend') ? (
+          {dailyRecords.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              {dailyRecords.length > 0 ? 'Weekend' : 'No records for this day.'}
+              No records for this day.
             </div>
           ) : (
             <Tabs defaultValue="present" className="w-full">
@@ -76,8 +86,8 @@ export default function AttendanceSidebar({
                 <TabsTrigger value="absent">
                   <UserX className="mr-2 h-4 w-4" /> Absent ({absentEmployees.length})
                 </TabsTrigger>
-                <TabsTrigger value="late">
-                  <Clock className="mr-2 h-4 w-4" /> Late ({lateEmployees.length})
+                <TabsTrigger value="leave">
+                  <FileEdit /> Leave ({leaveEmployees.length})
                 </TabsTrigger>
               </TabsList>
               <ScrollArea className="h-96 mt-4">
@@ -95,9 +105,9 @@ export default function AttendanceSidebar({
                     ))}
                   </div>
                 </TabsContent>
-                <TabsContent value="late">
+                <TabsContent value="leave">
                   <div className="space-y-1">
-                    {lateEmployees.map(record => (
+                    {leaveEmployees.map(record => (
                       <EmployeeListItem key={record.employeeId} record={record} employee={getEmployee(record.employeeId)} />
                     ))}
                   </div>

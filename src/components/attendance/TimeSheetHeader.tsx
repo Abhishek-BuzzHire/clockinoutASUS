@@ -50,58 +50,23 @@ export const TimesheetHeader = ({
 
                 {/* Hide extra view icons on mobile, show on medium+ */}
                 <div className="hidden md:flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="bg-indigo-600 text-card">
+                    {/* <Button variant="ghost" size="icon" className="bg-indigo-600 text-card">
                         <Grid3x3 className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon">
+                    </Button> */}
+                    <Button variant="ghost" size="icon" className="bg-indigo-600 text-card">
                         <List className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon">
+                    {/* <Button variant="ghost" size="icon">
                         <Table2 className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon">
                         <MoreHorizontal className="h-4 w-4" />
+                    </Button> */}
+                    <Button variant={"secondary"} className="hover:bg-indigo-600 hover:text-white">
+                        Get Data
                     </Button>
                 </div>
             </div>
         </div>
     );
-
-    // return (
-    //     <div className="space-y-4 bg-card rounded-lg border border-border shadow-sm p-4">
-    //         <div className="flex items-center justify-between">
-    //             <div className="flex items-center gap-0">
-    //                 <Button variant="ghost" size="icon" onClick={() => onNavigate("prev")}>
-    //                     <ChevronLeft className="h-4 w-4" />
-    //                 </Button>
-    //                 <Button variant="ghost" size="icon" onClick={onToday}>
-    //                     <Calendar className="h-4 w-4" />
-    //                 </Button>
-    //                 <Button variant="ghost" size="icon" onClick={() => onNavigate("next")}>
-    //                     <ChevronRight className="h-4 w-4" />
-    //                 </Button>
-    //                 <span className="text-sm font-semibold ml-2">
-    //                     {format(weekStart, "dd-MMM-yyyy")} - {format(weekEnd, "dd-MMM-yyyy")}
-    //                 </span>
-    //             </div>
-    //             <span className="text-sm font-semibold whitespace-nowrap">
-    //                 General [ {shiftStart} A.M. - {shiftEnd} P.M. ]
-    //             </span>
-    //             <div className="flex items-center gap-2">
-    //                 <Button variant="ghost" size="icon" className="bg-indigo-600 text-card">
-    //                     <Grid3x3 className="h-4 w-4" />
-    //                 </Button>
-    //                 <Button variant="ghost" size="icon">
-    //                     <List className="h-4 w-4" />
-    //                 </Button>
-    //                 <Button variant="ghost" size="icon">
-    //                     <Table2 className="h-4 w-4" />
-    //                 </Button>
-    //                 <Button variant="ghost" size="icon">
-    //                     <MoreHorizontal className="h-4 w-4" />
-    //                 </Button>
-    //             </div>
-    //         </div>
-    //     </div>
-    // );
 };

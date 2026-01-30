@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { TimeEntryRow } from "@/components/attendance/TimeEntryRow";
 import { TimesheetHeader } from "@/components/attendance/TimeSheetHeader";
-import { ShiftConfig } from "@/lib/types";
+import { CalendarDay, ShiftConfig, DayStatus } from "@/lib/types";
 import { ConfirmClockOutModal } from "@/components/attendance/confirmClockOut";
 import AttendanceRegularizationPopup from "@/components/attendance/attendanceRegulizer";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,9 @@ import ApplyLeaveModal from "@/components/attendance/ApplyLeaveModal";
 import EmployeeWFHHistoryTable from "@/components/attendance/EmployeeWFHHistoryTable";
 import ApplyWFHModal from "@/components/attendance/ApplyWFHModal";
 import { CalendarDays, CalendarPlus, ClockArrowUp, Home, Laptop, LayoutDashboard, LogOut, Plus } from "lucide-react";
+import EmployeeRegulizeRequests from "@/components/attendance/EmployeeRegulizeRequests";
+import { toMinutes } from "../admin/page";
+import { useCurrentEmployee } from "@/hooks/useCurrentEmployee";
 
 export const SHIFT_CONFIG: ShiftConfig = {
     startTime: "09:30",
@@ -31,12 +34,10 @@ type WeeklyAttendance = {
     punch_in_time: string | null;
     punch_out_time: string | null;
     working_time: string | null;
+    work_status: string | null;
 };
 
-
-type DayStatus = "weekend" | "absent" | "present" | "today" | "future";
-
-const apiUrl = "http://localhost:8000"
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 type AttendanceRecord = {
     id?: number;
@@ -115,7 +116,7 @@ const PunchCard: React.FC<{
 
             <div className="text-center px-4 pb-8">
                 <h3 className="text-xl font-semibold text-gray-800">{profileName ?? "Employee"}</h3>
-                <p className="text-sm text-gray-500 mb-2">BuzzHire Employee</p>
+                <p className="text-sm text-gray-500 mb-2">BuzzHire User</p>
 
                 <p className={`font-bold text-lg mb-2 ${isPunchedIn ? "text-green-600" : "text-red-600"}`}>
                     {isPunchedIn ? "IN" : "OUT"}
@@ -154,12 +155,21 @@ const sumWorkingTime = (data: WeeklyAttendance[]) => {
 
 
 const EmployeeAttendancePage = () => {
+    const adminUsername = "satyajeet@buzzhire.in"
+    
+    const { employee } = useCurrentEmployee();
+
+    const avatarSrc = employee?.profile_photo
+    ? (employee.profile_photo.startsWith("data:") ? employee.profile_photo : `data:image/png;base64,${employee.profile_photo}`)
+    : "/avatar.png";
     // Auth + router
     const { user, loading, logout } = useAuth();
     const router = useRouter();
 
     const tabs = ["Attendance", "Leaves & WFH"];
     const [activeTab, setActiveTab] = useState("Attendance");
+
+    const [calendarMap, setCalendarMap] = useState<Record<string, CalendarDay>>({});
 
     // Geolocation
     const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
@@ -180,7 +190,10 @@ const EmployeeAttendancePage = () => {
 
     const [weeklyAttendance, setWeeklyAttendance] = useState<WeeklyAttendance[]>([]);
     const [totalWeeklyHours, setTotalWeeklyHours] = useState<string>("0:00");
+    const [expectedWeeklyHours, setExpectedWeeklyHours] = useState<string>("0:00");
 
+
+    const [requestsRegulize, setRequestsRegulize] = useState<any[]>([]);
     const [openRegulize, setOpenRegulize] = useState(false);
     const [loadingRegulize, setLoadingRegulize] = useState(false);
     const [messageRegulize, setMessageRegulize] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -224,7 +237,7 @@ const EmployeeAttendancePage = () => {
 
             const res = await axios.post(
                 `${apiUrl}/wfh/apply/`,
-                { date },
+                { date, admin_username: adminUsername },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
@@ -271,9 +284,14 @@ const EmployeeAttendancePage = () => {
         try {
             const token = Cookies.get("access");
 
+            const fianlPayload = {
+                ...payload,
+                admin_username: adminUsername,
+            }
+
             const res = await axios.post(
                 `${apiUrl}/api/employee/leave/apply/`,
-                payload,
+                fianlPayload,
                 {
                     headers: { Authorization: `Bearer ${token}` }
                 }
@@ -287,6 +305,30 @@ const EmployeeAttendancePage = () => {
         }
     };
 
+    const loadRegulizeRequests = async () => {
+        try {
+            setLoadingRegulize(true);
+            const token = Cookies.get("access");
+
+            const res = await axios.get(
+                `${apiUrl}/api/attendance-regularization/my-requests/`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            setRequestsRegulize(res.data.data || []);
+            // console.log("Regulize Data", res.data)
+        } catch (err) {
+            console.error(err);
+            alert("Failed to load regularizer requests");
+        } finally {
+            setLoadingRegulize(false);
+        }
+    };
+
+    useEffect(() => {
+        loadRegulizeRequests();
+    }, []);
+
     const handleSubmitRegulize = async (payload: {
         date: string;
         type: string;
@@ -299,11 +341,14 @@ const EmployeeAttendancePage = () => {
             setLoadingRegulize(true);
             const token = Cookies.get("access");
 
-            console.log(payload)
+            const fianlPayload = {
+                ...payload,
+                admin_username: adminUsername,
+            }
 
             const res = await axios.post(
                 `${apiUrl}/api/attendance-correction/request/`,
-                payload,
+                fianlPayload,
                 { headers: { Authorization: token ? `Bearer ${token}` : "" } }
             );
 
@@ -388,7 +433,7 @@ const EmployeeAttendancePage = () => {
             });
 
             const data = response.data;
-            console.log("today Data: ", data)
+            // console.log("today Data: ", data)
             if (data.status === "success" && data.data) {
                 setAttendanceStatus(data.data);
                 setAttendanceData((prev) => ({ ...prev, [todayStr]: data.data }));
@@ -400,10 +445,10 @@ const EmployeeAttendancePage = () => {
                     const elapsed = Math.max(0, Math.floor((now - punchIn) / 1000));
                     setInitialElapsedSeconds(elapsed);
                     setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
-                    console.log("FetchToday Api Punch In", "Raw:", data.data.punch_in_time, "&", "Processed:", punchTime)
+                    // console.log("FetchToday Api Punch In", "Raw:", data.data.punch_in_time, "&", "Processed:", punchTime)
                 } else if (data.data.punch_out_time) {
                     setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
-                    console.log("FetchToday Api Punch Out", "Raw:", data.data.punch_out_time, "&", "Processed:", punchTime)
+                    // console.log("FetchToday Api Punch Out", "Raw:", data.data.punch_out_time, "&", "Processed:", punchTime)
                     setInitialElapsedSeconds(0);
                 } else {
                     setPunchTime("");
@@ -426,6 +471,22 @@ const EmployeeAttendancePage = () => {
 
     // fetch week data from TotalHoursView
 
+    const fetchCompanyCalendar = async (start: Date, end: Date) => {
+        const token = Cookies.get("access");
+
+        const res = await axios.get(`${apiUrl}/api/company-calendar`, {
+            headers: { Authorization: token ? `Bearer ${token}` : "" },
+            params: { start_date: format(start, "yyyy-MM-dd"), end_date: format(end, "yyyy-MM-dd") }
+        });
+
+        const map: Record<string, CalendarDay> = {};
+        res.data.calendar.forEach((d: CalendarDay) => {
+            map[d.date] = d;
+        });
+
+        setCalendarMap(map);
+    };
+
     const fetchWeeklyAttendance = useCallback(
         async (start: Date, end: Date) => {
             try {
@@ -446,11 +507,16 @@ const EmployeeAttendancePage = () => {
 
                 if (response.data.status === "success") {
                     setWeeklyAttendance(response.data.data);
-                    console.log("Weekly Attendance Data:", response.data.data);
+                    // console.log("Weekly Attendance Data:", response.data.data);
                 }
+
+                await fetchCompanyCalendar(start, end);
 
                 const total = sumWorkingTime(response.data.data);
                 setTotalWeeklyHours(total);
+                const expected = (response.data.expected_hours);
+                setExpectedWeeklyHours(expected);
+
             } catch (err) {
                 console.error("Failed to fetch weekly attendance", err);
             }
@@ -500,11 +566,11 @@ const EmployeeAttendancePage = () => {
                         const elapsed = Math.max(0, Math.floor((Date.now() - pIn) / 1000));
                         setInitialElapsedSeconds(elapsed);
                         setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
-                        console.log("handlePunch Api Punch In", "Raw:", data.data.punch_in_time, "&", "Processed:", punchTime)
+                        // console.log("handlePunch Api Punch In", "Raw:", data.data.punch_in_time, "&", "Processed:", punchTime)
                     } else if (type === "out" && data.data.punch_out_time) {
                         setInitialElapsedSeconds(0);
                         setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
-                        console.log("handlePunch Api Punch Out", "Raw:", data.data.punch_out_time, "&", "Processed:", punchTime)
+                        // console.log("handlePunch Api Punch Out", "Raw:", data.data.punch_out_time, "&", "Processed:", punchTime)
                     }
                 } else {
                     // fallback: refresh today's attendance
@@ -579,23 +645,60 @@ const EmployeeAttendancePage = () => {
     const weekData = weekDates.map((date) => {
         const dateStr = format(date, "yyyy-MM-dd");
         const apiEntry = weeklyAttendance.find(d => d.date === dateStr);
-        const status: DayStatus = isToday(date)
-            ? "today"
-            : isFuture(date)
-                ? "future"
-                : isWeekend(date)
-                    ? "weekend"
-                    : apiEntry?.punch_in_time
-                        ? "present"
-                        : "absent";
+        const calendarDay = calendarMap[dateStr];
+
+        let lateBy: string | undefined;
+        let earlyBy: string | undefined;
+
+        if (apiEntry?.punch_in_time) {
+            const punchMinutes = toMinutes(apiEntry.punch_in_time);
+            const shiftStart = toMinutes(SHIFT_CONFIG.startTime) + 30;
+
+            if (punchMinutes > shiftStart) {
+                const diff = punchMinutes - shiftStart;
+                lateBy = `${Math.floor(diff / 60)}h ${diff % 60}m`;
+            }
+        }
+
+        if (apiEntry?.punch_out_time) {
+            const punchOutMinutes = toMinutes(apiEntry.punch_out_time);
+            const shiftEnd = toMinutes(SHIFT_CONFIG.endTime);
+
+            if (punchOutMinutes < shiftEnd) {
+                const diff = shiftEnd - punchOutMinutes;
+                earlyBy = `${Math.floor(diff / 60)}h ${diff % 60}m`;
+            }
+        }
+
+        let status: DayStatus = "absent";
+
+        if (isFuture(date)) {
+            status = "future";
+        }
+        else if (calendarDay?.calendar_type === "HOLIDAY") {
+            status = "holiday";   // reuse weekend styling for holiday
+        }
+        else if (calendarDay?.calendar_type === "WEEKEND") {
+            status = "weekend";
+        }
+        else if (apiEntry?.work_status === "LEAVE") {
+            status = "leave";    // treated as absent visually
+        }
+        else if (apiEntry?.punch_in_time) {
+            status = "present";
+        }
+        else {
+            status = "absent";
+        }
 
         return {
             day: isToday(date) ? "Today" : format(date, "EEE"),
             date: date.getDate(),
+            dateStr,
             checkInTime: apiEntry?.punch_in_time || undefined,
             checkOutTime: apiEntry?.punch_out_time || undefined,
-            lateBy: undefined,
-            earlyBy: undefined,
+            lateBy,
+            earlyBy,
             hoursWorked: apiEntry?.working_time ?? "0:00",
             status,
             isToday: isToday(date),
@@ -611,7 +714,7 @@ const EmployeeAttendancePage = () => {
     const handlePunchAction = async () => {
         const currentTime = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" });
         setPunchTime(currentTime);
-        console.log("CurrentTIme Component", currentTime)
+        // console.log("CurrentTIme Component", currentTime)
         if (isCheckedIn) {
             // --- USER IS TRYING TO CLOCK OUT ---
             try {
@@ -713,16 +816,19 @@ const EmployeeAttendancePage = () => {
                                     <div className="bg-card rounded-lg border border-border shadow-sm p-4 lg:p-6 pt-2">
                                         <div className="space-y-4 lg:space-y-2">
                                             {weekData.map((entry, index) => (
-                                                <TimeEntryRow key={index} {...{
-                                                    ...entry, checkInTime: entry.checkInTime ?? undefined,
-                                                    checkOutTime: entry.checkOutTime ?? undefined,
-                                                }} />
+                                                <TimeEntryRow
+                                                    key={index}
+                                                    {...entry}
+                                                    checkInTime={entry.checkInTime ?? undefined}
+                                                    checkOutTime={entry.checkOutTime ?? undefined}
+                                                    calendarDay={calendarMap[entry.dateStr]}
+                                                />
                                             ))}
                                         </div>
 
                                         <div className="w-full bg-white p-4 text-sm flex justify-between">
                                             <p>
-                                                Weekly Working Time: 47:30
+                                                Weekly Working Time: {expectedWeeklyHours}
                                             </p>
 
                                             <p>
@@ -748,8 +854,8 @@ const EmployeeAttendancePage = () => {
                                         handlePunchAction={handlePunchAction}
                                         punchTime={punchTime}
                                         elapsedSeconds={initialElapsedSeconds}
-                                        profileName={user?.name ?? user?.email ?? "Employee"}
-                                        imgurl={user?.picture}
+                                        profileName={employee?.name ?? "Employee"}
+                                        imgurl={avatarSrc}
                                     />
 
                                     {/* Location display & refresh */}
@@ -958,6 +1064,56 @@ const EmployeeAttendancePage = () => {
 
                         </div>
 
+                        {/* Regulize Component */}
+                        <div className="p-6 space-y-8 bg-slate-50/30">
+
+                            {/* HEADER SECTION */}
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                    <h1 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                                        Attendance Correction Requests
+                                        <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
+                                    </h1>
+                                    <p className="text-sm text-slate-500 font-medium">
+                                        Submit and track your attendance correction applications and history.
+                                    </p>
+                                </div>
+
+                                <button
+                                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                    onClick={() => setOpenRegulize(true)}
+                                >
+                                    <Plus className="w-5 h-5" />
+                                    Apply Regularize Attendance
+                                </button>
+                            </div>
+
+                            {/* DATA TABLE SECTION */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                                    <Laptop className="w-3.5 h-3.5" />
+                                    Recent Requests & Status
+                                </div>
+
+                                {/* Assumes EmployeeWFHHistoryTable follows the same professional style we built for leaves */}
+                                <EmployeeRegulizeRequests
+                                    loading={loading}
+                                    list={requestsRegulize}
+                                />
+                            </div>
+
+                            {/* MODAL OVERLAY */}
+                            {openRegulize && (
+                                <AttendanceRegularizationPopup
+                                    onClose={() => setOpenRegulize(false)}
+                                    onSubmit={handleSubmitRegulize}
+                                    loading={loadingRegulize}
+                                    message={messageRegulize}
+                                />
+                            )}
+
+                        </div>
+
                         <button
                             onClick={logout}
                             className="flex items-center justify-center gap-2 w-full px-4 py-3.5 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-100 hover:border-rose-600 font-semibold text-xs uppercase tracking-widest rounded-2xl transition-all duration-300 active:scale-[0.98]"
@@ -999,253 +1155,3 @@ const EmployeeAttendancePage = () => {
 };
 
 export default EmployeeAttendancePage;
-
-
-
-
-
-
-
-
-
-
-
-
-
-// <ConfirmClockOutModal
-//                 isOpen={showClockOutModal}
-//                 workingHours={workingHours}
-//                 onConfirm={confirmClockOut}
-//                 onCancel={cancelClockOut}
-//             />
-
-//             <div className="text-lg w-full bg-cyan-50 p-4">
-//                 {/* MAIN CONTENT WRAPPER: Column on mobile, Row on Large Screens */}
-//                 <div className="flex flex-col-reverse lg:flex-row gap-4 pt-8 lg:pt-0">
-
-//                     {/* --- LEFT SIDE: TIMESHEET --- */}
-//                     <div className="w-full lg:w-[80%] min-h-screen space-y-6 pt-4 lg:pt-12">
-//                         {/* <BigCalendar /> */}
-//                         <TimesheetHeader
-//                             weekStart={currentWeekStart}
-//                             weekEnd={weekEnd}
-//                             onNavigate={navigateWeek}
-//                             onToday={goToToday}
-//                             shiftStart={SHIFT_CONFIG.startTime}
-//                             shiftEnd={SHIFT_CONFIG.endTime}
-//                         />
-//                         <div className="bg-card rounded-lg border border-border shadow-sm p-4 lg:p-6 pt-2">
-//                             <div className="space-y-4 lg:space-y-2">
-//                                 {weekData.map((entry, index) => (
-//                                     <TimeEntryRow key={index} {...{
-//                                         ...entry, checkInTime: entry.checkInTime ?? undefined,
-//                                         checkOutTime: entry.checkOutTime ?? undefined,
-//                                     }} />
-//                                 ))}
-//                             </div>
-
-//                             <div className="w-full bg-white p-4 text-sm flex justify-between">
-//                                 <p>
-//                                     Weekly Working Time: 47:30
-//                                 </p>
-
-//                                 <p>
-//                                     Your Weekly Working Time: {totalWeeklyHours}
-//                                 </p>
-//                             </div>
-
-//                             {/* Timeline Labels: Hidden on mobile (too crowded), visible on Desktop */}
-//                             <div className="mt-8 relative hidden lg:block">
-//                                 <div className="flex justify-between text-sm text-muted-foreground px-[120px]">
-//                                     {timeLabels.map((time) => (
-//                                         <span key={time}>{time}</span>
-//                                     ))}
-//                                 </div>
-//                             </div>
-//                         </div>
-
-
-//                         {/* Leaves Component */}
-
-//                         {/* Leaves Component */}
-//                         <div className="p-6 space-y-8 bg-slate-50/30 min-h-screen">
-
-//                             {/* HEADER SECTION */}
-//                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-//                                 <div>
-//                                     {/* Breadcrumb Style Label */}
-//                                     <div className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-1">
-//                                         <LayoutDashboard className="w-3 h-3" />
-//                                         <span>Employee Portal</span>
-//                                         <span className="text-slate-300">/</span>
-//                                         <span className="text-slate-500">Attendance</span>
-//                                     </div>
-
-//                                     <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
-//                                         My Leaves
-//                                         <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-//                                     </h1>
-//                                     <p className="text-sm text-slate-500 font-medium">
-//                                         Manage your time off, track balances, and view request status.
-//                                     </p>
-//                                 </div>
-
-//                                 <button
-//                                     className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-blue-200 transition-all hover:scale-[1.02] active:scale-[0.98]"
-//                                     onClick={() => setOpenApplyLeaves(true)}
-//                                 >
-//                                     <Plus className="w-5 h-5" />
-//                                     Apply Leave
-//                                 </button>
-//                             </div>
-
-//                             {/* METRICS SECTION */}
-//                             <div className="space-y-3">
-//                                 <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
-//                                     <CalendarDays className="w-3.5 h-3.5" />
-//                                     Leave Entitlement Overview
-//                                 </div>
-//                                 <EmployeeLeaveSummaryCard
-//                                     loading={loadingLeaves}
-//                                     summary={summaryLeaves}
-//                                 />
-//                             </div>
-
-//                             {/* HISTORY SECTION */}
-//                             <div className="space-y-4">
-//                                 <EmployeeLeaveHistoryTable
-//                                     loading={loadingLeaves}
-//                                     requests={requestsLeaves}
-//                                 />
-//                             </div>
-
-//                             {/* MODAL OVERLAY */}
-//                             {openApplyLeaves && (
-//                                 <ApplyLeaveModal
-//                                     onClose={() => setOpenApplyLeaves(false)}
-//                                     onSubmit={applyLeave}
-//                                 />
-//                             )}
-
-//                         </div>
-
-//                         {/* WFH Component */}
-//                         <div className="p-6 space-y-8 bg-slate-50/30 min-h-screen">
-
-//                             {/* HEADER SECTION */}
-//                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-//                                 <div>
-//                                     {/* Breadcrumb Style Label */}
-//                                     <div className="flex items-center gap-2 text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-1">
-//                                         <Home className="w-3 h-3" />
-//                                         <span>Employee Portal</span>
-//                                         <span className="text-slate-300">/</span>
-//                                         <span className="text-slate-500">Remote Work</span>
-//                                     </div>
-
-//                                     <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
-//                                         WFH Requests
-//                                         <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
-//                                     </h1>
-//                                     <p className="text-sm text-slate-500 font-medium">
-//                                         Submit and track your work-from-home applications and history.
-//                                     </p>
-//                                 </div>
-
-//                                 <button
-//                                     className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
-//                                     onClick={() => setOpenApplyWfh(true)}
-//                                 >
-//                                     <Plus className="w-5 h-5" />
-//                                     Apply WFH
-//                                 </button>
-//                             </div>
-
-//                             {/* DATA TABLE SECTION */}
-//                             <div className="space-y-4">
-//                                 <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
-//                                     <Laptop className="w-3.5 h-3.5" />
-//                                     Recent Requests & Status
-//                                 </div>
-
-//                                 {/* Assumes EmployeeWFHHistoryTable follows the same professional style we built for leaves */}
-//                                 <EmployeeWFHHistoryTable
-//                                     loading={loading}
-//                                     requests={requestsWfh}
-//                                 />
-//                             </div>
-
-//                             {/* MODAL OVERLAY */}
-//                             {openApplyWfh && (
-//                                 <ApplyWFHModal
-//                                     onClose={() => setOpenApplyWfh(false)}
-//                                     onSubmit={applyWFH}
-//                                 />
-//                             )}
-
-//                         </div>
-//                     </div>
-
-//                     {/* --- RIGHT SIDE: PUNCH & LOCATION --- */}
-//                     <div className="w-full lg:w-[20%] mt-6 lg:mt-12 relative space-y-4">
-//                         <PunchCard
-//                             isPunchedIn={isPunchedInUI}
-//                             handlePunchAction={handlePunchAction}
-//                             punchTime={punchTime}
-//                             elapsedSeconds={initialElapsedSeconds}
-//                             profileName={user?.name ?? user?.email ?? "Employee"}
-//                             imgurl={user?.picture}
-//                         />
-
-//                         {/* Location display & refresh */}
-//                         <div className={`p-4 rounded-md ${locationError ? "bg-red-100 text-red-700" : "bg-green-50 text-green-700"} mb-4`}>
-//                             <h3 className="font-semibold">Current Location Status:</h3>
-//                             {isProcessing && location === null ? (
-//                                 <p>Fetching location...</p>
-//                             ) : locationError ? (
-//                                 <p>{locationError}</p>
-//                             ) : (
-//                                 <p>Lat: {location?.lat?.toFixed(6)}, Lon: {location?.lon?.toFixed(6)}</p>
-//                             )}
-
-//                             <div className="mt-3">
-//                                 <button
-//                                     onClick={fetchGeolocation}
-//                                     disabled={isProcessing}
-//                                     className="w-full py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition duration-200"
-//                                 >
-//                                     {isProcessing ? "Updating..." : "Refresh Location"}
-//                                 </button>
-//                             </div>
-//                         </div>
-
-//                         {/* Message */}
-//                         {message && (
-//                             <div className={`p-4 rounded-md ${message.startsWith("Error") || message.includes("failed") ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}>
-//                                 {message}
-//                             </div>
-//                         )}
-
-//                         <Button onClick={() => setOpenRegulize(true)} className="bg-blue-600 w-full text-white px-4 py-2 rounded">
-//                             Regulize Attendance
-//                         </Button>
-
-//                         {openRegulize && (
-//                             <AttendanceRegularizationPopup
-//                                 onClose={() => setOpenRegulize(false)}
-//                                 onSubmit={handleSubmitRegulize}
-//                                 loading={loadingRegulize}
-//                                 message={messageRegulize}
-//                             />
-//                         )}
-
-//                         <Button onClick={() => setOpenApplyLeaves(true)} className="bg-blue-600 w-full text-white px-4 py-2 rounded">
-//                             Apply For Leave
-//                         </Button>
-
-//                         <Button onClick={() => setOpenApplyWfh(true)} className="bg-blue-600 w-full text-white px-4 py-2 rounded">
-//                             Apply For Work From Home
-//                         </Button>
-//                     </div>
-//                 </div>
-//             </div>

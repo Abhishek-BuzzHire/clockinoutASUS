@@ -5,7 +5,7 @@ import { format, startOfMonth, endOfMonth, isAfter, isWeekend, isToday, isBefore
 import axios from "axios";
 import Cookies from "js-cookie";
 
-import type { AttendanceRecord, NewEmployee, ShiftConfig } from "@/lib/types";
+import type { AttendanceRecord, CalendarDay, NewEmployee, ShiftConfig } from "@/lib/types";
 import AttendanceCalendar from "@/components/attendance/attendanceCalender";
 import AttendanceSidebar from "@/components/attendance/attendanceSidebar";
 import CompanyHolidays from "@/components/attendance/CompanyHolidays";
@@ -23,24 +23,28 @@ import AdminLeaveDetailModal from "@/components/attendance/AdminLeaveDetailModal
 import AdminWFHDetailModal from "@/components/attendance/AdminWFHDetailModal";
 import AdminWFHListTable from "@/components/attendance/AdminWFHListTable";
 import { CheckSquare, ChevronRight, ClipboardList, Filter, Home, Search, Settings2 } from "lucide-react";
+import { AdminAttendancePivotReport, AdminHolidayOverridePage, AdminHolidayPage, AdminWorkingRulesPage } from "../../createNew/companyWork/page";
+import AdminAttendancePivotReportModal from "@/components/attendance/AttendancePivotReportModel";
 
-const apiUrl = "http://localhost:8000"
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-const ADMIN_EMAIL_WHITELIST = new Set<string>([
-  "atul.s.kant@gmail.com",
-  "satyajeet@buzzhire.in",
-  "ankit@buzzhire.in",
-  "saurabh@buzzhire.in",
-  "abhishek.buzzhire@gmail.com",
-]);
+type DaySummary = {
+  present: number;
+  absent: number;
+  leave: number;
+};
 
+export type AttendanceDay = {
+  records: AttendanceRecord[];
+  summary: DaySummary;
+};
 
 export const SHIFT_CONFIG: ShiftConfig = {
   startTime: "09:30",
   endTime: "19:00",
 };
 
-const toMinutes = (time: string) => {
+export const toMinutes = (time: string) => {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
 };
@@ -54,15 +58,16 @@ const AdminAttendancePage = () => {
       router.push("/login");
       return;
     }
-
-    if (user?.email && !ADMIN_EMAIL_WHITELIST.has(user?.email)) {
-      router.push("/attendance");   // <-- create this page OR redirect home
+    if (user && user.role !== "admin") {
+      router.push("/list/attendance/employee");
       return;
     }
   }, [user, loading, router]);
 
-  const tabs = ["Attendance Management", "Leaves Management", "Regulizer Management"];
-  const [activeTab, setActiveTab] = useState("Attendance Management");
+  const [calendarMap, setCalendarMap] = useState<Record<string, CalendarDay>>({});
+
+  const tabs = ["Attendance", "Leave", "Regularization", "Company Holidays & Rules"];
+  const [activeTab, setActiveTab] = useState("Attendance");
   const [loadingPage, setLoadingPage] = useState(false);
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -71,26 +76,56 @@ const AdminAttendancePage = () => {
   const [openPopupDate, setOpenPopupDate] = useState(false);
   const [openPopupName, setOpenPopupName] = useState(false);
   const [openPopupTotal, setOpenPopupTotal] = useState(false);
+  const [openPopupPivot, setOpenPopupPivot] = useState(false);
 
   const [list, setList] = useState<any[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("PENDING");
 
   const [selected, setSelected] = useState<any | null>(null);
   const [detail, setDetail] = useState<any | null>(null);
 
   const [leaves, setLeaves] = useState<any[]>([]);
-  const [statusFilterLeaves, setStatusFilterLeaves] = useState<string>("");
+  const [statusFilterLeaves, setStatusFilterLeaves] = useState<string>("PENDING");
 
   const [selectedLeave, setSelectedLeave] = useState<any | null>(null);
 
   const [wfhList, setWfhList] = useState<any[]>([]);
-  const [statusFilterWfh, setStatusFilterWfh] = useState("");
+  const [statusFilterWfh, setStatusFilterWfh] = useState("PENDING");
   const [selectedWFH, setSelectedWFH] = useState<any | null>(null);
 
   // 🔥 This now stores REAL backend attendance
   const [attendanceRecords, setAttendanceRecords] = useState<
-    Record<string, AttendanceRecord[]>
+    Record<string, AttendanceDay>
   >({});
+
+  const fetchCompanyCalendar = async (date: Date) => {
+    try {
+      const token = Cookies.get("access");
+
+      const start = format(startOfMonth(date), "yyyy-MM-dd");
+      const end = format(endOfMonth(date), "yyyy-MM-dd");
+
+      const res = await axios.get(
+        `${apiUrl}/api/company-calendar`,
+        {
+          headers: { Authorization: token ? `Bearer ${token}` : "" },
+          params: {
+            start_date: start,
+            end_date: end,
+          },
+        }
+      );
+
+      const map: Record<string, CalendarDay> = {};
+      res.data.calendar.forEach((day: CalendarDay) => {
+        map[day.date] = day;
+      });
+
+      setCalendarMap(map);
+    } catch (err) {
+      console.error("Calendar Fetch Failed", err);
+    }
+  };
 
   // ✅ Fetch Admin Attendance API
   const fetchAdminAttendance = async (date: Date) => {
@@ -124,68 +159,119 @@ const AdminAttendancePage = () => {
         }))
       );
 
-      const mapped: Record<string, AttendanceRecord[]> = {};
+      const mapped: Record<string, AttendanceDay> = {};
 
       apiData.forEach((emp: any) => {
         if (EXCLUDED_EMP_IDS.has(emp.emp_id)) return;
+
         emp.attendance.forEach((day: any) => {
           const dateKey = day.date;
           const thisDate = new Date(dateKey);
           const today = new Date();
 
-          //  Skip weekends
-          if (isWeekend(thisDate) && !day.punch_in) return;
+          const calendarDay = calendarMap[dateKey];
 
-          //  Skip future dates
-          if (isAfter(thisDate, today)) return;
+          const isWorkingDay = calendarDay?.is_working_day ?? true;
+          const isLeave = day.work_status === "LEAVE";
+          const isWFH = day.work_status === "WFH";
+          const isWFO = day.work_status === "WFO";
+          const hasPunch = !!day.punch_in;
+          const isPastDay = isBefore(startOfDay(thisDate), startOfDay(today));
+          const isFutureDay = isAfter(startOfDay(thisDate), startOfDay(today));
 
-          if (!mapped[dateKey]) mapped[dateKey] = [];
+          let status: "present" | "absent" | "leave" | null = null;
+          let lateBy: string | null = null;
 
-          mapped[dateKey].push({
-            employeeId: String(emp.emp_id),
-            date: dateKey,   // ⬅️ REQUIRED
+          if (isLeave) {
+            status = "leave";
+          }
 
-            status: (() => {
-              const thisDate = new Date(dateKey);
-              const today = new Date();
+          // Future days → only leave allowed
+          else if (isFutureDay) {
+            status = null;
+          }
 
-              const isTodayDate = isToday(thisDate);
-              const isPastDay =
-                isBefore(
-                  startOfDay(thisDate),
-                  startOfDay(today)
-                );
+          // Past days (excluding today)
+          else if (isPastDay) {
+            if (!hasPunch) {
+              // No punch-in at all
+              status = "absent";
+            }
+            else if (hasPunch && !day.punch_out) {
+              // Punch-in but no punch-out
+              status = "absent";
+            }
+            else {
+              // Both punch-in and punch-out
+              status = "present";
 
+              // Late calculation (optional)
+              const shiftStart = toMinutes(SHIFT_CONFIG.startTime);
+              const punchMinutes = toMinutes(day.punch_in);
 
-              if (isPastDay && !day.punch_out) {
-                return "absent"
+              if (punchMinutes > shiftStart + 30) {
+                const diff = punchMinutes - shiftStart;
+                const hrs = Math.floor(diff / 60);
+                const mins = diff % 60;
+                lateBy = `${hrs > 0 ? `${hrs}h ` : ""}${mins}m`;
               }
-              // 1️⃣ ABSENT — no punch in
-              if (!day.punch_in) { return "absent"; };
+            }
+          }
 
-              // 3️⃣ SHIFT BASED LATE CHECK
-              const shiftStart = toMinutes(SHIFT_CONFIG.startTime);  // 09:30 → 570 mins
-              const punchInMinutes = toMinutes(day.punch_in);        // example 09:45 → 585 mins
+          // Today
+          else {
+            if (hasPunch) {
+              // Punch-in today → present even if not punched out yet
+              status = "present";
 
-              if (punchInMinutes > shiftStart) return "late";
+              const shiftStart = toMinutes(SHIFT_CONFIG.startTime);
+              const punchMinutes = toMinutes(day.punch_in);
 
-              // 4️⃣ OTHERWISE PRESENT
-              return "present";
-            })(),
+              if (punchMinutes > shiftStart + 30) {
+                const diff = punchMinutes - shiftStart;
+                const hrs = Math.floor(diff / 60);
+                const mins = diff % 60;
+                lateBy = `${hrs > 0 ? `${hrs}h ` : ""}${mins}m`;
+              }
+            } else {
+              // No punch yet today → don't mark absent yet
+              status = null;
+            }
+          }
 
+          if (!mapped[dateKey]) {
+            mapped[dateKey] = {
+              records: [],
+              summary: { present: 0, absent: 0, leave: 0 }
+            };
+          }
+
+          const record = {
+            employeeId: String(emp.emp_id),
+            date: dateKey,
+            status,
+            lateBy,
+            workStatus: day.work_status || null,
             checkInTime: day.punch_in || undefined,
             checkOutTime: day.punch_out || undefined,
+            hoursWorked: day.total_time || undefined,
+          };
 
-            hoursWorked: day.total_time
-              ? day.total_time
-              : undefined,
-          });
+          mapped[dateKey].records.push(record);
 
+          if (isFutureDay) {
+            if (status === "leave") {
+              mapped[dateKey].summary.leave++;
+            }
+          } else {
+            if (status === "present") mapped[dateKey].summary.present++;
+            if (status === "absent") mapped[dateKey].summary.absent++;
+            if (status === "leave") mapped[dateKey].summary.leave++;
+          }
         });
       });
-
       setAttendanceRecords(mapped);
-      console.log("Admin Attendance Fetched", mapped);
+      //   console.log("Admin Attendance Fetched", mapped);
     } catch (err) {
       console.error("Admin Attendance Fetch Failed", err);
     }
@@ -193,7 +279,11 @@ const AdminAttendancePage = () => {
 
   // Load once initially
   useEffect(() => {
-    fetchAdminAttendance(currentDate);
+    const load = async () => {
+      await fetchCompanyCalendar(currentDate);
+      await fetchAdminAttendance(currentDate);
+    };
+    load();
   }, []);
 
   const loadList = async () => {
@@ -351,39 +441,43 @@ const AdminAttendancePage = () => {
 
 
   // When month changes via calendar
-  const handleMonthChange = (newMonth: Date) => {
+  const handleMonthChange = async (newMonth: Date) => {
     setCurrentDate(newMonth);
-    fetchAdminAttendance(newMonth);
     setSelectedDate(newMonth);
+    await fetchCompanyCalendar(newMonth);
+    await fetchAdminAttendance(newMonth);
   };
 
   const recordsForSelectedDate =
-    attendanceRecords[format(selectedDate, "yyyy-MM-dd")] || [];
+    attendanceRecords[format(selectedDate, "yyyy-MM-dd")]?.records || [];
 
   const renderContent = () => {
     switch (activeTab) {
-      case "Attendance Management":
+      case "Attendance":
         return (
           <div className="flex flex-col min-h-screen gap-8">
             <div className="text-2xl text-gray-900 space-x-4 flex justify-between">
-              Attendance Manangement
+              Attendance Management
               <div className="flex gap-4">
                 <Button variant={"default"} onClick={() => setOpenPopupDate(true)} className="bg-blue-700 text-white">
-                  View Full Attendance Grouped By Date
+                  Attendnace Report (Date Wise)
                 </Button>
-
                 {openPopupDate && <AdminAttendancePopupByDate onClose={() => setOpenPopupDate(false)} />}
 
                 <Button variant={"default"} onClick={() => setOpenPopupName(true)} className="bg-blue-700 text-white">
-                  View Full Attendance Grouped By Name
+                  Attendnace Report (Name Wise)
                 </Button>
-
                 {openPopupName && <AdminAttendancePopupByName onClose={() => setOpenPopupName(false)} />}
-                <Button variant={"outline"} onClick={() => setOpenPopupTotal(true)} className="bg-blue-700 text-white">
-                  View Total Working Hours
-                </Button>
 
+                <Button variant={"outline"} onClick={() => setOpenPopupTotal(true)} className="bg-blue-700 text-white">
+                  Total Logged Hours
+                </Button>
                 {openPopupTotal && <AdminAttendancePopupTotals onClose={() => setOpenPopupTotal(false)} />}
+
+                <Button variant={"default"} onClick={() => setOpenPopupPivot(true)} className="bg-success text-white hover:bg-success/90">
+                  Attendance Report
+                </Button>
+                {openPopupPivot && <AdminAttendancePivotReportModal onClose={() => setOpenPopupPivot(false)} />}
               </div>
             </div>
 
@@ -397,6 +491,7 @@ const AdminAttendancePage = () => {
                     onMonthChange={handleMonthChange}
                     attendanceRecords={attendanceRecords}
                     totalEmployees={employees.length}
+                    calendarMap={calendarMap}
                   />
                 </div>
 
@@ -414,7 +509,7 @@ const AdminAttendancePage = () => {
           </div>
         );
 
-      case "Leaves Management":
+      case "Leave":
 
         return (
           <div className="flex flex-col min-h-screen gap-6 bg-slate-50/50 p-6">
@@ -501,7 +596,7 @@ const AdminAttendancePage = () => {
           </div>
         );
 
-      case "Regulizer Management":
+      case "Regularization":
         return (
           <div className="flex flex-col min-h-screen gap-8 bg-slate-50/50 p-6">
 
@@ -608,10 +703,29 @@ const AdminAttendancePage = () => {
           </div>
         );
 
+      case "Company Holidays & Rules":
+        return (
+          <>
+            <AdminWorkingRulesPage />
+            <AdminHolidayPage />
+            <AdminHolidayOverridePage />
+            <AdminAttendancePivotReport />
+          </>
+        )
+
       default:
         return <></>;
     }
   };
+
+  // Don't render admin UI until we know user is admin (prevents flash for employees)
+  if (loading || !user || user.role !== "admin") {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-sky-50">
+        <p className="text-slate-500">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-sky-50 p-4 relative">

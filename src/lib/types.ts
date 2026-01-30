@@ -1,4 +1,4 @@
-export type DayStatus = "weekend" | "absent" | "present" | "today" | "future";
+export type DayStatus = "weekend" | "absent" | "present" | "today" | "future" | "leave" | "holiday";
 
 export interface AttendanceEntry {
   date: string; // YYYY-MM-DD format
@@ -57,7 +57,8 @@ export type AttendanceStatus =
   | 'late'
   | 'early'
   | 'missing-punch-out'
-  | 'on-leave';
+  | 'leave'
+  | null;
 
 export type NewEmployee = {
   id: string;
@@ -69,6 +70,8 @@ export type AttendanceRecord = {
   employeeId: string;
   date: string; // YYYY-MM-DD
   status: AttendanceStatus;
+  lateBy?: string | null;
+  workStatus?: "WFO" | "WFH" | "LEAVE" | null;
   checkInTime?: string; // HH:mm
   checkOutTime?: string; // HH:mm
   hoursWorked?: number;
@@ -87,3 +90,29 @@ export type CompanyHoliday = {
   date: string; // YYYY-MM-DD
   name: string;
 };
+
+
+export type CalendarDay = {
+    date: string;
+    weekday: string;
+    is_working_day: boolean;
+    calendar_type: string;
+    holiday_name: string | null;
+    override_type: string | null;
+    expected_hours: number;
+  };
+
+  export type Employee = {
+    id: string,
+    name: string,
+    phone: string,
+    email: string,
+    address: string,
+    jobTitle: string,
+    department: string,
+    joiningDate: Date | string,
+    isPresentToday: boolean,
+    salary: number,
+    manager: string,
+    photo: string
+}

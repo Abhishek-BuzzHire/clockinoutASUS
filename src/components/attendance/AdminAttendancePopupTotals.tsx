@@ -4,6 +4,8 @@ import Cookies from "js-cookie";
 import { format } from "date-fns";
 import { FileText, X, Users, ChevronDown, Search, CheckCircle2, Download, Clock } from "lucide-react";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 interface AttendanceDay {
     date: string;
     total_time: string | null;
@@ -31,13 +33,15 @@ export default function AdminAttendancePopupTotals({ onClose }: { onClose: () =>
     const dropdownRef = useRef<HTMLDivElement>(null);
     const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
 
+    const [expectedHours, setExpectedHours] = useState<number>();
+
     // ---------- Load Employee List ----------
     useEffect(() => {
         const loadEmployees = async () => {
             const token = Cookies.get("access");
 
             const res = await axios.get(
-                "https://buzzhire.trueledgrr.com/api/admin/emp-total-details/",
+                `${apiUrl}/api/admin/emp-total-details/`,
                 {
                     headers: { Authorization: token ? `Bearer ${token}` : "" },
                     params: { start_date: "2025-01-01" }
@@ -89,7 +93,7 @@ export default function AdminAttendancePopupTotals({ onClose }: { onClose: () =>
             else params.ids = "";
 
             const res = await axios.get(
-                "https://buzzhire.trueledgrr.com/api/admin/emp-total-details/",
+                `${apiUrl}/api/admin/emp-total-details/`,
                 {
                     headers: { Authorization: token ? `Bearer ${token}` : "" },
                     params
@@ -97,6 +101,8 @@ export default function AdminAttendancePopupTotals({ onClose }: { onClose: () =>
             );
 
             const emps: EmployeeAttendance[] = res.data.emps || [];
+            const expectedHours = res.data.expected_total_hours;
+            setExpectedHours(expectedHours)
 
             const computed = emps
                 .filter(e => !EXCLUDED_EMP_IDS.has(e.emp_id))
@@ -274,7 +280,8 @@ export default function AdminAttendancePopupTotals({ onClose }: { onClose: () =>
                                 <thead>
                                     <tr className="bg-slate-50 border-b border-slate-200">
                                         <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Employee Name</th>
-                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-right">Accumulated Hours</th>
+                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-right">Expected Hours</th>
+                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-right">Hours Worked</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
@@ -287,6 +294,12 @@ export default function AdminAttendancePopupTotals({ onClose }: { onClose: () =>
                                                     </div>
                                                     <span className="text-sm font-medium text-slate-700">{emp.name}</span>
                                                 </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-bold">
+                                                    <Clock className="w-4 h-4" />
+                                                    {expectedHours}
+                                                </span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-bold">

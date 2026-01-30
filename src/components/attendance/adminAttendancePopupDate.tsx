@@ -5,6 +5,8 @@ import { format } from "date-fns";
 // Optional: If you use lucide-react for icons
 import { Calendar, FileText, X, Clock, User, Download, Users, Search, CheckCircle2, ChevronDown } from "lucide-react";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 interface AttendanceDay {
     date: string;
     punch_in: string | null;
@@ -34,7 +36,7 @@ export default function AdminAttendancePopupByDate({ onClose }: { onClose: () =>
             const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
 
             const res = await axios.get(
-                "https://buzzhire.trueledgrr.com/api/admin/emp-total-details/",
+                `${apiUrl}/api/admin/emp-total-details/`,
                 {
                     headers: { Authorization: token ? `Bearer ${token}` : "" },
                     params: { start_date: "2025-01-01" } // any valid — just to get list
@@ -114,7 +116,7 @@ export default function AdminAttendancePopupByDate({ onClose }: { onClose: () =>
             }
 
             const res = await axios.get(
-                "https://buzzhire.trueledgrr.com/api/admin/emp-total-details/",
+                `${apiUrl}/api/admin/emp-total-details/`,
                 {
                     headers: { Authorization: token ? `Bearer ${token}` : "" },
                     params
