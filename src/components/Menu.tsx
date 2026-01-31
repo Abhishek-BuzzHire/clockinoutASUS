@@ -10,10 +10,10 @@ const menuItems = [
     title: "MENU",
     items: [
       { icon: "/dashboard.png", label: "Dashboard", href: "/admin", visible: ["admin", "employee", "developer"] },
-      { icon: "/calendar.png", label: "Calendar", href: "/list/calendar", visible: ["admin", "employee", "developer"] },
-      { icon: "/jobs.png", label: "Jobs", href: "/list/jobs", visible: ["admin", "employee", "developer"] },
-      { icon: "/candidates.png", label: "Candidates", href: "/list/candidates", visible: ["admin", "employee", "developer"] },
-      { icon: "/referrals.png", label: "My Referrals", href: "/list/referrals", visible: ["admin", "employee", "developer"] },
+      // { icon: "/calendar.png", label: "Calendar", href: "/list/calendar", visible: ["admin", "employee", "developer"] },
+      // { icon: "/jobs.png", label: "Jobs", href: "/list/jobs", visible: ["admin", "employee", "developer"] },
+      // { icon: "/candidates.png", label: "Candidates", href: "/list/candidates", visible: ["admin", "employee", "developer"] },
+      // { icon: "/referrals.png", label: "My Referrals", href: "/list/referrals", visible: ["admin", "employee", "developer"] },
     ],
   },
   {
@@ -21,16 +21,16 @@ const menuItems = [
     items: [
       { icon: "/candidates.png", label: "Employees", href: "/list/employees", visible: ["admin", "developer"] },
       { icon: "/calendar.png", label: "Attendance", href: "/list/attendance/employee", visible: ["admin", "employee", "developer"] },
-      { icon: "/file-text.png", label: "Reports", href: "/list/reports", visible: ["admin", "employee", "developer"] },
-      { icon: "/file-text.png", label: "Clients", href: "/list/clients", visible: ["admin", "employee", "developer"] },
+      // { icon: "/file-text.png", label: "Reports", href: "/list/reports", visible: ["admin", "employee", "developer"] },
+      // { icon: "/file-text.png", label: "Clients", href: "/list/clients", visible: ["admin", "employee", "developer"] },
     ],
   },
   {
     title: "OTHER",
     items: [
       { icon: "/profile.png", label: "Profile", href: "/profile", visible: ["admin", "employee", "developer"] },
-      { icon: "/settings.png", label: "Settings", href: "/settings", visible: ["admin", "employee", "developer"] },
-      { icon: "/logout.png", label: "Logout", href: "/logout", visible: ["admin", "employee", "developer"] },
+      // { icon: "/settings.png", label: "Settings", href: "/settings", visible: ["admin", "employee", "developer"] },
+      // { icon: "/logout.png", label: "Logout", href: "/logout", visible: ["admin", "employee", "developer"] },
     ],
   },
 ];
