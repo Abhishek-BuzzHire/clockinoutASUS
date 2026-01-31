@@ -462,7 +462,6 @@ const AdminAttendancePage = () => {
               <div className="flex gap-4">
                 <Button variant={"default"} onClick={() => setOpenPopupDate(true)} className="bg-blue-700 text-white">
                   Attendnace Report (Date Wise)
-                  Attendnace Report (Date Wise)
                 </Button>
                 {openPopupDate && <AdminAttendancePopupByDate onClose={() => setOpenPopupDate(false)} />}
 
@@ -472,7 +471,6 @@ const AdminAttendancePage = () => {
                 {openPopupName && <AdminAttendancePopupByName onClose={() => setOpenPopupName(false)} />}
 
                 <Button variant={"outline"} onClick={() => setOpenPopupTotal(true)} className="bg-blue-700 text-white">
-                  Total Logged Hours
                   Total Logged Hours
                 </Button>
                 {openPopupTotal && <AdminAttendancePopupTotals onClose={() => setOpenPopupTotal(false)} />}
