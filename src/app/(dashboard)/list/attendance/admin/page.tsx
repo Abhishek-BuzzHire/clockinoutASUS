@@ -461,12 +461,12 @@ const AdminAttendancePage = () => {
               Attendance Management
               <div className="flex gap-4">
                 <Button variant={"default"} onClick={() => setOpenPopupDate(true)} className="bg-blue-700 text-white">
-                  Attendnace Report (Date Wise)
+                  Attendance Report (Date Wise)
                 </Button>
                 {openPopupDate && <AdminAttendancePopupByDate onClose={() => setOpenPopupDate(false)} />}
 
                 <Button variant={"default"} onClick={() => setOpenPopupName(true)} className="bg-blue-700 text-white">
-                  Attendnace Report (Name Wise)
+                  Attendance Report (Name Wise)
                 </Button>
                 {openPopupName && <AdminAttendancePopupByName onClose={() => setOpenPopupName(false)} />}
 
