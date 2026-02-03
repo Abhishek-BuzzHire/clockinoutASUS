@@ -31,16 +31,17 @@ export function middleware(request: NextRequest) {
   const role = payload?.role;
 
   const isAdminPath = ADMIN_PATHS.some((p) => pathname.startsWith(p) || pathname === p);
+    const origin = request.nextUrl.origin;
 
   if (!token || !payload) {
     if (pathname.startsWith("/list") || pathname === "/admin" || pathname === "/adminAttendance" || pathname === "/attendance") {
-      return NextResponse.redirect(new URL(LOGIN_PATH, request.url));
+      return NextResponse.redirect(new URL(LOGIN_PATH, origin));
     }
     return NextResponse.next();
   }
 
   if (isAdminPath && role !== "admin") {
-    return NextResponse.redirect(new URL(EMPLOYEE_HOME, request.url));
+    return NextResponse.redirect(new URL(EMPLOYEE_HOME, origin));
   }
 
   return NextResponse.next();
