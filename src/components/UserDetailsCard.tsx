@@ -15,9 +15,6 @@ import { useCurrentEmployee } from "@/hooks/useCurrentEmployee";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-const domainUrl = process.env.NEXT_PUBLIC_DOMAIN_URL;
-
 export function UserDetailsCard() {
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -33,7 +30,7 @@ export function UserDetailsCard() {
 
   const handleLogout = () => {
     logout();
-    router.push(`${domainUrl}/login`);
+    router.push("/login");
   };
 
   return (

@@ -39,8 +39,6 @@ type WeeklyAttendance = {
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-const domainUrl = process.env.NEXT_PUBLIC_DOMAIN_URL;
-
 type AttendanceRecord = {
     id?: number;
     user?: number;
@@ -755,7 +753,7 @@ const EmployeeAttendancePage = () => {
     // Redirect if not logged in
     useEffect(() => {
         if (!loading && !user) {
-            router.push(`${domainUrl}/login`);
+            router.push("/login");
             return;
         }
         if (user) {
