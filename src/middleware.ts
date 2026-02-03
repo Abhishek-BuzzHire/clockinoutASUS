@@ -31,7 +31,7 @@ export function middleware(request: NextRequest) {
   const role = payload?.role;
 
   const isAdminPath = ADMIN_PATHS.some((p) => pathname.startsWith(p) || pathname === p);
-    const origin = request.nextUrl.origin;
+  const origin = "https://hrms.bytebuzz.in";
 
   if (!token || !payload) {
     if (pathname.startsWith("/list") || pathname === "/admin" || pathname === "/adminAttendance" || pathname === "/attendance") {
