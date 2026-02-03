@@ -54,7 +54,7 @@ export default function LoginPage() {
       login(access, refresh);
 
       const decoded = jwtDecode<TokenPayload>(access);
-      const home = decoded.role === "admin" ? "/list/attendance/admin" : "/attendance";
+      const home = decoded.role === "admin" ? `${apiUrl}/list/attendance/admin` : `${apiUrl}/attendance`;
       router.push(home);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -82,7 +82,7 @@ export default function LoginPage() {
       login(access, refresh);
 
       const decoded = jwtDecode<TokenPayload>(access);
-      const home = decoded.role === "admin" ? "/list/attendance/admin" : "/attendance";
+      const home = decoded.role === "admin" ? `${apiUrl}/list/attendance/admin` : `${apiUrl}/attendance`;
       router.push(home);
     } catch (err: any) {
       setError(err.response?.data?.error || "Invalid username or password");

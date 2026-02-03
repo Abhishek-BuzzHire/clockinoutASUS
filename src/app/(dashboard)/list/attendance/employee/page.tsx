@@ -753,7 +753,7 @@ const EmployeeAttendancePage = () => {
     // Redirect if not logged in
     useEffect(() => {
         if (!loading && !user) {
-            router.push("/login");
+            router.push(`${apiUrl}/login`);
             return;
         }
         if (user) {

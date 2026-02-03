@@ -55,11 +55,11 @@ const AdminAttendancePage = () => {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login");
+      router.push(`${apiUrl}/login`);
       return;
     }
     if (user && user.role !== "admin") {
-      router.push("/list/attendance/employee");
+      router.push(`${apiUrl}/list/attendance/employee`);
       return;
     }
   }, [user, loading, router]);
