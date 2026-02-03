@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const domainUrl = process.env.NEXT_PUBLIC_DOMAIN_URL;
 
 interface AuthResponseData {
   access: string;
@@ -54,7 +55,7 @@ export default function LoginPage() {
       login(access, refresh);
 
       const decoded = jwtDecode<TokenPayload>(access);
-      const home = decoded.role === "admin" ? `${apiUrl}/list/attendance/admin` : `${apiUrl}/attendance`;
+      const home = decoded.role === "admin" ? `${domainUrl}/list/attendance/admin` : `${domainUrl}/attendance`;
       router.push(home);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -82,7 +83,7 @@ export default function LoginPage() {
       login(access, refresh);
 
       const decoded = jwtDecode<TokenPayload>(access);
-      const home = decoded.role === "admin" ? `${apiUrl}/list/attendance/admin` : `${apiUrl}/attendance`;
+      const home = decoded.role === "admin" ? `${domainUrl}/list/attendance/admin` : `${domainUrl}/attendance`;
       router.push(home);
     } catch (err: any) {
       setError(err.response?.data?.error || "Invalid username or password");

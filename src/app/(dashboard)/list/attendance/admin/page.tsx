@@ -27,6 +27,7 @@ import { AdminAttendancePivotReport, AdminHolidayOverridePage, AdminHolidayPage,
 import AdminAttendancePivotReportModal from "@/components/attendance/AttendancePivotReportModel";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const domainUrl = process.env.NEXT_PUBLIC_DOMAIN_URL;
 
 type DaySummary = {
   present: number;
@@ -55,11 +56,11 @@ const AdminAttendancePage = () => {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push(`${apiUrl}/login`);
+      router.push(`${domainUrl}/login`);
       return;
     }
     if (user && user.role !== "admin") {
-      router.push(`${apiUrl}/list/attendance/employee`);
+      router.push(`${domainUrl}/list/attendance/employee`);
       return;
     }
   }, [user, loading, router]);
