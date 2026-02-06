@@ -155,7 +155,7 @@ const sumWorkingTime = (data: WeeklyAttendance[]) => {
 
 
 const EmployeeAttendancePage = () => {
-    const adminUsername = "abhishek@buzzhire.in"
+    const adminUsername = "satyajeet@buzzhire.in"
     
     const { employee } = useCurrentEmployee();
 
