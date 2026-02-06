@@ -35,7 +35,13 @@ export function middleware(request: NextRequest) {
 
   if (!token || !payload) {
     if (pathname.startsWith("/list") || pathname === "/admin" || pathname === "/adminAttendance" || pathname === "/attendance") {
-      return NextResponse.redirect(new URL(LOGIN_PATH, origin));
+      const returnUrl = `${pathname}${request.nextUrl.search}`;
+
+      const loginUrl = new URL(LOGIN_PATH, origin);
+
+      loginUrl.searchParams.set('returnUrl', returnUrl);
+
+      return NextResponse.redirect(new URL(loginUrl));
     }
     return NextResponse.next();
   }

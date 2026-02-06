@@ -9,7 +9,7 @@ import type { AttendanceRecord, CalendarDay, NewEmployee, ShiftConfig } from "@/
 import AttendanceCalendar from "@/components/attendance/attendanceCalender";
 import AttendanceSidebar from "@/components/attendance/attendanceSidebar";
 import CompanyHolidays from "@/components/attendance/CompanyHolidays";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import AdminAttendancePopupByDate from "@/components/attendance/adminAttendancePopupDate";
 import AdminAttendancePopupByName from "@/components/attendance/adminAttendancePopupName";
@@ -52,6 +52,8 @@ export const toMinutes = (time: string) => {
 const AdminAttendancePage = () => {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -97,6 +99,62 @@ const AdminAttendancePage = () => {
   const [attendanceRecords, setAttendanceRecords] = useState<
     Record<string, AttendanceDay>
   >({});
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    const wfhId = searchParams.get("wfhId");
+    const regularizationToken = searchParams.get("regularizationToken");
+    const leaveId = searchParams.get("leaveId");
+
+    // 1. Handle Active Tab
+    // Map URL tab param to the text used in your 'tabs' array
+    const tabNameMap: { [key: string]: string } = {
+      attendance: "Attendance",
+      leave: "Leave",
+      regularization: "Regularization",
+      settings: "Company Holidays & Rules",
+    };
+
+    if (tab && tabNameMap[tab]) {
+      setActiveTab(tabNameMap[tab]);
+    } else {
+      // Default to the first tab if none is specified
+      setActiveTab("Attendance");
+    }
+
+    // 2. Handle WFH Modal
+    if (wfhId && wfhList.length > 0) {
+      const wfhRequest = wfhList.find((item) => String(item.wfh_id) === wfhId);
+      if (wfhRequest) {
+        setSelectedWFH(wfhRequest);
+      } else {
+        // If the ID is not in the list, remove it from the URL
+        const newParams = new URLSearchParams(searchParams.toString());
+        newParams.delete("wfhId");
+        router.replace(`?${newParams.toString()}`);
+      }
+    }
+
+    // 3. Handle Regularization Modal
+    if (regularizationToken && list.length > 0) {
+      // The 'openDetail' function already fetches and sets the modal data
+      openDetail(regularizationToken);
+    }
+
+    // You can add similar logic for 'leaveId' here if needed
+    if (leaveId && leaves.length > 0) {
+      const leaveRequest = leaves.find((item) => String(item.leave_id) === leaveId);
+      if (leaveRequest) {
+        setSelectedLeave(leaveRequest);
+      } else {
+        // Optional: Clean up URL if ID is invalid
+        const newParams = new URLSearchParams(searchParams.toString());
+        newParams.delete("leaveId");
+        router.replace(`?${newParams.toString()}`);
+      }
+    }
+
+  }, [searchParams, wfhList, list, leaves]);
 
   const fetchCompanyCalendar = async (date: Date) => {
     try {
@@ -454,7 +512,6 @@ const AdminAttendancePage = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "Attendance":
-      case "Attendance":
         return (
           <div className="flex flex-col min-h-screen gap-8">
             <div className="text-2xl text-gray-900 space-x-4 flex justify-between">
@@ -511,8 +568,6 @@ const AdminAttendancePage = () => {
         );
 
       case "Leave":
-      case "Leave":
-
         return (
           <div className="flex flex-col min-h-screen gap-6 bg-slate-50/50 p-6">
 
@@ -581,7 +636,10 @@ const AdminAttendancePage = () => {
                 <AdminLeaveListTable
                   loading={loading}
                   leaves={leaves}
-                  onView={(leave) => setSelectedLeave(leave)}
+                  onView={(leave) => {
+                    const currentTab = 'leave'; // This is under the Leave tab
+                    router.push(`/list/attendance/admin?tab=${currentTab}&leaveId=${leave.leave_id}`);
+                  }}
                 />
               </div>
             </div>
@@ -590,7 +648,11 @@ const AdminAttendancePage = () => {
             {selectedLeave && (
               <AdminLeaveDetailModal
                 leave={selectedLeave}
-                onClose={() => setSelectedLeave(null)}
+                onClose={() => {
+                  // Remove the leaveId from the URL, keeping the active tab
+                  setSelectedLeave(null);
+                  router.push(`/list/attendance/admin?tab=leave`);
+                }}
                 onApprove={() => takeActionLeaves(selectedLeave.leave_id, "APPROVE")}
                 onReject={() => takeActionLeaves(selectedLeave.leave_id, "REJECT")}
               />
@@ -598,7 +660,6 @@ const AdminAttendancePage = () => {
           </div>
         );
 
-      case "Regularization":
       case "Regularization":
         return (
           <div className="flex flex-col min-h-screen gap-8 bg-slate-50/50 p-6">
@@ -642,7 +703,10 @@ const AdminAttendancePage = () => {
                 <CorrectionListTable
                   loading={loadingPage}
                   list={list}
-                  onView={openDetail}
+                  onView={(token) => {
+                    const currentTab = 'regularization';
+                    router.push(`/list/attendance/admin?tab=${currentTab}&regularizationToken=${token}`);
+                  }}
                 />
               </div>
             </div>
@@ -681,7 +745,10 @@ const AdminAttendancePage = () => {
                 <AdminWFHListTable
                   loading={loadingPage}
                   list={wfhList}
-                  onView={(req) => setSelectedWFH(req)}
+                  onView={(req) => {
+                    const currentTab = 'regularization'; // This is under the Regularization tab
+                    router.push(`/list/attendance/admin?tab=${currentTab}&wfhId=${req.wfh_id}`);
+                  }}
                 />
               </div>
             </div>
@@ -690,7 +757,11 @@ const AdminAttendancePage = () => {
             {detail && (
               <CorrectionDetailModal
                 data={detail}
-                onClose={() => setDetail(null)}
+                onClose={() => {
+                  // Just remove the wfhId from the URL
+                  setDetail(null);
+                  router.push(`/list/attendance/admin?tab=regularization`);
+                }}
                 onAction={takeAction}
               />
             )}
@@ -698,7 +769,11 @@ const AdminAttendancePage = () => {
             {selectedWFH && (
               <AdminWFHDetailModal
                 wfh={selectedWFH}
-                onClose={() => setSelectedWFH(null)}
+                onClose={() => {
+                  // Just remove the wfhId from the URL
+                  setSelectedWFH(null);
+                  router.push(`/list/attendance/admin?tab=regularization`);
+                }}
                 onApprove={() => takeActionWfh(selectedWFH.wfh_id, "APPROVE")}
                 onReject={() => takeActionWfh(selectedWFH.wfh_id, "REJECT")}
               />
@@ -734,18 +809,29 @@ const AdminAttendancePage = () => {
     <div className="w-full bg-sky-50 p-4 relative">
       <div className="text-lg">
         <div className="flex space-x-8 text-xs font-bold border-b border-gray-300 mb-12">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`p-2 ${activeTab === tab
-                ? "border-b-2 border-blue-600"
-                : "text-gray-500"
-                }`}
-            >
-              {tab.toUpperCase()}
-            </button>
-          ))}
+          {
+            tabs.map((tab) => (
+              <button
+                key={tab}
+                // ⬇️ CHANGE this onClick
+                onClick={() => {
+                  const tabIdMap: { [key: string]: string } = {
+                    Attendance: "attendance",
+                    Leave: "leave",
+                    Regularization: "regularization",
+                    "Company Holidays & Rules": "settings",
+                  };
+                  const newTabId = tabIdMap[tab];
+                  router.push(`/list/attendance/admin?tab=${newTabId}`);
+                }}
+                className={`p-2 ${activeTab === tab
+                  ? "border-b-2 border-blue-600"
+                  : "text-gray-500"
+                  }`}
+              >
+                {tab.toUpperCase()}
+              </button>
+            ))};
         </div>
 
         {renderContent()}

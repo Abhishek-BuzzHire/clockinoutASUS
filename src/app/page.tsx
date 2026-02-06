@@ -2,7 +2,7 @@
 
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import axios, { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -24,6 +24,8 @@ interface TokenPayload {
 export default function LoginPage() {
   const { user, login, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl');
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -31,11 +33,25 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && !returnUrl) {
       const home = user.role === "admin" ? "/list/attendance/admin" : "/list/attendance/employee";
       router.replace(home);
     }
   }, [user, loading, router]);
+
+  const handleLoginSuccess = (access: string, refresh: string) => {
+    login(access, refresh); // Set cookies and user state in context
+
+    // ⬇️ 4. USE THE NEW LOGIC
+    if (returnUrl) {
+      router.push(returnUrl); // Go to the originally intended page
+    } else {
+      // Fallback to the default dashboard if no returnUrl is present
+      const decoded = jwtDecode<TokenPayload>(access);
+      const home = decoded.role === "admin" ? "/list/attendance/admin" : "/attendance";
+      router.push(home);
+    }
+  };
 
   const handleGoogleLoginSuccess = async (cred: CredentialResponse) => {
     const idToken = cred.credential;
@@ -51,11 +67,7 @@ export default function LoginPage() {
       );
 
       const { access, refresh } = response.data;
-      login(access, refresh);
-
-      const decoded = jwtDecode<TokenPayload>(access);
-      const home = decoded.role === "admin" ? "/list/attendance/admin" : "/attendance";
-      router.push(home);
+      handleLoginSuccess(access, refresh);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<{ error?: string }>;
@@ -79,11 +91,7 @@ export default function LoginPage() {
       );
 
       const { access, refresh } = response.data;
-      login(access, refresh);
-
-      const decoded = jwtDecode<TokenPayload>(access);
-      const home = decoded.role === "admin" ? "/list/attendance/admin" : "/attendance";
-      router.push(home);
+      handleLoginSuccess(access, refresh);
     } catch (err: any) {
       setError(err.response?.data?.error || "Invalid username or password");
     } finally {
