@@ -58,8 +58,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = (access: string, refresh: string) => {
-    Cookies.set("access", access, { expires: 7, secure: true, sameSite: "Strict" });
-    Cookies.set("refresh", refresh, { expires: 30, secure: true, sameSite: "Strict" });
+    Cookies.set("access", access, { expires: 7, secure: true, sameSite: "Lax" });
+    Cookies.set("refresh", refresh, { expires: 30, secure: true, sameSite: "Lax" });
     setUserFromToken(access);
   };
 
