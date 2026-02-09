@@ -293,7 +293,7 @@ const AdminAttendancePage = () => {
               }
             } else {
               // No punch yet today → don't mark absent yet
-              status = null;
+              status = "absent";
             }
           }
 
