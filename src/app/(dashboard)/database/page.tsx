@@ -11,7 +11,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export function CandidateDatabase() {
+export default function CandidateDatabase() {
     const [employees, setEmployees] = useState<CandidateRec[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filters, setFilters] = useState<Filters>({
