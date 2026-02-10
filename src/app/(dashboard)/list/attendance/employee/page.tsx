@@ -684,6 +684,9 @@ const EmployeeAttendancePage = () => {
         else if (apiEntry?.work_status === "LEAVE") {
             status = "leave";    // treated as absent visually
         }
+        else if (apiEntry?.work_status === "WFH") {
+            status = "WFH";
+        }
         else if (apiEntry?.punch_in_time) {
             status = "present";
         }

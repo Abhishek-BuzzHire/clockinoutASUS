@@ -84,6 +84,13 @@ export const TimeEntryRow = ({
                 </Badge>
             );
         }
+        if (status === "WFH") {
+            badges.push(
+                <Badge key="present" className="bg-blue-600 text-white border-0">
+                    WFH
+                </Badge>
+            );
+        }
 
         return badges.length > 0 ? <div className="flex gap-2">{badges}</div> : null;
     };

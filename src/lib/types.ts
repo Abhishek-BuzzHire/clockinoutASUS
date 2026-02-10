@@ -1,4 +1,4 @@
-export type DayStatus = "weekend" | "absent" | "present" | "today" | "future" | "leave" | "holiday";
+export type DayStatus = "weekend" | "absent" | "present" | "today" | "future" | "leave" | "holiday" | "WFH";
 
 export interface AttendanceEntry {
   date: string; // YYYY-MM-DD format
@@ -115,4 +115,47 @@ export type CalendarDay = {
     salary: number,
     manager: string,
     photo: string
+}
+
+
+export interface Candidate {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  salary: number | null;
+  expected_ctc: number | null;
+  notice: number | null;
+  totalExperienceYears: number | null;
+  location: string;
+  cvUrl: string;
+  currentCompanyName: string;
+  skills: string[];
+  education: string;
+  jobTitle: string;
+  customFields?: Record<string, string>;
+  source: '';
+  createdAt?: string;
+}
+
+
+export interface CandidateRec {
+    name: string;
+    employeeId: string;
+    email: string;
+    phone: string;
+    location: string;
+    age: number;
+    salary: number;
+    notice: number;
+    sex: string;
+    skills: string[];
+    totalExperienceYears: number;
+    currentCompanyName: string;
+    previousCompaniesName: string[];
+    education: string;
+    cvUrl: string;
+    jobTitle: string;
+    source: string;
+    createdAt: string;
 }

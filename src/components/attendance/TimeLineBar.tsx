@@ -49,11 +49,12 @@ export const TimelineBar = ({
           "absolute h-full rounded-full transition-all",
           status === "weekend" && "bg-weekend",
           status === "absent" && "bg-absent",
-          status === "leave" && "bg-leave",
+          status === "leave" && "bg-absent",
           status === "present" && "bg-success-light",
           status === "today" && "bg-blue-400",
           status === "holiday" && "bg-yellow-400",
-          status === "future" && "bg-timeline-inactive"
+          status === "future" && "bg-timeline-inactive",
+          status === "WFH" && "bg-success-light"
         )}
         style={barStyle}
       />
