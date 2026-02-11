@@ -1,6 +1,15 @@
 import { Button } from "@/components/ui/button";
-import { Calendar, ChevronLeft, ChevronRight, Grid3x3, List, MoreHorizontal, Table2 } from "lucide-react";
+import { Calendar, CalendarPlus, ChevronLeft, ChevronRight, ClockArrowUp, Grid3x3, Home, List, MoreHorizontal, MoreVertical, Table2 } from "lucide-react";
 import { format } from "date-fns";
+import React from "react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+
 
 interface TimesheetHeaderProps {
     weekStart: Date;
@@ -9,6 +18,11 @@ interface TimesheetHeaderProps {
     onToday: () => void;
     shiftStart: string;
     shiftEnd: string;
+
+
+    onRegularize: () => void;
+    onApplyLeave: () => void;
+    onApplyWFH: () => void;
 }
 
 export const TimesheetHeader = ({
@@ -18,7 +32,13 @@ export const TimesheetHeader = ({
     onToday,
     shiftStart,
     shiftEnd,
+
+    onRegularize,
+    onApplyLeave,
+    onApplyWFH,
+
 }: TimesheetHeaderProps) => {
+    const [menuOpen, setMenuOpen] = React.useState(false);
 
     return (
         <div className="space-y-4 bg-card rounded-lg border border-border shadow-sm p-4">
@@ -65,6 +85,57 @@ export const TimesheetHeader = ({
                     <Button variant={"secondary"} className="hover:bg-indigo-600 hover:text-white">
                         Get Data
                     </Button>
+
+                    <DropdownMenu>
+
+                        {/* Trigger Button */}
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+
+                        {/* Menu Content */}
+                        <DropdownMenuContent
+                            align="end"
+                            className="
+      w-64 rounded-2xl border border-border
+      bg-white/95 backdrop-blur-xl
+      shadow-[0_10px_40px_-15px_rgba(0,0,0,0.3)]
+      p-2
+    "
+                        >
+
+                            {/* Regularize */}
+                            <DropdownMenuItem
+                                onClick={onRegularize}
+                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer"
+                            >
+                                <ClockArrowUp className="w-4 h-4 text-slate-500" />
+                                Regularize Attendance
+                            </DropdownMenuItem>
+
+                            {/* Apply Leave */}
+                            <DropdownMenuItem
+                                onClick={onApplyLeave}
+                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-blue-50"
+                            >
+                                <CalendarPlus className="w-4 h-4 text-blue-500" />
+                                Apply For Leave
+                            </DropdownMenuItem>
+
+                            {/* Apply WFH */}
+                            <DropdownMenuItem
+                                onClick={onApplyWFH}
+                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-indigo-50"
+                            >
+                                <Home className="w-4 h-4 text-indigo-500" />
+                                Apply For WFH
+                            </DropdownMenuItem>
+
+                        </DropdownMenuContent>
+
+                    </DropdownMenu>
                 </div>
             </div>
         </div>
