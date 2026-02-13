@@ -49,7 +49,7 @@ export const TimesheetHeader = ({
                 </span>
 
                 {/* Hide extra view icons on mobile, show on medium+ */}
-                <div className="hidden md:flex items-center gap-2">
+                <div className="flex items-center gap-2">
                     {/* <Button variant="ghost" size="icon" className="bg-indigo-600 text-card">
                         <Grid3x3 className="h-4 w-4" />
                     </Button> */}
