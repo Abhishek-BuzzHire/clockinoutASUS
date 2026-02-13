@@ -29,6 +29,11 @@ export const SHIFT_CONFIG: ShiftConfig = {
     endTime: "19:00",
 };
 
+// const [openRegulize, setOpenRegulize] = useState(false);
+// const [openApplyLeaves, setOpenApplyLeaves] = useState(false);
+// const [openApplyWfh, setOpenApplyWfh] = useState(false);
+
+
 type WeeklyAttendance = {
     date: string;
     punch_in_time: string | null;
@@ -64,8 +69,8 @@ const PunchCard: React.FC<{
     profileName?: string;
     imgurl?: string;
 }> = ({ isPunchedIn, handlePunchAction, punchTime, elapsedSeconds, profileName, imgurl }) => {
-    const [elapsedTime, setElapsedTime] = useState<number>(elapsedSeconds ?? 0);
-    const intervalRef = useRef<number | null>(null);
+    const [elapsedTime, setElapsedTime] = useState < number > (elapsedSeconds ?? 0);
+    const intervalRef = useRef < number | null > (null);
 
     // Sync elapsedSeconds when it is provided/changes (e.g., on load)
     useEffect(() => {
@@ -156,12 +161,12 @@ const sumWorkingTime = (data: WeeklyAttendance[]) => {
 
 const EmployeeAttendancePage = () => {
     const adminUsername = "satyajeet@buzzhire.in"
-    
+
     const { employee } = useCurrentEmployee();
 
     const avatarSrc = employee?.profile_photo
-    ? (employee.profile_photo.startsWith("data:") ? employee.profile_photo : `data:image/png;base64,${employee.profile_photo}`)
-    : "/avatar.png";
+        ? (employee.profile_photo.startsWith("data:") ? employee.profile_photo : `data:image/png;base64,${employee.profile_photo}`)
+        : "/avatar.png";
     // Auth + router
     const { user, loading, logout } = useAuth();
     const router = useRouter();
@@ -169,43 +174,43 @@ const EmployeeAttendancePage = () => {
     const tabs = ["Attendance", "Leaves & WFH"];
     const [activeTab, setActiveTab] = useState("Attendance");
 
-    const [calendarMap, setCalendarMap] = useState<Record<string, CalendarDay>>({});
+    const [calendarMap, setCalendarMap] = useState < Record < string, CalendarDay>> ({});
 
     // Geolocation
-    const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
-    const [locationError, setLocationError] = useState<string | null>(null);
+    const [location, setLocation] = useState < { lat: number; lon: number } | null > (null);
+    const [locationError, setLocationError] = useState < string | null > (null);
     const [isProcessing, setIsProcessing] = useState(false);
 
     // Attendance state (backend-driven)
-    const [attendanceStatus, setAttendanceStatus] = useState<AttendanceRecord | null>(null);
-    const [attendanceData, setAttendanceData] = useState<Record<string, AttendanceRecord | undefined>>({});
-    const [message, setMessage] = useState<string | null>(null);
+    const [attendanceStatus, setAttendanceStatus] = useState < AttendanceRecord | null > (null);
+    const [attendanceData, setAttendanceData] = useState < Record < string, AttendanceRecord | undefined >> ({});
+    const [message, setMessage] = useState < string | null > (null);
 
     // Timer / UI state
-    const [punchTime, setPunchTime] = useState<string>("");
-    const [initialElapsedSeconds, setInitialElapsedSeconds] = useState<number>(0);
+    const [punchTime, setPunchTime] = useState < string > ("");
+    const [initialElapsedSeconds, setInitialElapsedSeconds] = useState < number > (0);
 
     const [showClockOutModal, setShowClockOutModal] = useState(false);
-    const [workingHours, setWorkingHours] = useState<string | undefined>(undefined);
+    const [workingHours, setWorkingHours] = useState < string | undefined > (undefined);
 
-    const [weeklyAttendance, setWeeklyAttendance] = useState<WeeklyAttendance[]>([]);
-    const [totalWeeklyHours, setTotalWeeklyHours] = useState<string>("0:00");
-    const [expectedWeeklyHours, setExpectedWeeklyHours] = useState<string>("0:00");
+    const [weeklyAttendance, setWeeklyAttendance] = useState < WeeklyAttendance[] > ([]);
+    const [totalWeeklyHours, setTotalWeeklyHours] = useState < string > ("0:00");
+    const [expectedWeeklyHours, setExpectedWeeklyHours] = useState < string > ("0:00");
 
 
-    const [requestsRegulize, setRequestsRegulize] = useState<any[]>([]);
+    const [requestsRegulize, setRequestsRegulize] = useState < any[] > ([]);
     const [openRegulize, setOpenRegulize] = useState(false);
     const [loadingRegulize, setLoadingRegulize] = useState(false);
-    const [messageRegulize, setMessageRegulize] = useState<{ type: "success" | "error"; text: string } | null>(null);
+    const [messageRegulize, setMessageRegulize] = useState < { type: "success" | "error"; text: string } | null > (null);
 
     const [loadingLeaves, setLoadingLeaves] = useState(false);
-    const [summaryLeaves, setSummaryLeaves] = useState<any>(null);
-    const [requestsLeaves, setRequestsLeaves] = useState<any[]>([]);
+    const [summaryLeaves, setSummaryLeaves] = useState < any > (null);
+    const [requestsLeaves, setRequestsLeaves] = useState < any[] > ([]);
 
     const [openApplyLeaves, setOpenApplyLeaves] = useState(false);
 
     const [loadingWfh, setLoadingWfh] = useState(false);
-    const [requestsWfh, setRequestsWfh] = useState<any[]>([]);
+    const [requestsWfh, setRequestsWfh] = useState < any[] > ([]);
     const [openApplyWfh, setOpenApplyWfh] = useState(false);
 
     const loadWFHRequests = async () => {
@@ -426,7 +431,7 @@ const EmployeeAttendancePage = () => {
             setMessage(null);
 
             const token = Cookies.get("access");
-            const response = await axios.get<PunchResponse>(`${apiUrl}/today/`, {
+            const response = await axios.get < PunchResponse > (`${apiUrl}/today/`, {
                 headers: {
                     Authorization: token ? `Bearer ${token}` : "",
                 },
@@ -538,7 +543,7 @@ const EmployeeAttendancePage = () => {
         try {
             const accessToken = Cookies.get("access");
 
-            const response = await axios.post<PunchResponse>(
+            const response = await axios.post < PunchResponse > (
                 endpoint,
                 {
                     latitude: location.lat,
@@ -607,7 +612,7 @@ const EmployeeAttendancePage = () => {
     };
 
     // --- Simple week/navigation stubs to keep UI (these are lightweight because we removed useAttendance) ---
-    const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => {
+    const [currentWeekStart, setCurrentWeekStart] = useState < Date > (() => {
         const now = new Date();
         // start of week (Sunday)
         const s = new Date(now);
@@ -815,6 +820,10 @@ const EmployeeAttendancePage = () => {
                                         onToday={goToToday}
                                         shiftStart={SHIFT_CONFIG.startTime}
                                         shiftEnd={SHIFT_CONFIG.endTime}
+
+                                        onRegularize={() => setOpenRegulize(true)}
+                                        onApplyLeave={() => setOpenApplyLeaves(true)}
+                                        onApplyWFH={() => setOpenApplyWfh(true)}
                                     />
                                     <div className="bg-card rounded-lg border border-border shadow-sm p-4 lg:p-6 pt-2">
                                         <div className="space-y-4 lg:space-y-2">
@@ -893,14 +902,6 @@ const EmployeeAttendancePage = () => {
                                     <div className="flex flex-col gap-4 justify-between h-[32%]">
                                         <div className="space-y-2">
                                             {/* Regularize Attendance */}
-                                            <button
-                                                onClick={() => setOpenRegulize(true)}
-                                                className="flex items-center justify-center gap-2 w-full bg-slate-900 hover:bg-blue-600 text-white font-semibold text-xs uppercase tracking-widest py-3.5 px-4 rounded-2xl shadow-lg shadow-blue-500/10 transition-all duration-300 active:scale-[0.98]"
-                                            >
-                                                <ClockArrowUp className="w-4 h-4" />
-                                                Regularize Attendance
-                                            </button>
-
                                             {openRegulize && (
                                                 <AttendanceRegularizationPopup
                                                     onClose={() => setOpenRegulize(false)}
@@ -911,14 +912,6 @@ const EmployeeAttendancePage = () => {
                                             )}
 
                                             {/* Apply For Leave */}
-                                            <button
-                                                onClick={() => setOpenApplyLeaves(true)}
-                                                className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs uppercase tracking-widest py-3.5 px-4 rounded-2xl shadow-lg shadow-blue-600/20 transition-all duration-300 active:scale-[0.98]"
-                                            >
-                                                <CalendarPlus className="w-4 h-4" />
-                                                Apply For Leave
-                                            </button>
-
                                             {/* MODAL OVERLAY */}
                                             {openApplyLeaves && (
                                                 <ApplyLeaveModal
@@ -928,14 +921,6 @@ const EmployeeAttendancePage = () => {
                                             )}
 
                                             {/* Apply For WFH */}
-                                            <button
-                                                onClick={() => setOpenApplyWfh(true)}
-                                                className="flex items-center justify-center gap-2 w-full bg-white border-2 border-slate-200 hover:border-blue-600 text-slate-700 hover:text-blue-600 font-semibold text-xs uppercase tracking-widest py-3.5 px-4 rounded-2xl transition-all duration-300 active:scale-[0.98]"
-                                            >
-                                                <Home className="w-4 h-4" />
-                                                Apply For WFH
-                                            </button>
-
                                             {/* MODAL OVERLAY */}
                                             {openApplyWfh && (
                                                 <ApplyWFHModal
@@ -945,14 +930,6 @@ const EmployeeAttendancePage = () => {
                                             )}
 
                                         </div>
-
-                                        <button
-                                            onClick={logout}
-                                            className="flex items-center justify-center gap-2 w-full px-4 py-3.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-100 hover:border-red-600 font-semibold text-xs uppercase tracking-widest rounded-2xl transition-all duration-300 active:scale-[0.98]"
-                                        >
-                                            <LogOut className="w-4 h-4" />
-                                            Logout System
-                                        </button>
 
                                     </div>
                                 </div>
