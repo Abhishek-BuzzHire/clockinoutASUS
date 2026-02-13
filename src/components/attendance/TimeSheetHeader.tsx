@@ -73,7 +73,7 @@ export const TimesheetHeader = ({
                     {/* <Button variant="ghost" size="icon" className="bg-indigo-600 text-card">
                         <Grid3x3 className="h-4 w-4" />
                     </Button> */}
-                    <Button variant="ghost" size="icon" className="bg-indigo-600 text-card">
+                    <Button variant="ghost" size="icon" className="hidden md:flex bg-indigo-600 text-card">
                         <List className="h-4 w-4" />
                     </Button>
                     {/* <Button variant="ghost" size="icon">
@@ -82,7 +82,7 @@ export const TimesheetHeader = ({
                     <Button variant="ghost" size="icon">
                         <MoreHorizontal className="h-4 w-4" />
                     </Button> */}
-                    <Button variant={"secondary"} className="hover:bg-indigo-600 hover:text-white">
+                    <Button variant={"secondary"} className="hidden md:block hover:bg-indigo-600 hover:text-white">
                         Get Data
                     </Button>
 
