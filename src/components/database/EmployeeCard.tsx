@@ -35,13 +35,13 @@ const DesSection: React.FC<{ title: string; children: React.ReactNode }> = ({ ti
 
 export function EmployeeCard({ employee }: EmployeeCardProps) {
   const getCvUrl = ():string | null => {
-    if (!employee.cvUrl) return null;
+    if (!employee.cv_url) return null;
 
-    if(/^https?:\/\//i.test(employee.cvUrl)) {
-      return employee.cvUrl;
+    if(/^https?:\/\//i.test(employee.cv_url)) {
+      return employee.cv_url;
     }
 
-    return `${API_URL}/resumes/${employee.cvUrl}`;
+    return `${API_URL}/api/resumes/${employee.cv_url}`;
   };
 
   const cvDownloadUrl = getCvUrl();
@@ -50,13 +50,13 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
     <Card className="w-full mt-6 pb-2 px-1 rounded-xl shadow-md border flex flex-col bg-white">
       <CardHeader className="m-0 p-0">
         <div>
-          <CardTitle className='text-lg font-semibold text-primary mt-2 ml-2'>{employee.name} - {employee.jobTitle}</CardTitle>
+          <CardTitle className='text-lg font-semibold text-primary mt-2 ml-2'>{employee.name} - {employee.job_title}</CardTitle>
         </div>
       </CardHeader>
       <CardContent className='relative text-xs text-black-700 flex flex-wrap gap-x-3 m-1'>
         <IconText icon={<MapPin />}>{employee.location}</IconText>
         <IconText icon={<IndianRupee />}>Current: {employee.salary} LPA</IconText>
-        <IconText icon={<Briefcase />}>{employee.totalExperienceYears} Years</IconText>
+        <IconText icon={<Briefcase />}>{employee.total_experience_years} Years</IconText>
         <IconText icon={<CalendarDays />}>Notice: {employee.notice} days</IconText>
         {/* <IconText icon={<Mars />}>{employee.sex}</IconText>
         <IconText icon={<User />}>{employee.age} Years Old</IconText> */}
@@ -70,13 +70,13 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
       <CardDescription className='flex'>
         <CardContent className=' ml-2 mr-10'>
           <DesSection title="Current Experience:">
-            - {employee.currentCompanyName}
+            - {employee.current_company_name}
           </DesSection>
           <Separator />
           <DesSection title="Previous Experience:">
-            {employee.previousCompaniesName && Array.isArray(employee.previousCompaniesName) && employee.previousCompaniesName.length > 0 ? (
+            {employee.previous_companies_name && Array.isArray(employee.previous_companies_name) && employee.previous_companies_name.length > 0 ? (
               <ul>
-                {employee.previousCompaniesName.map((company, index) => (
+                {employee.previous_companies_name.map((company, index) => (
                   <li key={index} className="text-xs">
                     - {company}
                   </li>

@@ -93,28 +93,28 @@ export type CompanyHoliday = {
 
 
 export type CalendarDay = {
-    date: string;
-    weekday: string;
-    is_working_day: boolean;
-    calendar_type: string;
-    holiday_name: string | null;
-    override_type: string | null;
-    expected_hours: number;
-  };
+  date: string;
+  weekday: string;
+  is_working_day: boolean;
+  calendar_type: string;
+  holiday_name: string | null;
+  override_type: string | null;
+  expected_hours: number;
+};
 
-  export type Employee = {
-    id: string,
-    name: string,
-    phone: string,
-    email: string,
-    address: string,
-    jobTitle: string,
-    department: string,
-    joiningDate: Date | string,
-    isPresentToday: boolean,
-    salary: number,
-    manager: string,
-    photo: string
+export type Employee = {
+  id: string,
+  name: string,
+  phone: string,
+  email: string,
+  address: string,
+  jobTitle: string,
+  department: string,
+  joiningDate: Date | string,
+  isPresentToday: boolean,
+  salary: number,
+  manager: string,
+  photo: string
 }
 
 
@@ -134,28 +134,28 @@ export interface Candidate {
   education: string;
   jobTitle: string;
   customFields?: Record<string, string>;
-  source: '';
+  source?: string;
   createdAt?: string;
 }
 
 
 export interface CandidateRec {
-    name: string;
-    employeeId: string;
-    email: string;
-    phone: string;
-    location: string;
-    age: number;
-    salary: number;
-    notice: number;
-    sex: string;
-    skills: string[];
-    totalExperienceYears: number;
-    currentCompanyName: string;
-    previousCompaniesName: string[];
-    education: string;
-    cvUrl: string;
-    jobTitle: string;
-    source: string;
-    createdAt: string;
+  name: string;
+  id: string;
+  email: string;
+  phone: string;
+  location: string;
+  age: number;
+  salary: number;
+  notice: number;
+  sex: string;
+  skills: string[];
+  total_experience_years: number;
+  current_company_name: string;
+  previous_companies_name: string[];
+  education: string;
+  cv_url: string;
+  job_title: string;
+  source: string;
+  createdAt: string;
 }
