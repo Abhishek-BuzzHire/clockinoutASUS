@@ -38,7 +38,13 @@ type WeeklyAttendance = {
     working_time: string | null;
     work_status: string | null;
 };
-
+type MonthlyAttendance = {
+    date: string;
+    punch_in_time: string | null;
+    punch_out_time: string | null;
+    working_time: string | null;
+    work_status: string | null;
+};
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -195,7 +201,7 @@ const EmployeeAttendancePage = () => {
     const [totalWeeklyHours, setTotalWeeklyHours] = useState<string>("0:00");
     const [expectedWeeklyHours, setExpectedWeeklyHours] = useState<string>("0:00");
 
-    const [monthlyAttendance, setMonthlyAttendance] = useState<WeeklyAttendance[]>([]);
+    const [monthlyAttendance, setMonthlyAttendance] = useState<MonthlyAttendance[]>([]);
     const [totalMonthlyHours, setTotalMonthlyHours] = useState<string>("0:00");
     const [expectedMonthlyHours, setExpectedMonthlyHours] = useState<string>("0:00");
 
@@ -563,6 +569,7 @@ const EmployeeAttendancePage = () => {
                 if (response.data.status === "success") {
                     setMonthlyAttendance(response.data.data);
                 }
+                console.log("Monthly Attendance Data:", response.data.data);
 
                 await fetchCompanyCalendar(start, end);
 
@@ -848,8 +855,29 @@ const EmployeeAttendancePage = () => {
                 earlyBy = `${Math.floor(diff / 60)}h ${diff % 60}m`;
             }
         }
+        let status: DayStatus = "absent";
 
-
+        if (isFuture(date)) {
+            status = "future";
+        }
+        else if (calendarDay?.calendar_type === "HOLIDAY") {
+            status = "holiday";   // reuse weekend styling for holiday
+        }
+        else if (calendarDay?.calendar_type === "WEEKEND") {
+            status = "weekend";
+        }
+        else if (apiEntry?.work_status === "LEAVE") {
+            status = "leave";    // treated as absent visually
+        }
+        else if (apiEntry?.work_status === "WFH") {
+            status = "WFH";
+        }
+        else if (apiEntry?.punch_in_time) {
+            status = "present";
+        }
+        else {
+            status = "absent";
+        }
 
         return {
             day: isToday(date) ? "Today" : format(date, "EEE"),
@@ -860,7 +888,7 @@ const EmployeeAttendancePage = () => {
             lateBy,
             earlyBy,
             hoursWorked: apiEntry?.working_time ?? "0:00",
-
+            status,
             isToday: isToday(date),
             isFuture: isFuture(date),
         };
@@ -948,9 +976,10 @@ const EmployeeAttendancePage = () => {
         if (viewMode === "monthly") {
             const end = endOfMonth(currentMonthStart);
             fetchMonthlyAttendance(currentMonthStart, end);
-
         }
-    }, [currentMonthStart, fetchMonthlyAttendance, viewMode]);
+    }, [currentMonthStart, viewMode, fetchMonthlyAttendance]);
+
+
 
     const monthlyAttendanceMap = React.useMemo(() => {
         const map: any = {};
@@ -963,6 +992,7 @@ const EmployeeAttendancePage = () => {
                 checkInTime: day.checkInTime,
                 checkOutTime: day.checkOutTime,
                 hoursWorked: day.hoursWorked ?? "00:00",
+                status: day.status,
             };
         });
 
