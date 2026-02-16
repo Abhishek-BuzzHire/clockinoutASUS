@@ -439,7 +439,6 @@ const EmployeeAttendancePage = () => {
             setMessage(null);
 
             const token = Cookies.get("access");
-            console.log("TOKEN:", token);
             const response = await axios.get<PunchResponse>(`${apiUrl}/today/`, {
                 headers: {
                     Authorization: token ? `Bearer ${token}` : "",
