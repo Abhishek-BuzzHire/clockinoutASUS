@@ -46,20 +46,27 @@ const deriveStatus = (
     date?: Date
 ) => {
 
-    if (date && isFuture(date)) return "FUTURE";
+    // 🔥 Normalize status safely (handles status OR work_status)
+    const rawStatus =
+        entry?.status ??
+        entry?.work_status ??
+        "";
+
+    const status = rawStatus.toString().trim().toUpperCase();
 
     if (calendarDay?.calendar_type === "HOLIDAY") return "HOLIDAY";
-
     if (calendarDay?.calendar_type === "WEEKEND") return "WEEKEND";
 
-    if (entry?.work_status === "LEAVE") return "LEAVE";
+    if (date && isFuture(date)) return "FUTURE";
 
-    if (entry?.work_status === "WFH") return "WFH";
+    if (status.includes("LEAVE")) return "LEAVE";
+    if (status.includes("WFH")) return "WFH";
 
     if (entry?.checkInTime || entry?.punch_in_time) return "PRESENT";
 
     return "ABSENT";
 };
+
 
 const getStatusMeta = (status: string, calendarDay?: CalendarDay) => {
     switch (status) {
@@ -72,7 +79,7 @@ const getStatusMeta = (status: string, calendarDay?: CalendarDay) => {
         case "LEAVE":
             return {
                 label: "Leave",
-                color: "bg-blue-100 text-blue-700 border-blue-200"
+                color: "bg-red-100 text-red-700 border-red-200"
             };
 
         case "WFH":
@@ -84,7 +91,7 @@ const getStatusMeta = (status: string, calendarDay?: CalendarDay) => {
         case "HOLIDAY":
             return {
                 label: calendarDay?.holiday_name || "Holiday",
-                color: "bg-rose-100 text-rose-700 border-rose-200"
+                color: "bg-yellow-100 text-yellow-700 border-yellow-200"
             };
 
         case "WEEKEND":
