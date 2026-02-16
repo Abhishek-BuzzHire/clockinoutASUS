@@ -182,7 +182,7 @@ const CandidateForm: React.FC = () => {
 
             if (candidateId) {
                 toast.success('Candidate added successfully.');
-                navigate.push(`/database/add-candidate/`);
+                navigate.push(`/database/`);
 
             } else {
                 toast.error('Failed to add candidate. Please try again.')

@@ -157,5 +157,10 @@ export interface CandidateRec {
   cv_url: string;
   job_title: string;
   source: string;
-  createdAt: string;
+  created_at: string;
+}
+
+export interface CVCountData {
+name: string;
+value: number;
 }

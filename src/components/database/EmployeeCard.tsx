@@ -130,7 +130,7 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
       <CardFooter className='text-xs mb-2 mr-2 mt-3 relative'>
         <div className='flex gap-4 absolute right-0'>
           <div><b className='text-blue-700'>Source: </b>{employee.source}</div>
-          <div><b className='text-blue-700'>Created: </b>{employee.createdAt}</div>
+          <div><b className='text-blue-700'>Created: </b>{employee.created_at}</div>
         </div>
       </CardFooter>
     </Card>
