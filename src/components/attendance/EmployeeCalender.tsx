@@ -67,6 +67,7 @@ const deriveStatus = (
     return "ABSENT";
 };
 
+
 const getStatusMeta = (status: string, calendarDay?: CalendarDay) => {
     switch (status) {
         case "PRESENT":
