@@ -151,7 +151,7 @@ export default function AttendanceCalendar({
                   </div>
                 )}
                 {isCurrentMonth && isWorkingDay && summary?.leave > 0 && isFutureDay && (
-                      <AttendanceStat label="Leave" value={summary.leave} color="bg-blue-500" />            
+                  <AttendanceStat label="Leave" value={summary.leave} color="bg-blue-500" />
                 )}
 
                 {isCurrentMonth && !isFutureDay && (isWeekend || isHoliday) && summary?.present! > 0 && (
