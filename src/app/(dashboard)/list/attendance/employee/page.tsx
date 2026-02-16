@@ -524,8 +524,9 @@ const EmployeeAttendancePage = () => {
 
                 if (response.data.status === "success") {
                     setWeeklyAttendance(response.data.data);
-                    // console.log("Weekly Attendance Data:", response.data.data);
                 }
+                console.log("Weekly Attendance Data:", response.data.data);
+
 
                 await fetchCompanyCalendar(start, end);
 
@@ -541,44 +542,41 @@ const EmployeeAttendancePage = () => {
         []
     );
 
-    // const fetchMonthlyAttendance = useCallback(
-    //     async (start: Date, end: Date) => {
-    //         try {
-    //             const token = Cookies.get("access");
+    const fetchMonthlyAttendance = useCallback(
+        async (start: Date, end: Date) => {
+            try {
+                const token = Cookies.get("access");
 
+                const response = await axios.get(
+                    `${apiUrl}/total-hours/`,
+                    {
+                        headers: {
+                            Authorization: token ? `Bearer ${token}` : "",
+                        },
+                        params: {
+                            start_date: format(start, "yyyy-MM-dd"),
+                            end_date: format(end, "yyyy-MM-dd"),
+                        },
+                    }
+                );
 
-    //             const response = await axios.get(
-    //                 `${apiUrl}/total-hours/`,
-    //                 {
-    //                     headers: {
-    //                         Authorization: token ? `Bearer ${token}` : "",
-    //                     },
-    //                     params: {
-    //                         start_date: format(start, "yyyy-MM-dd"),
-    //                         end_date: format(end, "yyyy-MM-dd"),
-    //                     },
-    //                 }
-    //             );
+                if (response.data.status === "success") {
+                    setMonthlyAttendance(response.data.data);
+                }
 
-    //             if (response.data.status === "success") {
+                await fetchCompanyCalendar(start, end);
 
-    //                 setMonthlyAttendance(response.data.data);
+                const total = sumWorkingTime(response.data.data);
+                setTotalMonthlyHours(total);
+                const expected = (response.data.expected_hours);
+                setExpectedMonthlyHours(expected);
 
-    //                 const total = sumWorkingTime(response.data.data);
-    //                 setTotalMonthlyHours(total);
-
-    //                 const expected = response.data.expected_hours;
-    //                 setExpectedMonthlyHours(expected);
-    //             }
-
-    //             await fetchCompanyCalendar(start, end);
-
-    //         } catch (err) {
-    //             console.error("Failed to fetch monthly attendance", err);
-    //         }
-    //     },
-    //     []
-    // );
+            } catch (err) {
+                console.error("Failed to fetch monthly attendance", err);
+            }
+        },
+        []
+    );
 
 
     // --- Punch API calls (in/out) ---
@@ -811,6 +809,63 @@ const EmployeeAttendancePage = () => {
         };
     });
 
+    const monthDates = (() => {
+        const arr: Date[] = [];
+        for (let i = 0; i < 30; i++) {
+            const d = new Date(currentMonthStart);
+            d.setDate(currentMonthStart.getDate() + i);
+            arr.push(d);
+        }
+        return arr;
+    })();
+
+    const monthEnd = endOfMonth(currentMonthStart);
+
+    const monthData = monthDates.map((date) => {
+        const dateStr = format(date, "yyyy-MM-dd");
+        const apiEntry = monthlyAttendance.find(d => d.date === dateStr);
+        const calendarDay = calendarMap[dateStr];
+
+        let lateBy: string | undefined;
+        let earlyBy: string | undefined;
+
+        if (apiEntry?.punch_in_time) {
+            const punchMinutes = toMinutes(apiEntry.punch_in_time);
+            const shiftStart = toMinutes(SHIFT_CONFIG.startTime) + 30;
+
+            if (punchMinutes > shiftStart) {
+                const diff = punchMinutes - shiftStart;
+                lateBy = `${Math.floor(diff / 60)}h ${diff % 60}m`;
+            }
+        }
+
+        if (apiEntry?.punch_out_time) {
+            const punchOutMinutes = toMinutes(apiEntry.punch_out_time);
+            const shiftEnd = toMinutes(SHIFT_CONFIG.endTime);
+
+            if (punchOutMinutes < shiftEnd) {
+                const diff = shiftEnd - punchOutMinutes;
+                earlyBy = `${Math.floor(diff / 60)}h ${diff % 60}m`;
+            }
+        }
+
+
+
+        return {
+            day: isToday(date) ? "Today" : format(date, "EEE"),
+            date: date.getDate(),
+            dateStr,
+            checkInTime: apiEntry?.punch_in_time || undefined,
+            checkOutTime: apiEntry?.punch_out_time || undefined,
+            lateBy,
+            earlyBy,
+            hoursWorked: apiEntry?.working_time ?? "0:00",
+
+            isToday: isToday(date),
+            isFuture: isFuture(date),
+        };
+    });
+
     // Derived flags
     const isCheckedIn = Boolean(attendanceStatus?.punch_in_time && !attendanceStatus?.punch_out_time);
     const isPunchedInUI = isCheckedIn; // rename to match earlier UI
@@ -880,42 +935,40 @@ const EmployeeAttendancePage = () => {
     }, [attendanceStatus]);
 
     useEffect(() => {
-        if (viewMode !== "monthly") return;
+        if (viewMode === "weekly") {
 
-        const start = startOfMonth(currentMonthStart);
-        const end = endOfMonth(currentMonthStart);
-
-        fetchWeeklyAttendance(start, end);
-    }, [currentMonthStart, fetchWeeklyAttendance]);
+            const end = endOfWeek(currentWeekStart, { weekStartsOn: 0 });
+            fetchWeeklyAttendance(currentWeekStart, end);
+        }
+    }, [currentWeekStart, fetchWeeklyAttendance]);
 
 
 
     useEffect(() => {
         if (viewMode === "monthly") {
-            const start = new Date(currentMonthStart);
-            const end = new Date(
-                currentMonthStart.getFullYear(),
-                currentMonthStart.getMonth() + 1,
-                0
-            );
+            const end = endOfMonth(currentMonthStart);
+            fetchMonthlyAttendance(currentMonthStart, end);
 
-            fetchWeeklyAttendance(start, end);
         }
-    }, [currentMonthStart, fetchWeeklyAttendance]);
+    }, [currentMonthStart, fetchMonthlyAttendance, viewMode]);
 
     const monthlyAttendanceMap = React.useMemo(() => {
-        const map: Record<string, any> = {};
+        const map: any = {};
 
-        monthlyAttendance.forEach((day) => {
-            map[day.date] = {
-                date: day.date,
-                checkInTime: day.punch_in_time,
-                checkOutTime: day.punch_out_time,
+        monthData.forEach((day) => {
+            if (!day?.dateStr) return;
+
+            map[day.dateStr] = {
+                date: day.dateStr,
+                checkInTime: day.checkInTime,
+                checkOutTime: day.checkOutTime,
+                hoursWorked: day.hoursWorked ?? "00:00",
             };
         });
 
         return map;
-    }, [monthlyAttendance]);
+    }, [monthData]);
+
 
     // UI rendering
     if (loading || !user) {
@@ -963,20 +1016,17 @@ const EmployeeAttendancePage = () => {
                                     {/* 🔥 CALENDAR SWITCH GOES HERE */}
                                     {viewMode === "monthly" && (
                                         <EmployeeCalendar
+
                                             currentDate={currentMonthStart}
                                             selectedDate={selectedDate}
                                             attendanceData={monthlyAttendanceMap}
 
                                             activeTimer={null}
-                                            elapsedTime={0}
-                                            calculateHoursWorked={(date: string) => {
-                                                const dayData = monthlyAttendance.find(d => d.date === date);
-                                                return dayData ? toMinutes(dayData.working_time || "0:00") : 0;
-                                            }}
 
+                                            expectedHours={expectedMonthlyHours}
+                                            totalHours={totalMonthlyHours}
                                             onSelectDate={setSelectedDate}
                                             onMonthChange={setCurrentMonthStart}
-
                                             calendarMap={calendarMap}
                                         />
                                     )}

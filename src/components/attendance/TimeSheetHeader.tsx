@@ -45,6 +45,7 @@ export const TimesheetHeader = ({
 
     const toggleViewMode = () => {
         onViewChange(viewMode === "weekly" ? "monthly" : "weekly");
+
     };
 
     return (
