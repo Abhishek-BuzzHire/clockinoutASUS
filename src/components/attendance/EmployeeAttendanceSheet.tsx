@@ -256,6 +256,8 @@ export default function EmployeeAttendanceSheet({
             };
         });
 
+
+
         const worksheet = XLSX.utils.json_to_sheet(exportData);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
@@ -425,7 +427,7 @@ export default function EmployeeAttendanceSheet({
                                                     {isOffDay ? <span className="text-slate-300">—</span> : (f.workingTime ?? "—")}
                                                 </td>
                                                 <td className="px-4 py-3 text-slate-500 text-xs">
-                                                    {isOffDay ? <span className="text-slate-300">—</span> : ((entry as any).lateBy ?? "—")}
+                                                    {isOffDay ? <span className="text-slate-300">—</span> : (getLateBy(f.punchIn) ?? "—")}
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${meta.badgeClass}`}>
@@ -524,3 +526,27 @@ function formatDate(dateStr: string): string {
 function getWeekday(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString(undefined, { weekday: "short" });
 }
+
+
+const getLateBy = (punchIn?: string | null): string | null => {
+    const SHIFT_START = "10:00";
+
+    if (!punchIn) return null;
+
+    const [inH, inM] = punchIn.split(":").map(Number);
+    const [startH, startM] = SHIFT_START.split(":").map(Number);
+
+    const inMinutes = inH * 60 + inM;
+    const startMinutes = startH * 60 + startM;
+
+    // Not late
+    if (inMinutes <= startMinutes) return null;
+
+    const diff = inMinutes - startMinutes;
+
+    const hrs = Math.floor(diff / 60);
+    const mins = diff % 60;
+
+    if (hrs > 0) return `${hrs}h ${mins}m`;
+    return `${mins}m`;
+};
