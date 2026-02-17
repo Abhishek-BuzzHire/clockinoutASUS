@@ -24,6 +24,8 @@ interface TimesheetHeaderProps {
     onRegularize: () => void;
     onApplyLeave: () => void;
     onApplyWFH: () => void;
+
+    onEmployeeAttendanceSheet: () => void;
 }
 
 export const TimesheetHeader = ({
@@ -40,6 +42,7 @@ export const TimesheetHeader = ({
     onRegularize,
     onApplyLeave,
     onApplyWFH,
+    onEmployeeAttendanceSheet
 
 }: TimesheetHeaderProps) => {
 
@@ -142,7 +145,8 @@ export const TimesheetHeader = ({
                     <Button variant="ghost" size="icon">
                         <MoreHorizontal className="h-4 w-4" />
                     </Button> */}
-                    <Button variant={"secondary"} className="hidden md:block hover:bg-indigo-600 hover:text-white">
+                    <Button variant={"secondary"} className="hidden md:block hover:bg-indigo-600 hover:text-white"
+                        onClick={onEmployeeAttendanceSheet}>
                         Get Data
                     </Button>
 
