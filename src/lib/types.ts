@@ -79,7 +79,6 @@ export type AttendanceRecord = {
 
 export type employeeAttendance={
   date: string; // YYYY-MM-DD
-  status: AttendanceStatus;
   lateBy?: string | null;
   workStatus?: "WFO" | "WFH" | "LEAVE" | null;
   checkInTime?: string; // HH:mm
