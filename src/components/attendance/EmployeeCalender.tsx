@@ -148,7 +148,6 @@ function deriveStatus(
 
     // 4–8: Past working days — use attendance entry
     const rawStatus = (
-        entry?.status ??
         entry?.workStatus ??
         ""
     ).toString().trim().toUpperCase();
