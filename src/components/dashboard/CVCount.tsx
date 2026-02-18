@@ -2,6 +2,10 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
+const getFirstName = (fullName: string) => {
+    return fullName ? fullName.split(' ')[0] : 'Unknown';
+};
+
 // Dummy data for the jobs summary
 const colors = [
     "#FF3B3B", // from #FF6B6B → stronger red
@@ -77,7 +81,7 @@ const CVCount = ({ data, loading }: CVCountProps) => {
                         {data.map((entry, index) => (
                             <div key={`legend-${entry.id}`} className="flex items-center m-2">
                                 <div className={`w-1 h-3 mr-2`} style={{ backgroundColor: colors[index % colors.length] }}></div>
-                                <span className="text-sm font-semibold">{entry.name}</span>
+                                <span className="text-sm font-semibold">{getFirstName(entry.name)}</span>
                                 <span className="text-sm text-gray-500 ml-1">{entry.cv_count}</span>
                             </div>
                         ))}
