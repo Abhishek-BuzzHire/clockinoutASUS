@@ -372,7 +372,7 @@ const EmployeeAttendancePage = () => {
             const res = await axios.post(
                 `${apiUrl}/api/attendance-correction/request/`,
                 fianlPayload,
-                { headers: { Authorization: token ? `Bearer ${token}` : "" } }
+                { headers: { Authorization: `Bearer ${token}` } }
             );
 
             setMessageRegulize({ type: "success", text: res.data.message });
@@ -460,7 +460,7 @@ const EmployeeAttendancePage = () => {
             const token = Cookies.get("access");
             const response = await axios.get<PunchResponse>(`${apiUrl}/today/`, {
                 headers: {
-                    Authorization: token ? `Bearer ${token}` : "",
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
@@ -507,7 +507,7 @@ const EmployeeAttendancePage = () => {
         const token = Cookies.get("access");
 
         const res = await axios.get(`${apiUrl}/api/company-calendar`, {
-            headers: { Authorization: token ? `Bearer ${token}` : "" },
+            headers: { Authorization: `Bearer ${token}` },
             params: { start_date: format(start, "yyyy-MM-dd"), end_date: format(end, "yyyy-MM-dd") }
         });
 
@@ -540,12 +540,12 @@ const EmployeeAttendancePage = () => {
 
             const [attendanceRes, calendarRes] = await Promise.all([
                 axios.get(`${apiUrl}/total-hours/`, {
-                    headers: { Authorization: token ? `Bearer ${token}` : "" },
+                    headers: { Authorization: `Bearer ${token}` },
                     params: { start_date: start, end_date: end }
                 }),
 
                 axios.get(`${apiUrl}/api/company-calendar`, {
-                    headers: { Authorization: token ? `Bearer ${token}` : "" },
+                    headers: { Authorization: `Bearer ${token}` },
                     params: { start_date: start, end_date: end }
                 })
             ]);
@@ -591,7 +591,7 @@ const EmployeeAttendancePage = () => {
                     `${apiUrl}/total-hours/`,
                     {
                         headers: {
-                            Authorization: token ? `Bearer ${token}` : "",
+                            Authorization: `Bearer ${token}`,
                         },
                         params: {
                             start_date: format(start, "yyyy-MM-dd"),
@@ -628,7 +628,7 @@ const EmployeeAttendancePage = () => {
                     `${apiUrl}/total-hours/`,
                     {
                         headers: {
-                            Authorization: token ? `Bearer ${token}` : "",
+                            Authorization: `Bearer ${token}`,
                         },
                         params: {
                             start_date: format(start, "yyyy-MM-dd"),
@@ -980,7 +980,7 @@ const EmployeeAttendancePage = () => {
                 const res = await axios.get(
                     `${apiUrl}/total-working-time/`,
                     {
-                        headers: { Authorization: token ? `Bearer ${token}` : "" }
+                        headers: { Authorization: `Bearer ${token}` }
                     }
                 );
 
