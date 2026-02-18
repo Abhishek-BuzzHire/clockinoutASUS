@@ -159,8 +159,3 @@ export interface CandidateRec {
   source: string;
   created_at: string;
 }
-
-export interface CVCountData {
-name: string;
-value: number;
-}
