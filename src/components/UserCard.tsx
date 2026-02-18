@@ -64,6 +64,12 @@ const UserCard = ({ data }: { data: any }) => {
             {data.phone}
           </p>
 
+          <p className="flex gap-2">
+            <Image src={"/linkedin.png"} alt="" width={20} height={20} className="opacity-65" />
+            {data.linkedIn}
+          </p>
+
+
         </div>
       </div>
     </div>

@@ -36,7 +36,7 @@ const data = employeeData;
 const EmployeesListPage = () => {
   const [employees, setEmployees] = useState<any[]>([])
   const [employeesLoading, setEmployeesLoading] = useState(false)
-  
+
   const [loading, setLoading] = useState(false)
   const [managers, setManagers] = useState<any[]>([])
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
@@ -76,7 +76,7 @@ const EmployeesListPage = () => {
       const res = await axios.get(`${apiUrl}/api/profile/`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      
+
       // Map API response to match EmployeeTable/UserCard expectations
       const mappedEmployees = res.data.map((profile: any) => ({
         id: profile.id,
@@ -109,7 +109,7 @@ const EmployeesListPage = () => {
         is_active: profile.user.is_active,
         manager: profile.user.manager
       }))
-      
+
       setEmployees(mappedEmployees)
     } catch (err) {
       console.error("Failed to load employees", err)
@@ -290,24 +290,24 @@ const EmployeesListPage = () => {
               )}
 
               {!employeesLoading && (
-              <div>
-                {view === 'userCard' && (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                      {employees.map((employee) => (
-                        <UserCard key={employee.id} data={employee} />
-                      ))}
-                    </div>
-                    <Pagination />
-                  </>
-                )}
-                {view === 'table' && (
-                  <>
-                    <EmployeeTable data={employees} />
-                    <Pagination />
-                  </>
-                )}
-              </div>
+                <div>
+                  {view === 'userCard' && (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {employees.map((employee) => (
+                          <UserCard key={employee.id} data={employee} />
+                        ))}
+                      </div>
+                      <Pagination />
+                    </>
+                  )}
+                  {view === 'table' && (
+                    <>
+                      <EmployeeTable data={employees} />
+                      <Pagination />
+                    </>
+                  )}
+                </div>
               )}
             </div>
           )

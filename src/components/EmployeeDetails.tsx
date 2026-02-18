@@ -2,10 +2,20 @@
 // along with genral props, "stages" should also be passed here.
 
 import { Employee } from "@/lib/types";
+import { Linkedin } from "lucide-react";
 import Image from "next/image"
 import { useState } from "react";
 
-const EmployeeDetails = ({ data }: { data: any }) => {
+const EmployeeDetails = ({
+  data,
+  onPrev,
+  onNext
+}: {
+  data: any;
+  onPrev: () => void;
+  onNext: () => void;
+}) => {
+
 
   const getProfilePhoto = () => {
     if (data.profile_photo) {
@@ -130,12 +140,18 @@ const EmployeeDetails = ({ data }: { data: any }) => {
     <div className="w-full min-h-screen bg-white ">
       <div className="flex justify-between bg-white py-4 px-8">
         <div className="flex gap-2 ">
-          <button className="flex items-center justify-center w-10 h-10 rounded-md border border-gray-200 bg-white hover:bg-gray-200">
-            <Image src={"/chev-left.png"} alt="" width={24} height={24} />
+
+
+          <button className="flex items-center justify-center w-10 h-10 rounded-md border border-gray-200 bg-white hover:bg-gray-200"
+            onClick={onPrev}>
+            <Image src={"/chev-left.png"} alt="Previous Employee" width={24} height={24} />
           </button>
-          <button className="flex items-center justify-center w-10 h-10 rounded-md border border-gray-200 bg-white hover:bg-gray-200">
-            <Image src={"/chev-right.png"} alt="" width={24} height={24} />
+          <button className="flex items-center justify-center w-10 h-10 rounded-md border border-gray-200 bg-white hover:bg-gray-200"
+            onClick={onNext}>
+            <Image src={"/chev-right.png"} alt="Next Employee" width={24} height={24} />
           </button>
+
+
         </div>
         <div className="flex gap-2 pr-4">
           <button className="flex items-center justify-center w-10 h-10 rounded-md border border-gray-200 bg-white hover:bg-gray-200">
@@ -150,52 +166,162 @@ const EmployeeDetails = ({ data }: { data: any }) => {
         </div>
       </div>
       {/* Header Section */}
-      <div className="flex p-6 flex-col sm:flex-row justify-between items-center bg-sky-50">
-        <div className="flex items-center space-x-4">
-          <Image src={getProfilePhoto()} alt="" width={136} height={136} className="rounded-full" />
-          <div className="flex flex-col gap-8">
-            <div className="space-y-1">
-              <h1 className="text-xl font-bold text-gray-700">{data.name}</h1>
-              <div className="flex gap-2 text-xs font-semibold items-center">
-                <p className="bg-green-100 text-green-800 border-2 border-green-300 px-2.5 py-0.5 rounded-md inline-block">
+
+
+      <div className="w-full bg-sky-50 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
+
+          {/* Profile Image */}
+          <Image
+            src={getProfilePhoto()}
+            alt=""
+            width={136}
+            height={136}
+            className="rounded-full w-24 h-24 sm:w-32 sm:h-32 object-cover shrink-0"
+          />
+
+          {/* Right Content */}
+          <div className="flex-1 flex flex-col gap-5 min-w-0">
+
+            {/* Name + Status */}
+            <div className="space-y-1.5 min-w-0">
+              <h1
+                className="text-lg sm:text-xl font-bold text-gray-700 truncate whitespace-nowrap"
+                title={data.name}
+              >
+                {data.name}
+              </h1>
+
+              <div className="flex flex-wrap gap-2 items-center text-xs">
+                <span className="bg-green-100 text-green-800 border border-green-300 px-2 py-0.5 rounded-md font-semibold shrink-0">
                   Active
-                </p>
-                <div className="bg-gray-400 w-1 h-1 rounded-full "></div>
-                <p className="text-gray-400 font-normal">{data.jobTitle}</p>
+                </span>
+
+                <span className="w-1 h-1 bg-gray-400 rounded-full shrink-0"></span>
+
+                <span
+                  className="text-gray-400 truncate whitespace-nowrap"
+                  title={data.jobTitle}
+                >
+                  {data.jobTitle}
+                </span>
               </div>
             </div>
-            <div className="flex gap-24 font-semibold text-gray-700 text-xs">
-              <div className="space-y-2">
-                <div className="flex justify-between gap-12">
-                  <p className="text-gray-400">Department</p>
-                  <p>{data.department}</p>
+
+            {/* Info Grid */}
+            <div className="
+        grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
+        gap-4 sm:gap-5 text-xs font-semibold text-gray-700
+        min-w-0
+      ">
+
+              {/* Column 1 */}
+              <div className="space-y-1.5 min-w-0">
+
+                <div className="grid grid-cols-[95px_1fr]  gap-0 items-center">
+                  <p className="text-gray-400 shrink-0">Department</p>
+                  <p
+                    className="truncate whitespace-nowrap min-w-0"
+                    title={data.department}
+                  >
+                    {data.department || "—"}
+                  </p>
                 </div>
-                <div className="flex justify-between gap-12">
-                  <p className="text-gray-400">Date Hired</p>
-                  <p>{data.joining_date
-                    ? new Date(data.joining_date).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })
-                    : "N/A"
-                  }</p>
+
+                <div className="grid grid-cols-[95px_1fr] gap-0 items-center">
+                  <p className="text-gray-400 shrink-0">Date Hired</p>
+                  <p className="truncate whitespace-nowrap min-w-0">
+                    {data.joining_date
+                      ? new Date(data.joining_date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })
+                      : "N/A"}
+                  </p>
                 </div>
+
               </div>
-              <div className="space-y-2">
-                <div className="flex gap-2">
-                  <Image src={"/mail.png"} alt="" width={16} height={16} className="opacity-65" />
-                  {data.email}
+
+              {/* Column 2 */}
+              <div className="space-y-1.5 min-w-0">
+
+                <div className="flex gap-2 items-center min-w-0">
+                  <Image
+                    src="/mail.png"
+                    alt=""
+                    width={16}
+                    height={16}
+                    className="opacity-60 shrink-0"
+                  />
+
+                  <span
+                    className="truncate whitespace-nowrap min-w-0"
+                    title={data.email}
+                  >
+                    {data.email || "—"}
+                  </span>
                 </div>
-                <div className="flex gap-2">
-                  <Image src={"/phone.png"} alt="" width={16} height={16} className="opacity-65" />
-                  {data.phone}
+
+                <div className="flex gap-2 items-center min-w-0">
+                  <Image
+                    src="/phone.png"
+                    alt=""
+                    width={16}
+                    height={16}
+                    className="opacity-60 shrink-0"
+                  />
+
+                  <span
+                    className="truncate whitespace-nowrap min-w-0"
+                    title={data.phone}
+                  >
+                    {data.phone || "—"}
+                  </span>
                 </div>
+
               </div>
+
+              {/* Column 3 */}
+              <div className="space-y-2.5 min-w-0">
+
+                {data.linkedIn ? (
+                  <a
+                    href={data.linkedIn}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="
+                flex items-center gap-2
+                text-gray-600 hover:text-[#0A66C2]
+                transition-colors duration-200
+                group min-w-0
+              "
+                  >
+                    <Linkedin
+                      size={18}
+                      className="opacity-70 group-hover:opacity-100 transition shrink-0"
+                    />
+
+                    <span
+                      className="truncate whitespace-nowrap min-w-0 text-xs font-medium"
+                      title={data.linkedIn}
+                    >
+                      LinkedIn
+                    </span>
+                  </a>
+                ) : (
+                  <span className="text-gray-400">No LinkedIn</span>
+                )}
+
+              </div>
+
             </div>
           </div>
         </div>
       </div>
+
+
+
       <div className="bg-white px-8">
         <div className="flex space-x-8 text-sm font-bold border-b border-gray-300 mb-8">
           {tabs.map(tab => (
