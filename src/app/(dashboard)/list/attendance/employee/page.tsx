@@ -13,7 +13,7 @@ import { TimesheetHeader } from "@/components/attendance/TimeSheetHeader";
 import { CalendarDay, ShiftConfig, DayStatus } from "@/lib/types";
 import { ConfirmClockOutModal } from "@/components/attendance/confirmClockOut";
 import AttendanceRegularizationPopup from "@/components/attendance/attendanceRegulizer";
-import { Button } from "@/components/ui/button";
+import { startOfMonth, endOfMonth } from "date-fns";
 import EmployeeLeaveSummaryCard from "@/components/attendance/EmployeeLeaveSummaryCard";
 import EmployeeLeaveHistoryTable from "@/components/attendance/EmployeeLeaveHistoryTable";
 import ApplyLeaveModal from "@/components/attendance/ApplyLeaveModal";
@@ -23,18 +23,22 @@ import { CalendarDays, CalendarPlus, ClockArrowUp, Home, Laptop, LayoutDashboard
 import EmployeeRegulizeRequests from "@/components/attendance/EmployeeRegulizeRequests";
 import { toMinutes } from "../admin/page";
 import { useCurrentEmployee } from "@/hooks/useCurrentEmployee";
+import EmployeeCalendar from "@/components/attendance/EmployeeCalender";
 
 export const SHIFT_CONFIG: ShiftConfig = {
     startTime: "09:30",
     endTime: "19:00",
 };
 
-// const [openRegulize, setOpenRegulize] = useState(false);
-// const [openApplyLeaves, setOpenApplyLeaves] = useState(false);
-// const [openApplyWfh, setOpenApplyWfh] = useState(false);
-
 
 type WeeklyAttendance = {
+    date: string;
+    punch_in_time: string | null;
+    punch_out_time: string | null;
+    working_time: string | null;
+    work_status: string | null;
+};
+type MonthlyAttendance = {
     date: string;
     punch_in_time: string | null;
     punch_out_time: string | null;
@@ -69,8 +73,8 @@ const PunchCard: React.FC<{
     profileName?: string;
     imgurl?: string;
 }> = ({ isPunchedIn, handlePunchAction, punchTime, elapsedSeconds, profileName, imgurl }) => {
-    const [elapsedTime, setElapsedTime] = useState < number > (elapsedSeconds ?? 0);
-    const intervalRef = useRef < number | null > (null);
+    const [elapsedTime, setElapsedTime] = useState<number>(elapsedSeconds ?? 0);
+    const intervalRef = useRef<number | null>(null);
 
     // Sync elapsedSeconds when it is provided/changes (e.g., on load)
     useEffect(() => {
@@ -174,43 +178,47 @@ const EmployeeAttendancePage = () => {
     const tabs = ["Attendance", "Leaves & WFH"];
     const [activeTab, setActiveTab] = useState("Attendance");
 
-    const [calendarMap, setCalendarMap] = useState < Record < string, CalendarDay>> ({});
+    const [calendarMap, setCalendarMap] = useState<Record<string, CalendarDay>>({});
 
     // Geolocation
-    const [location, setLocation] = useState < { lat: number; lon: number } | null > (null);
-    const [locationError, setLocationError] = useState < string | null > (null);
+    const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
+    const [locationError, setLocationError] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
 
     // Attendance state (backend-driven)
-    const [attendanceStatus, setAttendanceStatus] = useState < AttendanceRecord | null > (null);
-    const [attendanceData, setAttendanceData] = useState < Record < string, AttendanceRecord | undefined >> ({});
-    const [message, setMessage] = useState < string | null > (null);
+    const [attendanceStatus, setAttendanceStatus] = useState<AttendanceRecord | null>(null);
+    const [attendanceData, setAttendanceData] = useState<Record<string, AttendanceRecord | undefined>>({});
+    const [message, setMessage] = useState<string | null>(null);
 
     // Timer / UI state
-    const [punchTime, setPunchTime] = useState < string > ("");
-    const [initialElapsedSeconds, setInitialElapsedSeconds] = useState < number > (0);
+    const [punchTime, setPunchTime] = useState<string>("");
+    const [initialElapsedSeconds, setInitialElapsedSeconds] = useState<number>(0);
 
     const [showClockOutModal, setShowClockOutModal] = useState(false);
-    const [workingHours, setWorkingHours] = useState < string | undefined > (undefined);
+    const [workingHours, setWorkingHours] = useState<string | undefined>(undefined);
 
-    const [weeklyAttendance, setWeeklyAttendance] = useState < WeeklyAttendance[] > ([]);
-    const [totalWeeklyHours, setTotalWeeklyHours] = useState < string > ("0:00");
-    const [expectedWeeklyHours, setExpectedWeeklyHours] = useState < string > ("0:00");
+    const [weeklyAttendance, setWeeklyAttendance] = useState<WeeklyAttendance[]>([]);
+    const [totalWeeklyHours, setTotalWeeklyHours] = useState<string>("0:00");
+    const [expectedWeeklyHours, setExpectedWeeklyHours] = useState<string>("0:00");
+
+    const [monthlyAttendance, setMonthlyAttendance] = useState<MonthlyAttendance[]>([]);
+    const [totalMonthlyHours, setTotalMonthlyHours] = useState<string>("0:00");
+    const [expectedMonthlyHours, setExpectedMonthlyHours] = useState<string>("0:00");
 
 
-    const [requestsRegulize, setRequestsRegulize] = useState < any[] > ([]);
+    const [requestsRegulize, setRequestsRegulize] = useState<any[]>([]);
     const [openRegulize, setOpenRegulize] = useState(false);
     const [loadingRegulize, setLoadingRegulize] = useState(false);
-    const [messageRegulize, setMessageRegulize] = useState < { type: "success" | "error"; text: string } | null > (null);
+    const [messageRegulize, setMessageRegulize] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
     const [loadingLeaves, setLoadingLeaves] = useState(false);
-    const [summaryLeaves, setSummaryLeaves] = useState < any > (null);
-    const [requestsLeaves, setRequestsLeaves] = useState < any[] > ([]);
+    const [summaryLeaves, setSummaryLeaves] = useState<any>(null);
+    const [requestsLeaves, setRequestsLeaves] = useState<any[]>([]);
 
     const [openApplyLeaves, setOpenApplyLeaves] = useState(false);
 
     const [loadingWfh, setLoadingWfh] = useState(false);
-    const [requestsWfh, setRequestsWfh] = useState < any[] > ([]);
+    const [requestsWfh, setRequestsWfh] = useState<any[]>([]);
     const [openApplyWfh, setOpenApplyWfh] = useState(false);
 
     const loadWFHRequests = async () => {
@@ -431,11 +439,13 @@ const EmployeeAttendancePage = () => {
             setMessage(null);
 
             const token = Cookies.get("access");
-            const response = await axios.get < PunchResponse > (`${apiUrl}/today/`, {
+            console.log("TOKEN:", token);
+            const response = await axios.get<PunchResponse>(`${apiUrl}/today/`, {
                 headers: {
                     Authorization: token ? `Bearer ${token}` : "",
                 },
             });
+
 
             const data = response.data;
             // console.log("today Data: ", data)
@@ -491,6 +501,14 @@ const EmployeeAttendancePage = () => {
 
         setCalendarMap(map);
     };
+    type AttendanceDay = {
+        date: string;
+        punch_in_time: string | null;
+        punch_out_time: string | null;
+        working_time: string | null;
+        work_status: string | null;
+    };
+
 
     const fetchWeeklyAttendance = useCallback(
         async (start: Date, end: Date) => {
@@ -512,8 +530,9 @@ const EmployeeAttendancePage = () => {
 
                 if (response.data.status === "success") {
                     setWeeklyAttendance(response.data.data);
-                    // console.log("Weekly Attendance Data:", response.data.data);
                 }
+                console.log("Weekly Attendance Data:", response.data.data);
+
 
                 await fetchCompanyCalendar(start, end);
 
@@ -529,6 +548,44 @@ const EmployeeAttendancePage = () => {
         []
     );
 
+    const fetchMonthlyAttendance = useCallback(
+        async (start: Date, end: Date) => {
+            try {
+                const token = Cookies.get("access");
+
+                const response = await axios.get(
+                    `${apiUrl}/total-hours/`,
+                    {
+                        headers: {
+                            Authorization: token ? `Bearer ${token}` : "",
+                        },
+                        params: {
+                            start_date: format(start, "yyyy-MM-dd"),
+                            end_date: format(end, "yyyy-MM-dd"),
+                        },
+                    }
+                );
+
+                if (response.data.status === "success") {
+                    setMonthlyAttendance(response.data.data);
+                }
+                console.log("Monthly Attendance Data:", response.data.data);
+
+                await fetchCompanyCalendar(start, end);
+
+                const total = sumWorkingTime(response.data.data);
+                setTotalMonthlyHours(total);
+                const expected = (response.data.expected_hours);
+                setExpectedMonthlyHours(expected);
+
+            } catch (err) {
+                console.error("Failed to fetch monthly attendance", err);
+            }
+        },
+        []
+    );
+
+
     // --- Punch API calls (in/out) ---
     const handlePunch = async (type: "in" | "out") => {
         if (!location || !user) {
@@ -543,7 +600,7 @@ const EmployeeAttendancePage = () => {
         try {
             const accessToken = Cookies.get("access");
 
-            const response = await axios.post < PunchResponse > (
+            const response = await axios.post<PunchResponse>(
                 endpoint,
                 {
                     latitude: location.lat,
@@ -612,7 +669,7 @@ const EmployeeAttendancePage = () => {
     };
 
     // --- Simple week/navigation stubs to keep UI (these are lightweight because we removed useAttendance) ---
-    const [currentWeekStart, setCurrentWeekStart] = useState < Date > (() => {
+    const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => {
         const now = new Date();
         // start of week (Sunday)
         const s = new Date(now);
@@ -621,19 +678,64 @@ const EmployeeAttendancePage = () => {
         return s;
     });
 
+    const [currentMonthStart, setCurrentMonthStart] = useState<Date>(() => {
+        const now = new Date();
+        const m = new Date(now);
+        m.setDate(1);
+        m.setHours(0, 0, 0, 0);
+        return m;
+    });
+
+    const [viewMode, setViewMode] = useState<"weekly" | "monthly">("weekly");
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+
+    const changeViewMode = (mode: "weekly" | "monthly") => {
+        setViewMode(mode);
+    };
+
+
+    const handleNavigate = (direction: "prev" | "next") => {
+        if (viewMode === "weekly") {
+            navigateWeek(direction);
+        } else {
+            navigateMonth(direction);
+        }
+    };
+
+
     const navigateWeek = (direction: "prev" | "next") => {
         const newStart = new Date(currentWeekStart);
         newStart.setDate(currentWeekStart.getDate() + (direction === "next" ? 7 : -7));
         setCurrentWeekStart(newStart);
     };
 
+    const navigateMonth = (direction: "prev" | "next") => {
+        setCurrentMonthStart(prev => {
+            const newDate = new Date(prev);
+            newDate.setMonth(prev.getMonth() + (direction === "next" ? 1 : -1));
+            return newDate;
+        });
+    };
+
+
+
     const goToToday = () => {
         const now = new Date();
-        const s = new Date(now);
-        s.setDate(now.getDate() - now.getDay());
-        s.setHours(0, 0, 0, 0);
-        setCurrentWeekStart(s);
+
+        if (viewMode === "weekly") {
+            const s = new Date(now);
+            s.setDate(now.getDate() - now.getDay());
+            s.setHours(0, 0, 0, 0);
+            setCurrentWeekStart(s);
+        } else {
+            const m = new Date(now);
+            m.setDate(1);
+            m.setHours(0, 0, 0, 0);
+            setCurrentMonthStart(m);
+        }
     };
+
 
     const weekDates = (() => {
         const arr: Date[] = [];
@@ -675,6 +777,84 @@ const EmployeeAttendancePage = () => {
             }
         }
 
+        let status: DayStatus = "absent";
+
+        if (isFuture(date)) {
+            status = "future";
+        }
+        else if (calendarDay?.calendar_type === "HOLIDAY") {
+            status = "holiday";   // reuse weekend styling for holiday
+        }
+        else if (calendarDay?.calendar_type === "WEEKEND") {
+            status = "weekend";
+        }
+        else if (apiEntry?.work_status === "LEAVE") {
+            status = "leave";    // treated as absent visually
+        }
+        else if (apiEntry?.work_status === "WFH") {
+            status = "WFH";
+        }
+        else if (apiEntry?.punch_in_time) {
+            status = "present";
+        }
+        else {
+            status = "absent";
+        }
+
+        return {
+            day: isToday(date) ? "Today" : format(date, "EEE"),
+            date: date.getDate(),
+            dateStr,
+            checkInTime: apiEntry?.punch_in_time || undefined,
+            checkOutTime: apiEntry?.punch_out_time || undefined,
+            lateBy,
+            earlyBy,
+            hoursWorked: apiEntry?.working_time ?? "0:00",
+            status,
+            isToday: isToday(date),
+            isFuture: isFuture(date),
+        };
+    });
+
+    const monthDates = (() => {
+        const arr: Date[] = [];
+        for (let i = 0; i < 30; i++) {
+            const d = new Date(currentMonthStart);
+            d.setDate(currentMonthStart.getDate() + i);
+            arr.push(d);
+        }
+        return arr;
+    })();
+
+    const monthEnd = endOfMonth(currentMonthStart);
+
+    const monthData = monthDates.map((date) => {
+        const dateStr = format(date, "yyyy-MM-dd");
+        const apiEntry = monthlyAttendance.find(d => d.date === dateStr);
+        const calendarDay = calendarMap[dateStr];
+
+        let lateBy: string | undefined;
+        let earlyBy: string | undefined;
+
+        if (apiEntry?.punch_in_time) {
+            const punchMinutes = toMinutes(apiEntry.punch_in_time);
+            const shiftStart = toMinutes(SHIFT_CONFIG.startTime) + 30;
+
+            if (punchMinutes > shiftStart) {
+                const diff = punchMinutes - shiftStart;
+                lateBy = `${Math.floor(diff / 60)}h ${diff % 60}m`;
+            }
+        }
+
+        if (apiEntry?.punch_out_time) {
+            const punchOutMinutes = toMinutes(apiEntry.punch_out_time);
+            const shiftEnd = toMinutes(SHIFT_CONFIG.endTime);
+
+            if (punchOutMinutes < shiftEnd) {
+                const diff = shiftEnd - punchOutMinutes;
+                earlyBy = `${Math.floor(diff / 60)}h ${diff % 60}m`;
+            }
+        }
         let status: DayStatus = "absent";
 
         if (isFuture(date)) {
@@ -783,9 +963,42 @@ const EmployeeAttendancePage = () => {
     }, [attendanceStatus]);
 
     useEffect(() => {
-        const end = endOfWeek(currentWeekStart, { weekStartsOn: 0 });
-        fetchWeeklyAttendance(currentWeekStart, end);
+        if (viewMode === "weekly") {
+
+            const end = endOfWeek(currentWeekStart, { weekStartsOn: 0 });
+            fetchWeeklyAttendance(currentWeekStart, end);
+        }
     }, [currentWeekStart, fetchWeeklyAttendance]);
+
+
+
+    useEffect(() => {
+        if (viewMode === "monthly") {
+            const end = endOfMonth(currentMonthStart);
+            fetchMonthlyAttendance(currentMonthStart, end);
+        }
+    }, [currentMonthStart, viewMode, fetchMonthlyAttendance]);
+
+
+
+    const monthlyAttendanceMap = React.useMemo(() => {
+        const map: any = {};
+
+        monthData.forEach((day) => {
+            if (!day?.dateStr) return;
+
+            map[day.dateStr] = {
+                date: day.dateStr,
+                checkInTime: day.checkInTime,
+                checkOutTime: day.checkOutTime,
+                hoursWorked: day.hoursWorked ?? "00:00",
+                status: day.status,
+            };
+        });
+
+        return map;
+    }, [monthData]);
+
 
     // UI rendering
     if (loading || !user) {
@@ -816,7 +1029,11 @@ const EmployeeAttendancePage = () => {
                                     <TimesheetHeader
                                         weekStart={currentWeekStart}
                                         weekEnd={weekEnd}
-                                        onNavigate={navigateWeek}
+
+                                        onNavigate={handleNavigate}
+                                        onViewChange={changeViewMode}
+                                        viewMode={viewMode}
+
                                         onToday={goToToday}
                                         shiftStart={SHIFT_CONFIG.startTime}
                                         shiftEnd={SHIFT_CONFIG.endTime}
@@ -824,39 +1041,60 @@ const EmployeeAttendancePage = () => {
                                         onRegularize={() => setOpenRegulize(true)}
                                         onApplyLeave={() => setOpenApplyLeaves(true)}
                                         onApplyWFH={() => setOpenApplyWfh(true)}
-                                    />
-                                    <div className="bg-card rounded-lg border border-border shadow-sm p-4 lg:p-6 pt-2">
-                                        <div className="space-y-4 lg:space-y-2">
-                                            {weekData.map((entry, index) => (
-                                                <TimeEntryRow
-                                                    key={index}
-                                                    {...entry}
-                                                    checkInTime={entry.checkInTime ?? undefined}
-                                                    checkOutTime={entry.checkOutTime ?? undefined}
-                                                    calendarDay={calendarMap[entry.dateStr]}
-                                                />
-                                            ))}
-                                        </div>
+                                        monthStart={currentMonthStart} />
 
-                                        <div className="w-full bg-white p-4 text-sm flex justify-between">
-                                            <p>
-                                                Weekly Working Time: {expectedWeeklyHours}
-                                            </p>
+                                    {/* 🔥 CALENDAR SWITCH GOES HERE */}
+                                    {viewMode === "monthly" && (
+                                        <EmployeeCalendar
 
-                                            <p>
-                                                Your Weekly Working Time: {totalWeeklyHours}
-                                            </p>
-                                        </div>
+                                            currentDate={currentMonthStart}
+                                            selectedDate={selectedDate}
+                                            attendanceData={monthlyAttendanceMap}
 
-                                        {/* Timeline Labels: Hidden on mobile (too crowded), visible on Desktop */}
-                                        <div className="mt-8 relative hidden lg:block">
-                                            <div className="flex justify-between text-sm text-muted-foreground px-[120px]">
-                                                {timeLabels.map((time) => (
-                                                    <span key={time}>{time}</span>
+                                            activeTimer={null}
+
+                                            expectedHours={expectedMonthlyHours}
+                                            totalHours={totalMonthlyHours}
+                                            onSelectDate={setSelectedDate}
+                                            onMonthChange={setCurrentMonthStart}
+                                            calendarMap={calendarMap}
+                                        />
+                                    )}
+
+                                    {viewMode === "weekly" && (
+                                        <div className="bg-card rounded-lg border border-border shadow-sm p-4 lg:p-6 pt-2">
+                                            <div className="space-y-4 lg:space-y-2">
+                                                {weekData.map((entry, index) => (
+                                                    <TimeEntryRow
+                                                        key={index}
+                                                        {...entry}
+                                                        checkInTime={entry.checkInTime ?? undefined}
+                                                        checkOutTime={entry.checkOutTime ?? undefined}
+                                                        calendarDay={calendarMap[entry.dateStr]}
+                                                    />
                                                 ))}
                                             </div>
+
+                                            <div className="w-full bg-white p-4 text-sm flex justify-between">
+                                                <p>
+                                                    Weekly Working Time: {expectedWeeklyHours}
+                                                </p>
+
+                                                <p>
+                                                    Your Weekly Working Time: {totalWeeklyHours}
+                                                </p>
+                                            </div>
+
+                                            {/* Timeline Labels: Hidden on mobile (too crowded), visible on Desktop */}
+                                            <div className="mt-8 relative hidden lg:block">
+                                                <div className="flex justify-between text-sm text-muted-foreground px-[120px]">
+                                                    {timeLabels.map((time) => (
+                                                        <span key={time}>{time}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
 
                                 {/* --- RIGHT SIDE: PUNCH & LOCATION --- */}

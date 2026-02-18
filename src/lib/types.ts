@@ -77,6 +77,16 @@ export type AttendanceRecord = {
   hoursWorked?: number;
 };
 
+export type employeeAttendance={
+  date: string; // YYYY-MM-DD
+  status: AttendanceStatus;
+  lateBy?: string | null;
+  workStatus?: "WFO" | "WFH" | "LEAVE" | null;
+  checkInTime?: string; // HH:mm
+  checkOutTime?: string; // HH:mm
+  hoursWorked?: number;
+}
+
 export type AdminLeaveRequest = {
   id: string;
   employeeId: string;
