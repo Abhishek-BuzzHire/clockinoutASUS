@@ -41,7 +41,7 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
       return employee.cv_url;
     }
 
-    return `${API_URL}/api/resumes/${employee.cv_url}`;
+    return `${API_URL}/api/media/resumes/${employee.cv_url}`;
   };
 
   const cvDownloadUrl = getCvUrl();
