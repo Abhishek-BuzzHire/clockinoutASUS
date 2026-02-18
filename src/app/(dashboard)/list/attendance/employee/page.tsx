@@ -24,6 +24,7 @@ import EmployeeRegulizeRequests from "@/components/attendance/EmployeeRegulizeRe
 import { toMinutes } from "../admin/page";
 import { useCurrentEmployee } from "@/hooks/useCurrentEmployee";
 import EmployeeCalendar from "@/components/attendance/EmployeeCalender";
+import EmployeeAttendanceSheet from "@/components/attendance/EmployeeAttendanceSheet";
 
 export const SHIFT_CONFIG: ShiftConfig = {
     startTime: "09:30",
@@ -205,6 +206,15 @@ const EmployeeAttendancePage = () => {
     const [totalMonthlyHours, setTotalMonthlyHours] = useState<string>("0:00");
     const [expectedMonthlyHours, setExpectedMonthlyHours] = useState<string>("0:00");
 
+    // Attendance Sheet State
+    const [isEmployeeSheetOpen, setIsEmployeeSheetOpen] = useState(false);
+
+    const [employeeSheetData, setEmployeeSheetData] = useState<AttendanceDay[]>([]);
+    const [employeeSheetLoading, setEmployeeSheetLoading] = useState(false);
+    const [employeeSheetError, setEmployeeSheetError] = useState("");
+
+
+
 
     const [requestsRegulize, setRequestsRegulize] = useState<any[]>([]);
     const [openRegulize, setOpenRegulize] = useState(false);
@@ -380,6 +390,15 @@ const EmployeeAttendancePage = () => {
         }
     };
 
+    const handleEmployeeSheetSubmit = async (start: string, end: string) => {
+        await fetchAttendanceAndCalendar(start, end);
+    };
+    const handleOpenEmployeeAttendanceSheet = () => {
+        setIsEmployeeSheetOpen(true);
+    };
+
+
+
 
     const { toast } = useToast();
 
@@ -439,16 +458,14 @@ const EmployeeAttendancePage = () => {
             setMessage(null);
 
             const token = Cookies.get("access");
-            console.log("TOKEN:", token);
             const response = await axios.get<PunchResponse>(`${apiUrl}/today/`, {
                 headers: {
                     Authorization: token ? `Bearer ${token}` : "",
                 },
             });
 
-
             const data = response.data;
-            // console.log("today Data: ", data)
+
             if (data.status === "success" && data.data) {
                 setAttendanceStatus(data.data);
                 setAttendanceData((prev) => ({ ...prev, [todayStr]: data.data }));
@@ -501,6 +518,7 @@ const EmployeeAttendancePage = () => {
 
         setCalendarMap(map);
     };
+
     type AttendanceDay = {
         date: string;
         punch_in_time: string | null;
@@ -508,6 +526,60 @@ const EmployeeAttendancePage = () => {
         working_time: string | null;
         work_status: string | null;
     };
+
+    //Employee Attendance Sheet data fetcher (attendance + calendar)
+    const fetchAttendanceAndCalendar = async (
+        start: string,
+        end: string
+    ) => {
+        try {
+            setEmployeeSheetLoading(true);
+            setEmployeeSheetError("");
+
+            const token = Cookies.get("access");
+
+            const [attendanceRes, calendarRes] = await Promise.all([
+                axios.get(`${apiUrl}/total-hours/`, {
+                    headers: { Authorization: token ? `Bearer ${token}` : "" },
+                    params: { start_date: start, end_date: end }
+                }),
+
+                axios.get(`${apiUrl}/api/company-calendar`, {
+                    headers: { Authorization: token ? `Bearer ${token}` : "" },
+                    params: { start_date: start, end_date: end }
+                })
+            ]);
+
+            /* ========================
+               Attendance
+            ======================== */
+
+            if (attendanceRes.data.status === "success") {
+                setEmployeeSheetData(attendanceRes.data.data || []);
+            } else {
+                setEmployeeSheetData([]);
+            }
+
+            /* ========================
+               Calendar → Map
+            ======================== */
+
+            const calendarMap: Record<string, CalendarDay> = {};
+
+            calendarRes.data.calendar.forEach((d: CalendarDay) => {
+                calendarMap[d.date.slice(0, 10)] = d;
+            });
+
+            setCalendarMap(calendarMap);
+
+        } catch (err) {
+            setEmployeeSheetError("Failed to fetch attendance or calendar");
+        } finally {
+            setEmployeeSheetLoading(false);
+        }
+    };
+
+
 
 
     const fetchWeeklyAttendance = useCallback(
@@ -531,8 +603,7 @@ const EmployeeAttendancePage = () => {
                 if (response.data.status === "success") {
                     setWeeklyAttendance(response.data.data);
                 }
-                console.log("Weekly Attendance Data:", response.data.data);
-
+                console.log("Weekly Attendance Response:", response.data);
 
                 await fetchCompanyCalendar(start, end);
 
@@ -569,7 +640,6 @@ const EmployeeAttendancePage = () => {
                 if (response.data.status === "success") {
                     setMonthlyAttendance(response.data.data);
                 }
-                console.log("Monthly Attendance Data:", response.data.data);
 
                 await fetchCompanyCalendar(start, end);
 
@@ -1041,7 +1111,9 @@ const EmployeeAttendancePage = () => {
                                         onRegularize={() => setOpenRegulize(true)}
                                         onApplyLeave={() => setOpenApplyLeaves(true)}
                                         onApplyWFH={() => setOpenApplyWfh(true)}
-                                        monthStart={currentMonthStart} />
+                                        monthStart={currentMonthStart}
+                                        onEmployeeAttendanceSheet={handleOpenEmployeeAttendanceSheet} />
+
 
                                     {/* 🔥 CALENDAR SWITCH GOES HERE */}
                                     {viewMode === "monthly" && (
@@ -1166,6 +1238,19 @@ const EmployeeAttendancePage = () => {
                                                     onSubmit={applyWFH}
                                                 />
                                             )}
+                                            {/* Employee Attendance Sheet */}
+                                            {isEmployeeSheetOpen && (
+                                                <EmployeeAttendanceSheet
+                                                    onClose={() => setIsEmployeeSheetOpen(false)}
+                                                    onSubmit={handleEmployeeSheetSubmit}
+                                                    calendarMap={calendarMap}
+                                                    data={employeeSheetData}
+                                                    loading={employeeSheetLoading}
+                                                    error={employeeSheetError}
+                                                />
+                                            )}
+
+
 
                                         </div>
 
