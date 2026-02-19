@@ -73,7 +73,7 @@ export default function CandidateDatabasePage() {
 
             const data = response.data;
             setEmployees(data.employees);  
-            console.log("Fetched Employees: ", data.employees);
+            // console.log("Fetched Employees: ", data.employees);
             setTotalProfiles(data.totalProfiles);
 
         } catch (err) {

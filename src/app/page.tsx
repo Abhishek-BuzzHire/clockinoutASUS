@@ -48,7 +48,7 @@ export default function LoginPage() {
     } else {
       // Fallback to the default dashboard if no returnUrl is present
       const decoded = jwtDecode<TokenPayload>(access);
-      const home = decoded.role === "admin" ? "/list/attendance/admin" : "/attendance";
+      const home = decoded.role === "admin" ? "/list/attendance/admin" : "/list/attendance";
       router.push(home);
     }
   };
