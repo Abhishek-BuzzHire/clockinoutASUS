@@ -603,7 +603,7 @@ const EmployeeAttendancePage = () => {
                 if (response.data.status === "success") {
                     setWeeklyAttendance(response.data.data);
                 }
-                console.log("Weekly Attendance Response:", response.data);
+                // console.log("Weekly Attendance Response:", response.data);
 
                 await fetchCompanyCalendar(start, end);
 
