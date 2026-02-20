@@ -14,11 +14,17 @@ import { useAuth } from "@/context/AuthContext";
 import { useCurrentEmployee } from "@/hooks/useCurrentEmployee";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import ChangePassword from "./ChangePassword";
 
 export function UserDetailsCard() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { employee } = useCurrentEmployee();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const [changePassPopUp, setChangePassPopUp] = useState(false);
+
 
   const displayName = employee?.name ?? user?.username ?? "User";
   const role = user?.role ?? "employee";
@@ -33,8 +39,8 @@ export function UserDetailsCard() {
     router.push("/login");
   };
 
-  return (
-    <DropdownMenu>
+  return (<>
+    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
@@ -90,19 +96,51 @@ export function UserDetailsCard() {
             <DetailRow label="Designation" value={employee?.designation ?? "—"} />
           </CardContent>
           <CardFooter className="pt-4 pb-5 px-5 border-t border-slate-100 mt-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
-              onClick={handleLogout}
-            >
-              <LogOut className="size-4" />
-              Logout
-            </Button>
+
+            <div className="w-full flex flex-col gap-3">
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-center text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
+                onClick={() => {
+                  setDropdownOpen(false);   // 👈 CLOSE DROPDOWN
+                  setChangePassPopUp(true); // 👈 OPEN MODAL
+                }}
+              >
+                Change Password
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-center gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
+                onClick={handleLogout}
+              >
+                <LogOut className="size-4" />
+                Logout
+              </Button>
+
+            </div>
           </CardFooter>
         </Card>
       </DropdownMenuContent>
     </DropdownMenu>
+    {changePassPopUp && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div
+          className="absolute inset-0 bg-black/40"
+          onClick={() => setChangePassPopUp(false)}
+        />
+
+        {/* Modal Content */}
+        <div className="relative z-10 w-full max-w-lg bg-white rounded-2xl shadow-lg p-6">
+          <ChangePassword
+            onCancel={() => setChangePassPopUp(false)}
+          />
+        </div>
+      </div>
+    )}</>
   );
 }
 
