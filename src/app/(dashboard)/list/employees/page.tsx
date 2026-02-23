@@ -60,7 +60,8 @@ const EmployeesListPage = () => {
     // password: "",
     role: "employee",
     manager_id: "",
-    is_active: true
+    is_active: true,
+    manager_name: ""
   })
 
   useEffect(() => {
@@ -194,7 +195,8 @@ const EmployeesListPage = () => {
       //   password: user.password,
       role: user.role,
       manager_id: user.manager?.id || "",
-      is_active: user.is_active ?? true
+      is_active: user.is_active ?? true,
+      manager_name: user.manager?.name || ""
     })
   }
 
@@ -402,7 +404,8 @@ const EmployeesListPage = () => {
                       <option value="">Select a manager</option>
                       {managers.map(m => (
                         <option key={m.id} value={m.id}>
-                          {m.name} ({m.role})
+                          {m.name}     {m.role === "admin" && ` (${m.role})`}
+
                         </option>
                       ))}
                     </select>
@@ -536,10 +539,11 @@ const EmployeesListPage = () => {
                         onChange={e => setEditData({ ...editData, manager_id: e.target.value })}
                         className="w-full px-4 py-3 border rounded-xl font-semibold"
                       >
-                        <option value="">{editData.manager_id}</option>
+                        <option className="font-medium bg-indigo-300"
+                        >{editData.manager_name}</option>
                         {managers.map(m => (
                           <option key={m.id} value={m.id}>
-                            {m.name} ({m.role})
+                            {m.name}
                           </option>
                         ))}
                       </select>
