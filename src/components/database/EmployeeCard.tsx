@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Briefcase, MapPin, IndianRupee, CalendarDays, File, Eye, Phone, Mail } from 'lucide-react';
 import React from 'react';
 import { Separator } from '@/components/ui/separator'
+import { format } from 'date-fns';
 
 interface EmployeeCardProps {
   employee: CandidateRec;
@@ -130,7 +131,7 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
       <CardFooter className='text-xs mb-2 mr-2 mt-3 relative'>
         <div className='flex gap-4 absolute right-0'>
           <div><b className='text-blue-700'>Source: </b>{employee.source}</div>
-          <div><b className='text-blue-700'>Created: </b>{employee.created_at}</div>
+          <div><b className='text-blue-700'>Created: </b>{format(new Date(employee.created_at), "dd MMM yyyy hh:mm a")}</div>
         </div>
       </CardFooter>
     </Card>

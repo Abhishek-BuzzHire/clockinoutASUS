@@ -39,6 +39,15 @@ interface CVCountProps {
 }
 
 const CVCount = ({ data, loading }: CVCountProps) => {
+
+    const chartData = data
+        .filter(user => user.cv_count > 0)
+        .map((user, index) => ({
+            name: getFirstName(user.name),
+            value: user.cv_count,
+            fill: colors[index % colors.length] // Recharts 3.0+ uses this fill
+        }));
+
     const totalCvs = data.reduce((acc, entry) => acc + entry.cv_count, 0);
 
     if (loading) return <div className="p-8 text-center bg-white rounded-2xl shadow-lg">Loading...</div>;
@@ -57,17 +66,16 @@ const CVCount = ({ data, loading }: CVCountProps) => {
                         <ResponsiveContainer height={200}>
                             <PieChart>
                                 <Pie
-                                    data={data}
+                                    data={chartData}
                                     dataKey="value"
                                     nameKey="name"
                                     cx="50%"
                                     cy="50%"
                                     outerRadius={85}
                                     innerRadius={70}
+                                    paddingAngle={2}
+                                    stroke="none"
                                 >
-                                    {data.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-                                    ))}
                                 </Pie>
                                 <Tooltip />
                             </PieChart>

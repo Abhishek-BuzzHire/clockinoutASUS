@@ -19,40 +19,82 @@ function getPayloadFromToken(token: string): { id?: string; username?: string; r
   }
 }
 
-const ADMIN_PATHS = ["/list/attendance/admin", "/admin", "/adminAttendance"];
+const ROUTES = {
+  public:
+    ['/login', '/'],
+
+  admin: [
+    '/admin',
+    '/list/attendance/admin',
+    '/list/employees',
+  ],
+
+  employee: [
+    "/employee",
+  ],
+
+  shared: [
+    "/list",
+    "/ai-assist",
+    "/database",
+    "/database/add-candidate",
+    '/list/attendance/employee',
+    '/profile',
+    '/dashboard'
+  ]
+}
+
+const ADMIN_HOME = "/admin";
 const EMPLOYEE_HOME = "/list/attendance/employee";
 const LOGIN_PATH = "/login";
+const ORIGIN = "https://hrms.bytebuzz.in";
+
+function matchesRoute (pathname: string, routes: string[]) {
+  return routes.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
+}
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
 
   const token = request.cookies.get("access")?.value;
   const payload = token ? getPayloadFromToken(token) : null;
   const role = payload?.role;
 
-  const isAdminPath = ADMIN_PATHS.some((p) => pathname.startsWith(p) || pathname === p);
-  const origin = "https://hrms.bytebuzz.in";
+  const isPublic = matchesRoute(pathname, ROUTES.public);
+  const isAdminRoute = matchesRoute(pathname, ROUTES.admin);
+  const isEmployeeRoute = matchesRoute(pathname, ROUTES.employee);
+  const isSharedRoute = matchesRoute(pathname, ROUTES.shared);
 
   if (!token || !payload) {
-    if (pathname.startsWith("/list") || pathname === "/admin" || pathname === "/adminAttendance" || pathname === "/attendance") {
-      const returnUrl = `${pathname}${request.nextUrl.search}`;
-
-      const loginUrl = new URL(LOGIN_PATH, origin);
-
-      loginUrl.searchParams.set('returnUrl', returnUrl);
-
-      return NextResponse.redirect(new URL(loginUrl));
+    if (!isPublic) {
+      const loginUrl = new URL(LOGIN_PATH, ORIGIN);
+      loginUrl.searchParams.set("returnUrl", pathname + search);
+      return NextResponse.redirect(loginUrl);
     }
     return NextResponse.next();
   }
 
-  if (isAdminPath && role !== "admin") {
-    return NextResponse.redirect(new URL(EMPLOYEE_HOME, origin));
+  /* ---------- Logged In but Wrong Role ---------- */
+  if (isAdminRoute && role !== "admin") {
+    return NextResponse.redirect(new URL(EMPLOYEE_HOME, ORIGIN));
+  }
+
+  if (isEmployeeRoute && role === "admin") {
+    return NextResponse.redirect(new URL(ADMIN_HOME, ORIGIN));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/list/:path*", "/admin", "/adminAttendance", "/attendance"],
+  matcher: [
+    "/admin/:path*",
+    "/employee/:path*",
+    "/list/:path*",
+    "/profile/:path*",
+    "/ai-assist/:path*",
+    "/database/:path*",
+  ],
 };
