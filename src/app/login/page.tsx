@@ -187,7 +187,10 @@ export default function LoginPage() {
 
         {/* Forgot */}
         <div className="text-center mt-1 mb-5">
-          <span className="text-[13px] font-medium text-blue-600 hover:text-blue-700 cursor-pointer transition">
+          <span
+            onClick={() => router.push("/forget-password")}
+            className="text-[12px] font-medium text-blue-600 hover:text-blue-700 cursor-pointer transition"
+          >
             Forgot Password?
           </span>
         </div>
