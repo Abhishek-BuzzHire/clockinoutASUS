@@ -190,7 +190,6 @@ export default function LoginPage() {
         <div className="text-center mt-1 mb-5">
           <span className="text-[13px] font-medium text-blue-600 hover:text-blue-700 cursor-pointer transition">
             <Link href="/forgot-password">Forgot Password?</Link>
-            Forgot Password?
           </span>
         </div>
 
