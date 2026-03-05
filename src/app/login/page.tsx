@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -188,6 +189,7 @@ export default function LoginPage() {
         {/* Forgot */}
         <div className="text-center mt-1 mb-5">
           <span className="text-[13px] font-medium text-blue-600 hover:text-blue-700 cursor-pointer transition">
+            <Link href="/forgot-password">Forgot Password?</Link>
             Forgot Password?
           </span>
         </div>
