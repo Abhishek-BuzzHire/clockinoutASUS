@@ -1,7 +1,7 @@
 const EmployeeDashboard = () => {
     return (
         <>
-        Employee Dashboard Page
+            Employee Dashboard Page
         </>
     )
 }
