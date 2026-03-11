@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 function SetPasswordForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    
+
     // Get username (email) from the URL query parameter
     const username = searchParams.get("username") || "";
 
@@ -34,8 +34,8 @@ function SetPasswordForm() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ 
-                    username: username, 
+                body: JSON.stringify({
+                    username: username,
                     new_password: newPassword  // Changed from 'password' to 'new_password'
                 }),
             });
@@ -52,9 +52,9 @@ function SetPasswordForm() {
                 setTimeout(() => router.push("/login"), 2000);
             } else {
                 // Shows the error from your backend (e.g. "Username and new_password are required")
-                setMessage({ 
-                    text: data.message || data.error || "Failed to reset password.", 
-                    type: "error" 
+                setMessage({
+                    text: data.message || data.error || "Failed to reset password.",
+                    type: "error"
                 });
             }
         } catch (error: unknown) {
@@ -74,11 +74,10 @@ function SetPasswordForm() {
             </h1>
 
             {message && (
-                <div className={`mb-6 rounded-lg border px-3 py-2 text-sm ${
-                    message.type === "success" 
-                    ? "border-green-200 bg-green-50 text-green-800" 
-                    : "border-red-200 bg-red-50 text-red-800"
-                }`}>
+                <div className={`mb-6 rounded-lg border px-3 py-2 text-sm ${message.type === "success"
+                        ? "border-green-200 bg-green-50 text-green-800"
+                        : "border-red-200 bg-red-50 text-red-800"
+                    }`}>
                     {message.text}
                 </div>
             )}

@@ -2,6 +2,16 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+
+interface ForgotPasswordOtpPayload {
+    username: string;
+}
+
+const fetchForgotPasswordSendOtp = async (payload: ForgotPasswordOtpPayload) => {
+    const res = await axios.post("/forgot-password/send-otp/", payload);
+    return res.data;
+};
 
 export default function ForgotPasswordUsernamePage() {
     const router = useRouter();
@@ -15,39 +25,16 @@ export default function ForgotPasswordUsernamePage() {
         setLoading(true);
 
         try {
-            console.log("🔄 Sending to API:", username);
+            const payload: ForgotPasswordOtpPayload = { username: username.trim() };
+            await fetchForgotPasswordSendOtp(payload);
 
-            // Note: Ensure this matches your /api folder spelling exactly
-            const response = await fetch("http://localhost:8000/api/forgot-password/send-otp/", {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
-                body: JSON.stringify({ username: username.trim() }),
-            });
+            setMessage("✅ OTP sent successfully!");
+            setTimeout(() => {
+                router.push(`/forget-password/enter-otp?username=${encodeURIComponent(username)}`);
+            }, 1500);
 
-            let data;
-            try {
-                data = await response.json();
-            } catch {
-                data = { message: "Invalid response from server" };
-            }
-
-            if (response.ok) {
-                setMessage("✅ OTP sent successfully!");
-                setTimeout(() => {
-                    // Redirects to the subfolder seen in your screenshot
-                    router.push(`/forget-password/enter-otp?username=${encodeURIComponent(username)}`);
-                }, 1500);
-            } else {
-                setMessage(`❌ ${data.message || data.error || `Error ${response.status}`}`);
-            }
-        } catch (error: unknown) {
-            // This fix solves the "Unexpected any" ESLint error
-            const errorMessage = error instanceof Error ? error.message : "Unknown error";
-            console.error("💥 Network error:", errorMessage);
-            setMessage("❌ Network error. Check if server is running.");
+        } catch (error: any) {
+            setMessage(error?.response?.data?.message || error?.response?.data?.error || "Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -61,11 +48,10 @@ export default function ForgotPasswordUsernamePage() {
                 </h1>
 
                 {message && (
-                    <div className={`mb-4 rounded-lg border px-3 py-2 text-sm ${
-                        message.includes('✅') 
-                            ? 'border-green-200 bg-green-50 text-green-800' 
-                            : 'border-red-200 bg-red-50 text-red-800'
-                    }`}>
+                    <div className={`mb-4 rounded-lg border px-3 py-2 text-sm ${message.includes('✅')
+                        ? 'border-green-200 bg-green-50 text-green-800'
+                        : 'border-red-200 bg-red-50 text-red-800'
+                        }`}>
                         {message}
                     </div>
                 )}
