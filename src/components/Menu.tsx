@@ -21,6 +21,7 @@ const menuItems = [
     items: [
       { icon: "/candidates.png", label: "Employees", href: "/list/employees", visible: ["admin", "developer"] },
       { icon: "/calendar.png", label: "Attendance", href: "/list/attendance/employee", visible: ["admin", "employee", "developer"] },
+      // { icon: "/money.png", label: "Payroll", href: "/list/payroll", visible: ["admin", "developer"] },
       // { icon: "/file-text.png", label: "Reports", href: "/list/reports", visible: ["admin", "employee", "developer"] },
       // { icon: "/file-text.png", label: "Clients", href: "/list/clients", visible: ["admin", "employee", "developer"] },
     ],
