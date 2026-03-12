@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
+import { apiUrl } from "@/lib/data";
 
 interface VerifyOtpPayload {
     username: string;
@@ -10,7 +11,7 @@ interface VerifyOtpPayload {
 }
 
 const fetchVerifyOtp = async (payload: VerifyOtpPayload) => {
-    const res = await axios.post("/forgot-password/verify-otp/", payload);
+    const res = await axios.post(`${apiUrl}/forgot-password/verify-otp/`, payload);
     return res.data;
 };
 

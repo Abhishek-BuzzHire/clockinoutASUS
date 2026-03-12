@@ -2,6 +2,18 @@
 
 import { useState, FormEvent, ChangeEvent, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { apiUrl } from "@/lib/data";
+import axios from "axios";
+
+
+interface SetPassPayload {
+    username: string,
+    new_password: string
+}
+const fetchSetPass = async (payload: SetPassPayload) => {
+    const res = await axios.post(`${apiUrl}/forgot-password/verify-otp/`, payload);
+    return res.data;
+};
 
 function SetPasswordForm() {
     const router = useRouter();
@@ -19,49 +31,18 @@ function SetPasswordForm() {
         e.preventDefault();
         setMessage(null);
 
-        // Client-side match check
         if (newPassword !== confirmPassword) {
             setMessage({ text: "Passwords do not match.", type: "error" });
             return;
         }
 
-        setLoading(true);
-
         try {
-            // Updated payload to match your Django requirements: { username, new_password }
-            const response = await fetch("http://localhost:8000/api/forgot-password/reset/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    username: username,
-                    new_password: newPassword  // Changed from 'password' to 'new_password'
-                }),
-            });
-
-            let data;
-            try {
-                data = await response.json();
-            } catch {
-                data = { message: "Invalid server response" };
-            }
-
-            if (response.ok) {
-                setMessage({ text: "✅ Password changed successfully!", type: "success" });
-                setTimeout(() => router.push("/login"), 2000);
-            } else {
-                // Shows the error from your backend (e.g. "Username and new_password are required")
-                setMessage({
-                    text: data.message || data.error || "Failed to reset password.",
-                    type: "error"
-                });
-            }
-        } catch (error: unknown) {
-            // Fixes the "Unexpected any" linting error
-            const err = error instanceof Error ? error.message : "Network error";
-            console.error("Submission error:", err);
-            setMessage({ text: "❌ Connection error. Is the server running?", type: "error" });
+            setLoading(true);
+            const payload: SetPassPayload = { username, new_password: newPassword };
+            await fetchSetPass(payload);
+            setTimeout(() => router.push("/login"), 2000);
+        } catch (error: any) {
+            setMessage(error?.response?.data?.message || error?.response?.data?.error || "Failed to reset password.");
         } finally {
             setLoading(false);
         }
@@ -75,8 +56,8 @@ function SetPasswordForm() {
 
             {message && (
                 <div className={`mb-6 rounded-lg border px-3 py-2 text-sm ${message.type === "success"
-                        ? "border-green-200 bg-green-50 text-green-800"
-                        : "border-red-200 bg-red-50 text-red-800"
+                    ? "border-green-200 bg-green-50 text-green-800"
+                    : "border-red-200 bg-red-50 text-red-800"
                     }`}>
                     {message.text}
                 </div>
