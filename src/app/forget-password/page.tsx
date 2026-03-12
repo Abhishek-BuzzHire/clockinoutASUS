@@ -10,7 +10,7 @@ interface ForgotPasswordOtpPayload {
 }
 
 const fetchForgotPasswordSendOtp = async (payload: ForgotPasswordOtpPayload) => {
-    const res = await axios.post(`${apiUrl}/forgot-password/send-otp/`, payload);
+    const res = await axios.post(`${apiUrl}/api/forgot-password/send-otp/`, payload);
     return res.data;
 };
 

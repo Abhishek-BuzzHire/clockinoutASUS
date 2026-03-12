@@ -11,7 +11,7 @@ interface VerifyOtpPayload {
 }
 
 const fetchVerifyOtp = async (payload: VerifyOtpPayload) => {
-    const res = await axios.post(`${apiUrl}/forgot-password/verify-otp/`, payload);
+    const res = await axios.post(`${apiUrl}/api/forgot-password/verify-otp/`, payload);
     return res.data;
 };
 
