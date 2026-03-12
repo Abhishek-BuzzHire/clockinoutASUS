@@ -2,6 +2,17 @@
 
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
+
+interface VerifyOtpPayload {
+    username: string;
+    otp: string;
+}
+
+const fetchVerifyOtp = async (payload: VerifyOtpPayload) => {
+    const res = await axios.post("/forgot-password/verify-otp/", payload);
+    return res.data;
+};
 
 export default function EnterOtpPage() {
     const router = useRouter();
@@ -10,31 +21,25 @@ export default function EnterOtpPage() {
 
     const [otp, setOtp] = useState("");
     const [message, setMessage] = useState<string | null>(null);
-    const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+    const [loading, setLoading] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(300);
 
     useEffect(() => {
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
-                if (prev > 0) {
-                    return prev - 1;
-                } else {
-                    clearInterval(timer);
-                    return 0;
-                }
+                if (prev > 0) return prev - 1;
+                clearInterval(timer);
+                return 0;
             });
         }, 1000);
-
         return () => clearInterval(timer);
     }, []);
 
     useEffect(() => {
         if (timeLeft === 0) {
-            const timeout = setTimeout(() => {
-                setMessage("OTP has expired. Please request a new one.");
-            }, 0);
-            return () => clearTimeout(timeout);
+            setMessage("OTP has expired. Please request a new one.");
         }
-    }, [timeLeft, message]);
+    }, [timeLeft]);
 
     const handleVerifyOtp = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -46,23 +51,14 @@ export default function EnterOtpPage() {
         }
 
         try {
-            const response = await fetch("http://localhost:8000/api/forgot-password/verify-otp/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ username, otp }),
-            });
-
-            if (response.ok) {
-                console.log("OTP verified successfully");
-                router.push(`/forget-password/set-password?username=${encodeURIComponent(username)}`);
-            } else {
-                const errorData = await response.json();
-                setMessage(errorData.message || "Failed to verify OTP.");
-            }
-        } catch {
-            setMessage("An error occurred while verifying OTP.");
+            setLoading(true);
+            const payload: VerifyOtpPayload = { username, otp };
+            await fetchVerifyOtp(payload);
+            router.push(`/forget-password/set-password?username=${encodeURIComponent(username)}`);
+        } catch (error: any) {
+            setMessage(error?.response?.data?.message || error?.response?.data?.error || "Failed to verify OTP.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -88,27 +84,28 @@ export default function EnterOtpPage() {
                             <input
                                 type="text"
                                 value={otp}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                    setOtp(e.target.value)
-                                }
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => setOtp(e.target.value)}
                                 required
-                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-center tracking-widest focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                                disabled={loading || timeLeft === 0}
+                                maxLength={6}
+                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-center tracking-widest focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50"
                                 placeholder="Enter 6-digit OTP"
                             />
-                            <p className="text-xs text-gray-500 mt-1">
-                                💡 Check console (F12) for OTP
-                            </p>
                         </div>
 
-                        <div className="text-xs text-gray-500 mt-1 text-center">
-                            Time remaining: {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, "0")}
+                        <div className="text-xs text-gray-500 text-center">
+                            Time remaining:{" "}
+                            <span className={timeLeft <= 60 ? "text-red-500 font-semibold" : ""}>
+                                {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, "0")}
+                            </span>
                         </div>
 
                         <button
                             type="submit"
-                            className="w-full mt-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition"
+                            disabled={loading || timeLeft === 0 || !otp.trim()}
+                            className="w-full mt-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition disabled:bg-blue-400 disabled:cursor-not-allowed"
                         >
-                            Verify OTP
+                            {loading ? "Verifying..." : "Verify OTP"}
                         </button>
                     </form>
                 </div>

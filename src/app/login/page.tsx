@@ -1,7 +1,7 @@
 "use client";
 
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
