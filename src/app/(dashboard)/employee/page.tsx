@@ -1,3 +1,5 @@
+'use client';
+
 import CVCount from "@/components/dashboard/CVCount";
 import { apiUrl } from "@/lib/data";
 import { CVCountData, CVUserData } from "@/lib/types";
@@ -50,7 +52,7 @@ const EmployeeDashboard = () => {
                         {/* < WeeklyStats /> */}
                     </div>
                     <div className="w-full lg:w-1/3 flex flex-col gap-4">
-                        <CVCount data={todayCVData} loading={loading} />
+                        <CVCount data={todayCVData} loading={loading}/>
                     </div>
                 </div>
             </>
