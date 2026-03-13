@@ -168,3 +168,16 @@ export interface CandidateRec {
   source: string;
   created_at: string;
 }
+
+
+
+export interface CVUserData {
+    id: number;
+    name: string;
+    cv_count: number;
+}
+
+export interface CVCountData {
+    date: string;
+    users: CVUserData[];
+}
