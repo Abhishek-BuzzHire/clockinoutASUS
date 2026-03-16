@@ -11,7 +11,7 @@ const menuItems = [
     items: [
       { icon: "/dashboard.png", label: "Dashboard", href: "/admin", visible: ["admin", "employee", "developer"] },
       // { icon: "/calendar.png", label: "Calendar", href: "/list/calendar", visible: ["admin", "employee", "developer"] },
-      // { icon: "/jobs.png", label: "Jobs", href: "/list/jobs", visible: ["admin", "employee", "developer"] },
+      { icon: "/jobs.png", label: "Jobs", href: "/list/jobs", visible: ["admin", "employee", "developer"] },
       // { icon: "/candidates.png", label: "Candidates", href: "/list/candidates", visible: ["admin", "employee", "developer"] },
       // { icon: "/referrals.png", label: "My Referrals", href: "/list/referrals", visible: ["admin", "employee", "developer"] },
     ],
@@ -23,7 +23,7 @@ const menuItems = [
       { icon: "/calendar.png", label: "Attendance", href: "/list/attendance/employee", visible: ["admin", "employee", "developer"] },
       // { icon: "/money.png", label: "Payroll", href: "/list/payroll", visible: ["admin", "developer"] },
       // { icon: "/file-text.png", label: "Reports", href: "/list/reports", visible: ["admin", "employee", "developer"] },
-      // { icon: "/file-text.png", label: "Clients", href: "/list/clients", visible: ["admin", "employee", "developer"] },
+      { icon: "/file-text.png", label: "Clients", href: "/list/clients", visible: ["admin", "employee", "developer"] },
     ],
   },
   {
