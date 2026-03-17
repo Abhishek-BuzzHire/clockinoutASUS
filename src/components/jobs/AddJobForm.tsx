@@ -1,5 +1,8 @@
 import AddClientForm from "@/components/clients/AddClientForm";
 import { useState } from "react";
+import { jobsApi } from "@/apis/jobs/route";
+import { Job } from "@/lib/types/jobs";
+
 
 type JobStatus = "open" | "closed" | "draft";
 
@@ -10,15 +13,18 @@ type Client = {
 
 type Props = {
     onClose: () => void;
+    onSuccess?: () => void;
     existingClients: Client[];
 };
 
-export default function AddJobForm({ onClose, existingClients }: Props) {
+export default function AddJobForm({ onClose, onSuccess, existingClients }: Props) {
     const [focused, setFocused] = useState<string | null>(null);
     const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [showClientForm, setShowClientForm] = useState(false);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     const [values, setValues] = useState({
         title: "",
@@ -100,22 +106,39 @@ export default function AddJobForm({ onClose, existingClients }: Props) {
         responsibilities.some((r) => r.trim() !== "") &&
         skills.length > 0;
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const allTouched = Object.keys(values).reduce(
             (acc, key) => ({ ...acc, [key]: true }),
             {}
         );
         setTouched(allTouched);
         if (!allFilled) return;
-        const payload = {
-            ...values,
-            clientId: selectedClient!.id,
+
+        const payload: Partial<Job> = {
+            job_title: values.title,
+            job_location: values.location,
+            job_status: values.status,
+            client_id: String(selectedClient!.id),
+            department: values.overview,
+            min_exp: values.min_exp,
+            max_exp: values.max_exp,
             qualifications: qualifications.filter((q) => q.trim()),
             responsibilities: responsibilities.filter((r) => r.trim()),
             skills,
         };
-        console.log("Submitting job:", payload);
-        onClose();
+
+        setSubmitting(true);
+        setSubmitError(null);
+        try {
+            await jobsApi.createJob(payload);
+            onSuccess?.();   // notify parent to refresh list
+            onClose();
+        } catch (err) {
+            console.error("Failed to create job", err);
+            setSubmitError("Failed to post job. Please try again.");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const handleClientCreated = (client: Client) => {
@@ -445,19 +468,23 @@ export default function AddJobForm({ onClose, existingClients }: Props) {
                         </div>
 
                         <div className="h-px bg-gray-100" />
-
+                        {submitError && (
+                            <p className="text-xs text-red-500 text-center -mb-2">{submitError}</p>
+                        )}
                         {/* ── ACTIONS ── */}
                         <div className="flex gap-2.5">
+                            // 6. Update the Post Job button to reflect submitting state
                             <button
                                 onClick={handleSubmit}
+                                disabled={submitting}
                                 className={`flex-1 flex items-center justify-center gap-2 text-white text-sm font-medium py-2.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0
-                                    ${allFilled
+        ${allFilled && !submitting
                                         ? "bg-gray-900 hover:bg-gray-700"
                                         : "bg-gray-300 cursor-not-allowed hover:translate-y-0 hover:shadow-none"
                                     }`}
                             >
-                                Post Job
-                                <span className={allFilled ? "text-indigo-400" : "text-gray-400"}>→</span>
+                                {submitting ? "Posting…" : "Post Job"}
+                                <span className={allFilled && !submitting ? "text-indigo-400" : "text-gray-400"}>→</span>
                             </button>
                             <button
                                 onClick={onClose}

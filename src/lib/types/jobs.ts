@@ -66,20 +66,22 @@ export interface TemplateWithHR extends EmailTemplate {
 }
 
 export interface Job {
-    id: number;
+    job_id: number;
     department: string;
-    title: string;
-    candidates: {
-        total: number;
-        new: number;
-    };
-    location: string;
-    type: string;
-    status: string; // tighten if possible
-    client: string;
-    jobStatus: string; // union instead of generic string
+    job_title: string;
+    job_location: string;
+    job_type: string;        // was `type`
+    job_status: string;
+    client_name: string;
+    client_id: string;
+    total_candidates: number;  // was `candidates.total`
+    new_candidates: number;    // was `candidates.new`
+    qualifications?: string[];
+    responsibilities?: string[];
+    skills?: string[];
+    min_exp?: string;
+    max_exp?: string;
 }
-
 interface JobDetails {
     location: string,
     type: string,

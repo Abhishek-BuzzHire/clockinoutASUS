@@ -1,10 +1,7 @@
-"use client";
-
-import { Viewer, Worker, SpecialZoomLevel } from "@react-pdf-viewer/core";
-import { zoomPlugin } from "@react-pdf-viewer/zoom";
-import { getFilePlugin } from "@react-pdf-viewer/get-file";
-import { printPlugin } from "@react-pdf-viewer/print";
-
+import { Viewer, Worker, SpecialZoomLevel } from '@react-pdf-viewer/core';
+import { zoomPlugin } from '@react-pdf-viewer/zoom';
+import { getFilePlugin } from '@react-pdf-viewer/get-file';
+import { printPlugin } from '@react-pdf-viewer/print';
 
 type Props = {
     fileUrl: string;
