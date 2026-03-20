@@ -1,10 +1,14 @@
 // This is the candidate details from the right window half menu
 // along with genral props, "stages" should also be passed here.
-
+"use clients"
 import { Candidate } from "@/lib/types/jobs";
 import Image from "next/image"
 import { useState } from "react";
-import PdfView from "./PdfView";
+import dynamic from "next/dynamic";
+
+const PdfView = dynamic(() => import("./PdfView"), {
+    ssr: false,
+});
 
 const colors = ['orange-500', 'yellow-400', 'blue-500', "red-500", 'teal-500', 'green-500', "purple-500", "indigo-500"];
 

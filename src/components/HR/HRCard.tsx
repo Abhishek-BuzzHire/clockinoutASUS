@@ -35,7 +35,7 @@ const HRCard = ({ details }: ClientCardProps) => {
                     </div>
                     {/* Client badge */}
                     <span className="hidden md:inline-flex items-center text-xs bg-indigo-50 text-indigo-600 font-medium px-2.5 py-1 rounded-full border border-indigo-100 whitespace-nowrap">
-                        {details.client.name}
+                        {details.client.client_name}
                     </span>
                 </div>
 
@@ -64,7 +64,7 @@ const HRCard = ({ details }: ClientCardProps) => {
                         <Image src="/chev-right.png" alt="" width={14} height={14} className="invert brightness-0" />
                     </button>
                     <span className="md:hidden text-xs text-indigo-600 font-medium bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
-                        {details.client.name}
+                        {details.client.client_name}
                     </span>
                 </div>
             </CardContent>

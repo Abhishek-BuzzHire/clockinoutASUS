@@ -1,5 +1,5 @@
-import AddClientForm from "@/components/clients/AddClientForm";
-import AddJobForm from "@/components/jobs/AddJobForm";
+import AddClientForm from "@/components/clients/AddClientModal";
+import AddJobForm from "@/components/jobs/AddJobModal";
 import Image from "next/image";
 import { useState } from "react";
 

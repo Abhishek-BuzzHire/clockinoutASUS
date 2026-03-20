@@ -1,69 +1,125 @@
 "use client"
 
-import AddClientForm from "@/components/clients/AddClientForm";
+import { useEffect, useState } from "react";
+import AddClientForm from "@/components/clients/AddClientModal";
 import ClientCard from "@/components/clients/ClientCard";
 import EmailFormatList from "@/components/clients/EmailFormatList";
 import HRCard from "@/components/HR/HRCard";
-import { clients, hr, template } from "@/lib/types/jobdata"
-import { Client, ClientWithHRs, EmailTemplate, HR, HRWithClient, HRWithTemplates, TemplateWithHR } from "@/lib/types/jobs";
-import { useState } from "react"
+import { clientApi } from "@/apis/clients/routes";
+import { ClientWithHRs, HRWithClient } from "@/lib/types/jobs";
+import AddContactPersonForm from "@/components/clients/AddContactPerson";
 
-function getClientsWithHRs(clients: Client[], hrs: HR[]): ClientWithHRs[] {
-    return clients.map(client => ({
-        ...client,
-        hrs: hr.filter(h => h.clientId === client.id)
-    }));
-};
-
-function getHRsWithClients(hr: HR[], clients: Client[]): HRWithClient[] {
-    return hr.map(h => {
-        const relatedClient = clients.find(c => c.id === h.clientId);
-        if (!relatedClient) throw new Error(`Client not found for HR ID: ${h.id}`);
-        return { ...h, client: relatedClient };
-    });
-}
-
-function getTemplateWithHR(hr: HR[], clients: Client[], templates: EmailTemplate[]): HRWithTemplates[] {
-    return hr.map((h) => {
-        const hrTemplates = templates.filter((tpl) => tpl.hrId === h.id);
-        const relatedClient = clients.find(c => c.id === h.clientId);
-        if (!relatedClient) throw new Error(`Client not found for HR ID: ${h.id}`);
-        return { ...h, client: relatedClient, templates: hrTemplates };
-    });
-}
-
-const data = getClientsWithHRs(clients, hr);
-const hrdata = getHRsWithClients(hr, clients);
-const templateData = getTemplateWithHR(hr, clients, template);
+type ViewType = "client" | "hr";
+type ModalState = "none" | "addClient" | "addContact";
 
 const ClientsPage = () => {
     const tabs = ["Client & HR", "Email Templates"];
-    const [activeTab, setActiveTab] = useState('Client & HR');
-    type ViewType = 'client' | 'hr';
-    const [view, setView] = useState<ViewType>('client');
-    const [open, setOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState("Client & HR");
+    const [view, setView] = useState<ViewType>("client");
+    const [modal, setModal] = useState<ModalState>("none");
+    const [newClientName, setNewClientName] = useState<string>("");
+    const [newClientId, setNewClientId] = useState<number | null>(null);
 
+    const [clients, setClients] = useState<ClientWithHRs[]>([]);
+    const [hrdata, setHrdata] = useState<HRWithClient[]>([]);
+    const [isLoadingClients, setIsLoadingClients] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // ─── Fetch all clients with their HRs and contacts in parallel ───────────
+    const fetchClients = async () => {
+        try {
+            setIsLoadingClients(true);
+            setError(null);
+
+            const basicClients = await clientApi.getClient();
+
+            // For each client, fetch HRs and contacts in parallel
+            const toArray = (data: any): any[] => {
+                if (!data) return [];
+                if (Array.isArray(data)) return data;
+                if (data.results) return data.results;
+                if (data.data) return data.data;
+                const vals = Object.values(data);
+                if (vals.length > 0 && typeof vals[0] === "object") return vals as any[];
+                if ((data as any).contact_id || (data as any).hr_id) return [data];
+                return [];
+            };
+
+            const normalizeHR = (hr: any) => ({
+                id: hr.hr_id ?? hr.id,
+                clientId: hr.client_id ?? hr.clientId,
+                name: hr.hr_name ?? hr.name,
+                email: hr.hr_email ?? hr.email,
+                designation: hr.hr_designation ?? hr.designation ?? "",
+                number: hr.hr_phone ?? hr.number ?? "",
+            });
+
+            const normalizeContact = (c: any) => ({
+                contact_id: c.contact_id,
+                contact_name: c.contact_name,
+                contact_email: c.contact_email,
+                contact_phone: c.contact_phone,
+                contact_role: c.contact_role ?? "",
+            });
+
+            const enriched = await Promise.all(
+                basicClients.map(async (client: ClientWithHRs) => {
+                    const [hrsRaw, contactsRaw] = await Promise.all([
+                        clientApi.getClientHRs(client.client_id).catch(() => []),
+                        clientApi.getClientContacts(client.client_id).catch(() => []),
+                    ]);
+                    const hrs = toArray(hrsRaw).map(normalizeHR);
+                    const contacts = toArray(contactsRaw).map(normalizeContact);
+                    return { ...client, hrs, contacts };
+                })
+            );
+
+            setClients(enriched);
+        } catch (err) {
+            console.error("Failed to fetch clients:", err);
+            setError("Failed to load clients. Please try again.");
+        } finally {
+            setIsLoadingClients(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchClients();
+    }, []);
+
+    // ─── Handlers ────────────────────────────────────────────────────────────
+    const handleClientCreated = (client: { id: number | null; name: string }) => {
+        setNewClientId(client.id);
+        setNewClientName(client.name);
+        setModal("addContact");
+        fetchClients();
+    };
+
+    const handleContactCreated = () => {
+        setModal("none");
+        setNewClientId(null);
+        fetchClients();
+    };
+
+    // ─── Render Content ──────────────────────────────────────────────────────
     const renderContent = () => {
         switch (activeTab) {
             case "Client & HR":
                 return (
                     <div className="flex flex-col gap-6">
-                        {/* Toolbar row */}
+                        {/* Toolbar */}
                         <div className="flex items-center justify-between gap-4 flex-wrap">
-
-                            {/* Count badge */}
                             <p className="text-md font-bold text-gray-800">
-                                {view === 'client' ? 'Total Clients' : 'Total HRs'}:
+                                {view === "client" ? "Total Clients" : "Total HRs"}:
                                 <span className="ml-2 px-2 py-0.5 bg-blue-600 text-white rounded-md text-sm">
-                                    {view === 'client' ? data.length : hrdata.length}
+                                    {view === "client" ? clients.length : hrdata.length}
                                 </span>
                             </p>
 
-                            {/* Right side: Add button + view toggle */}
                             <div className="flex items-center gap-3">
                                 <button
                                     className="flex items-center gap-2.5 bg-indigo-500 text-white text-sm font-medium px-4 py-3 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all"
-                                    onClick={() => setOpen(true)}
+                                    onClick={() => setModal("addClient")}
                                 >
                                     Add Client
                                 </button>
@@ -93,18 +149,53 @@ const ClientsPage = () => {
                             </div>
                         </div>
 
-                        {/* Cards grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                            {view === 'client'
-                                ? data.map((client) => <ClientCard key={client.id} client={client} />)
-                                : hrdata.map((hr) => <HRCard key={hr.id} details={hr} />)
-                            }
-                        </div>
+                        {/* Error */}
+                        {error && (
+                            <div className="px-4 py-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl">
+                                {error}
+                            </div>
+                        )}
 
-                        {open && (
+                        {/* Cards */}
+                        {isLoadingClients ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                                {[...Array(6)].map((_, i) => (
+                                    <div key={i} className="h-40 rounded-2xl bg-gray-100 animate-pulse" />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                                {view === "client"
+                                    ? clients.map((client) => (
+                                        <ClientCard
+                                            key={client.client_id}
+                                            client={client}
+                                            onRefresh={fetchClients}
+                                        />
+                                    ))
+                                    : hrdata.map((hr) => <HRCard key={hr.id} details={hr} />)
+                                }
+                                {view === "client" && clients.length === 0 && !isLoadingClients && (
+                                    <p className="text-sm text-gray-400 col-span-3 text-center py-10">
+                                        No clients found. Add your first client!
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Modals */}
+                        {modal === "addClient" && (
                             <AddClientForm
-                                onClose={() => setOpen(false)}
-                                onClientCreated={() => setOpen(false)}
+                                onClose={() => setModal("none")}
+                                onClientCreated={handleClientCreated}
+                            />
+                        )}
+                        {modal === "addContact" && newClientId !== null && (
+                            <AddContactPersonForm
+                                clientId={newClientId}
+                                clientName={newClientName}
+                                onClose={() => setModal("none")}
+                                onContactCreated={handleContactCreated}
                             />
                         )}
                     </div>
@@ -116,10 +207,10 @@ const ClientsPage = () => {
                         <p className="text-md font-bold text-gray-800">
                             Active Templates:
                             <span className="ml-2 px-2 py-0.5 bg-blue-600 text-white rounded-md text-sm">
-                                {templateData.length}
+                                0
                             </span>
                         </p>
-                        <EmailFormatList data={templateData} />
+                        <EmailFormatList data={[]} />
                     </div>
                 );
 
@@ -132,7 +223,7 @@ const ClientsPage = () => {
         <div className="w-full min-h-screen bg-sky-50 p-6">
             {/* Tab bar */}
             <div className="flex space-x-8 text-xs font-bold border-b border-gray-300 mb-8">
-                {tabs.map(tab => (
+                {tabs.map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -146,7 +237,6 @@ const ClientsPage = () => {
                 ))}
             </div>
 
-            {/* Page content */}
             {renderContent()}
         </div>
     );

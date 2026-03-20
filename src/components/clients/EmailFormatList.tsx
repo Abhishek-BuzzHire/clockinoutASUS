@@ -90,7 +90,7 @@ const renderRow = ({
                 </td>
 
                 <td className="hidden text-gray-600 md:table-cell space-y-2">
-                    {item.client.name}
+                    {item.client.client_name}
                 </td>
 
                 <td className="hidden md:table-cell text-gray-600">

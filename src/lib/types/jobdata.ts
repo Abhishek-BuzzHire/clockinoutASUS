@@ -819,115 +819,115 @@ export const employeeData = [
   }
 ]
 
-export const clients: Client[] = [
-  {
-    id: 1,
-    name: "TechNova Solutions Pvt. Ltd.",
-    location: "Bangalore, India",
-    contactPerson: "Rahul Mehta",
-    contactPersonNumber: "+91-9876543210",
-    industry: "Information Technology"
-  },
-  {
-    id: 2,
-    name: "GreenField Agro Corp.",
-    location: "Ahmedabad, India",
-    contactPerson: "Priya Shah",
-    contactPersonNumber: "+91-9823456789",
-    industry: "Agriculture"
-  },
-  {
-    id: 3,
-    name: "SkyReach Logistics",
-    location: "Mumbai, India",
-    contactPerson: "Vikram Joshi",
-    contactPersonNumber: "+91-9765432109",
-    industry: "Logistics & Supply Chain"
-  },
-  {
-    id: 4,
-    name: "HealthBridge Pharmaceuticals",
-    location: "Hyderabad, India",
-    contactPerson: "Neha Reddy",
-    contactPersonNumber: "+91-9945123456",
-    industry: "Healthcare"
-  },
-  {
-    id: 5,
-    name: "EduNext Learning Systems",
-    location: "Pune, India",
-    contactPerson: "Arjun Desai",
-    contactPersonNumber: "+91-9988776655",
-    industry: "Education Technology"
-  }
-];
+// export const clients: Client[] = [
+//   {
+//     id: 1,
+//     name: "TechNova Solutions Pvt. Ltd.",
+//     location: "Bangalore, India",
+//     contactPerson: "Rahul Mehta",
+//     contactPersonNumber: "+91-9876543210",
+//     industry: "Information Technology"
+//   },
+//   {
+//     id: 2,
+//     name: "GreenField Agro Corp.",
+//     location: "Ahmedabad, India",
+//     contactPerson: "Priya Shah",
+//     contactPersonNumber: "+91-9823456789",
+//     industry: "Agriculture"
+//   },
+//   {
+//     id: 3,
+//     name: "SkyReach Logistics",
+//     location: "Mumbai, India",
+//     contactPerson: "Vikram Joshi",
+//     contactPersonNumber: "+91-9765432109",
+//     industry: "Logistics & Supply Chain"
+//   },
+//   {
+//     id: 4,
+//     name: "HealthBridge Pharmaceuticals",
+//     location: "Hyderabad, India",
+//     contactPerson: "Neha Reddy",
+//     contactPersonNumber: "+91-9945123456",
+//     industry: "Healthcare"
+//   },
+//   {
+//     id: 5,
+//     name: "EduNext Learning Systems",
+//     location: "Pune, India",
+//     contactPerson: "Arjun Desai",
+//     contactPersonNumber: "+91-9988776655",
+//     industry: "Education Technology"
+//   }
+// ];
 
-export const hr: HR[] = [
-  {
-    id: 1,
-    clientId: 1,
-    name: "Sanjana Rao",
-    email: "sanjana.rao@technova.com",
-    designation: "Senior HR Manager",
-    number: "+91-9988776655"
-  },
-  {
-    id: 2,
-    clientId: 1,
-    name: "Karan Patel",
-    email: "karan.patel@technova.com",
-    designation: "HR Executive",
-    number: "+91-9988776655"
-  },
-  {
-    id: 3,
-    clientId: 2,
-    name: "Ritika Shah",
-    email: "ritika.shah@greenfieldagro.com",
-    designation: "HR Lead",
-    number: "+91-9988776655"
-  },
-  {
-    id: 4,
-    clientId: 3,
-    name: "Abhishek Kumar",
-    email: "abhishek.kumar@skyreachlogistics.com",
-    designation: "Talent Acquisition Manager",
-    number: "+91-9988776655"
-  },
-  {
-    id: 5,
-    clientId: 4,
-    name: "Divya Nair",
-    email: "divya.nair@healthbridgepharma.com",
-    designation: "HR Business Partner",
-    number: "+91-9988776655"
-  },
-  {
-    id: 6,
-    clientId: 5,
-    name: "Rohit Bansal",
-    email: "rohit.bansal@edunext.com",
-    designation: "HR Coordinator",
-    number: "+91-9988776655"
-  }
-];
+// export const hr: HR[] = [
+//   {
+//     id: 1,
+//     clientId: 1,
+//     name: "Sanjana Rao",
+//     email: "sanjana.rao@technova.com",
+//     designation: "Senior HR Manager",
+//     number: "+91-9988776655"
+//   },
+//   {
+//     id: 2,
+//     clientId: 1,
+//     name: "Karan Patel",
+//     email: "karan.patel@technova.com",
+//     designation: "HR Executive",
+//     number: "+91-9988776655"
+//   },
+//   {
+//     id: 3,
+//     clientId: 2,
+//     name: "Ritika Shah",
+//     email: "ritika.shah@greenfieldagro.com",
+//     designation: "HR Lead",
+//     number: "+91-9988776655"
+//   },
+//   {
+//     id: 4,
+//     clientId: 3,
+//     name: "Abhishek Kumar",
+//     email: "abhishek.kumar@skyreachlogistics.com",
+//     designation: "Talent Acquisition Manager",
+//     number: "+91-9988776655"
+//   },
+//   {
+//     id: 5,
+//     clientId: 4,
+//     name: "Divya Nair",
+//     email: "divya.nair@healthbridgepharma.com",
+//     designation: "HR Business Partner",
+//     number: "+91-9988776655"
+//   },
+//   {
+//     id: 6,
+//     clientId: 5,
+//     name: "Rohit Bansal",
+//     email: "rohit.bansal@edunext.com",
+//     designation: "HR Coordinator",
+//     number: "+91-9988776655"
+//   }
+// ];
 
-export const getHRsWithClients = (): HRWithClient[] => {
-  return hr.map(h => {
-    const relatedClient = clients.find(c => c.id === h.clientId);
+// export const getHRsWithClients = (): HRWithClient[] => {
+//   return hr.map(h => {
+//     const relatedClient = clients.find(c => c.id === h.clientId);
 
-    // Safety check in case no client is found (optional)
-    if (!relatedClient) {
-      throw new Error(`Client not found for HR ID: ${h.id}`);
-    }
+//     // Safety check in case no client is found (optional)
+//     if (!relatedClient) {
+//       throw new Error(`Client not found for HR ID: ${h.id}`);
+//     }
 
-    return {
-      ...h,
-      client: relatedClient
-    };
-  });
-};
+//     return {
+//       ...h,
+//       client: relatedClient
+//     };
+//   });
+// };
 
 
 export const template: EmailTemplate[] = [

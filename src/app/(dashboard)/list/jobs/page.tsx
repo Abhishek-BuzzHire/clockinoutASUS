@@ -1,7 +1,7 @@
 "use client";
 
 import { jobsApi } from "@/apis/jobs/route";
-import AddJobForm from "@/components/jobs/AddJobForm";
+import AddJobForm from "@/components/jobs/AddJobModal";
 import JobCard from "@/components/jobs/JobCard";
 import { Job } from "@/lib/types/jobs";
 import { useEffect, useState } from "react";
@@ -81,7 +81,7 @@ const JobsPage = () => {
             {/* Tabs */}
             <div className="flex items-end justify-between border-b border-gray-300 mb-6">
                 <div className="flex space-x-8 text-lg font-semibold">
-                    {(["open", "closed"] as Job["job_status"][]).map((tab) => (
+                    {(["Active", "Inactive"] as Job["job_status"][]).map((tab) => (
                         <button
                             key={tab}
                             onClick={() => handleTabChange(tab)}

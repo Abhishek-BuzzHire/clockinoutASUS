@@ -1,10 +1,10 @@
-import AddClientForm from "@/components/clients/AddClientForm";
-import { useState } from "react";
+import AddClientForm from "@/components/clients/AddClientModal";
+import { useEffect, useState } from "react";
 import { jobsApi } from "@/apis/jobs/route";
 import { Job } from "@/lib/types/jobs";
 
-
 type JobStatus = "open" | "closed" | "draft";
+type Skill = { id: number; name: string };
 
 type Client = {
     id: number | null;
@@ -37,9 +37,37 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
 
     const [qualifications, setQualifications] = useState<string[]>([""]);
     const [responsibilities, setResponsibilities] = useState<string[]>([""]);
-    const [skillInput, setSkillInput] = useState("");
-    const [skills, setSkills] = useState<string[]>([]);
 
+    // Skills
+    const [skillInput, setSkillInput] = useState("");
+    const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
+    const [skillDropdownOpen, setSkillDropdownOpen] = useState(false);
+    const [skillSuggestions, setSkillSuggestions] = useState<Skill[]>([]);
+    const [skillsLoading, setSkillsLoading] = useState(false);
+
+    const fetchSkills = async (query: string) => {
+        if (!query.trim()) {
+            setSkillSuggestions([]);
+            return;
+        }
+        console.log("Fetching skills for:", query); // 👈 confirm what's being sent
+        setSkillsLoading(true);
+        try {
+            const data = await jobsApi.searchSkills(query);
+            console.log(data);
+            setSkillSuggestions(data);
+        } catch (err) {
+            console.error("Skill search failed", err);
+            setSkillSuggestions([]);
+        } finally {
+            setSkillsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const timer = setTimeout(() => fetchSkills(skillInput), 3000);
+        return () => clearTimeout(timer);
+    }, [skillInput]);
     const handleChange = (field: string, value: string) => {
         setValues((prev) => ({ ...prev, [field]: value }));
     };
@@ -79,24 +107,6 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
         else setList(list.filter((_, i) => i !== index));
     };
 
-    const addSkill = () => {
-        const trimmed = skillInput.trim();
-        if (trimmed && !skills.includes(trimmed)) {
-            setSkills([...skills, trimmed]);
-            setSkillInput("");
-        }
-    };
-
-    const removeSkill = (skill: string) =>
-        setSkills(skills.filter((s) => s !== skill));
-
-    const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter" || e.key === ",") {
-            e.preventDefault();
-            addSkill();
-        }
-    };
-
     const allFilled =
         !!selectedClient &&
         Object.entries(values)
@@ -104,7 +114,7 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
             .every(([, val]) => Boolean(val)) &&
         qualifications.some((q) => q.trim() !== "") &&
         responsibilities.some((r) => r.trim() !== "") &&
-        skills.length > 0;
+        selectedSkills.length > 0;
 
     const handleSubmit = async () => {
         const allTouched = Object.keys(values).reduce(
@@ -119,19 +129,19 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
             job_location: values.location,
             job_status: values.status,
             client_id: String(selectedClient!.id),
-            department: values.overview,
-            min_exp: values.min_exp,
-            max_exp: values.max_exp,
-            qualifications: qualifications.filter((q) => q.trim()),
-            responsibilities: responsibilities.filter((r) => r.trim()),
-            skills,
+            job_overview: values.overview,
+            job_min_exp: values.min_exp,
+            job_max_exp: values.max_exp,
+            job_qualification: qualifications.filter((q) => q.trim()),
+            job_responsibilities: responsibilities.filter((r) => r.trim()),
+            skill_ids: selectedSkills.map((s) => s.id),
         };
 
         setSubmitting(true);
         setSubmitError(null);
         try {
             await jobsApi.createJob(payload);
-            onSuccess?.();   // notify parent to refresh list
+            onSuccess?.();
             onClose();
         } catch (err) {
             console.error("Failed to create job", err);
@@ -157,7 +167,7 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
         ...Object.values(values).filter(Boolean),
         qualifications.some((q) => q.trim()) ? "q" : "",
         responsibilities.some((r) => r.trim()) ? "r" : "",
-        skills.length > 0 ? "s" : "",
+        selectedSkills.length > 0 ? "s" : "",
     ].filter(Boolean).length;
 
     const totalCount = Object.keys(values).length + 4;
@@ -363,16 +373,19 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
                             <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
                                 Skills <span className="text-red-400">*</span>
                             </label>
-                            {skills.length > 0 && (
+
+                            {selectedSkills.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mb-1">
-                                    {skills.map((skill) => (
+                                    {selectedSkills.map((skill) => (
                                         <span
-                                            key={skill}
+                                            key={skill.id}
                                             className="flex items-center gap-1.5 bg-indigo-100 text-indigo-700 text-xs font-semibold px-3 py-1.5 rounded-lg"
                                         >
-                                            {skill}
+                                            {skill.name}
                                             <button
-                                                onClick={() => removeSkill(skill)}
+                                                onClick={() =>
+                                                    setSelectedSkills((prev) => prev.filter((s) => s.id !== skill.id))
+                                                }
                                                 className="text-indigo-400 hover:text-red-500 transition-colors leading-none"
                                             >
                                                 ✕
@@ -381,27 +394,62 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
                                     ))}
                                 </div>
                             )}
-                            <div className="flex gap-2">
+
+                            <div className="relative">
                                 <input
                                     type="text"
-                                    placeholder="Type a skill and press Enter…"
+                                    placeholder="Type to search skills… (searches after 3s)"
                                     value={skillInput}
-                                    onChange={(e) => setSkillInput(e.target.value)}
-                                    onKeyDown={handleSkillKeyDown}
-                                    onFocus={() => setFocused("skill")}
-                                    onBlur={() => setFocused(null)}
-                                    className={`flex-1 rounded-xl px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border outline-none transition-all placeholder:text-gray-300
+                                    onChange={(e) => {
+                                        setSkillInput(e.target.value);
+                                        setSkillDropdownOpen(true);
+                                    }}
+                                    onFocus={() => {
+                                        setFocused("skill");
+                                        setSkillDropdownOpen(true);
+                                    }}
+                                    onBlur={() => {
+                                        setFocused(null);
+                                        setTimeout(() => setSkillDropdownOpen(false), 200);
+                                    }}
+                                    className={`w-full rounded-xl px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border outline-none transition-all placeholder:text-gray-300
                                         ${focused === "skill"
                                             ? "border-indigo-400 bg-white ring-2 ring-indigo-100"
                                             : "border-gray-200 hover:border-gray-300"
                                         }`}
                                 />
-                                <button
-                                    onClick={addSkill}
-                                    className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold transition-all"
-                                >
-                                    Add
-                                </button>
+
+                                {skillsLoading && (
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 animate-pulse">
+                                        Searching…
+                                    </span>
+                                )}
+
+                                {skillDropdownOpen && skillSuggestions.length > 0 && (
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 max-h-44 overflow-y-auto">
+                                        {skillSuggestions
+                                            .filter((s) => !selectedSkills.find((sel) => sel.id === s.id))
+                                            .map((skill, index) => (
+                                                <button
+                                                    key={`${skill.id}-${index}`}
+                                                    onMouseDown={() => {
+                                                        setSelectedSkills((prev) => [...prev, skill]);
+                                                        setSkillInput("");
+                                                        setSkillDropdownOpen(false);
+                                                    }}
+                                                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                                                >
+                                                    {skill.name}
+                                                </button>
+                                            ))}
+                                    </div>
+                                )}
+
+                                {skillDropdownOpen && !skillsLoading && skillInput.trim() && skillSuggestions.length === 0 && (
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 px-4 py-3 text-sm text-gray-400">
+                                        No skills found for "{skillInput}"
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -471,14 +519,14 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
                         {submitError && (
                             <p className="text-xs text-red-500 text-center -mb-2">{submitError}</p>
                         )}
+
                         {/* ── ACTIONS ── */}
                         <div className="flex gap-2.5">
-                            // 6. Update the Post Job button to reflect submitting state
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting}
                                 className={`flex-1 flex items-center justify-center gap-2 text-white text-sm font-medium py-2.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0
-        ${allFilled && !submitting
+                                    ${allFilled && !submitting
                                         ? "bg-gray-900 hover:bg-gray-700"
                                         : "bg-gray-300 cursor-not-allowed hover:translate-y-0 hover:shadow-none"
                                     }`}

@@ -1,4 +1,6 @@
+import { clientApi } from "@/apis/clients/routes";
 import { useState } from "react";
+import { ClientPayload } from "@/lib/types/jobs";
 
 type Props = {
     onClose: () => void;
@@ -8,15 +10,13 @@ type Props = {
 export default function AddClientForm({ onClose, onClientCreated }: Props) {
     const [focused, setFocused] = useState<string | null>(null);
     const [touched, setTouched] = useState<Record<string, boolean>>({});
-    const [values, setValues] = useState({
-        name: "",
-        industry: "",
-        contact_person: "",
-        contact_email: "",
-        contact_phone: "",
+    const [isLoading, setIsLoading] = useState(false);
+    const [values, setValues] = useState<ClientPayload>({
+        client_name: "",
+        client_industry: "",
     });
 
-    const handleChange = (field: string, value: string) => {
+    const handleChange = (field: keyof ClientPayload, value: string) => {
         setValues((prev) => ({ ...prev, [field]: value }));
     };
 
@@ -25,9 +25,7 @@ export default function AddClientForm({ onClose, onClientCreated }: Props) {
         setTouched((prev) => ({ ...prev, [field]: true }));
     };
 
-    const isInvalid = (key: string) =>
-        touched[key] && !values[key as keyof typeof values];
-
+    const isInvalid = (key: string) => touched[key] && !values[key as keyof ClientPayload];
     const allFilled = Object.values(values).every(Boolean);
 
     const handleSubmit = async () => {
@@ -38,18 +36,25 @@ export default function AddClientForm({ onClose, onClientCreated }: Props) {
         setTouched(allTouched);
         if (!allFilled) return;
 
-        const payload = {
-            ...values,
-            contact_phone: `+91${values.contact_phone}`,
+        const payload: ClientPayload = {
+            client_name: values.client_name,
+            client_industry: values.client_industry,
         };
-        console.log("Submitting client:", payload);
-        onClientCreated({ id: null, name: values.name }); // id is null until backend responds
+
+        try {
+            setIsLoading(true);
+            const newClient = await clientApi.createClient(payload);
+            onClientCreated({ id: newClient.client_id, name: newClient.client_name });
+        } catch (error) {
+            console.error("Failed to create client:", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
-    const fields = [
-        { key: "name", label: "Company Name", type: "text", placeholder: "Acme Corporation" },
-        { key: "industry", label: "Industry", type: "text", placeholder: "Technology, Finance…" },
-        { key: "contact_person", label: "Contact Person", type: "text", placeholder: "Jane Smith" },
-        { key: "contact_email", label: "Contact Email", type: "email", placeholder: "jane@acme.com" },
+
+    const fields: { key: keyof ClientPayload; label: string; type: string; placeholder: string }[] = [
+        { key: "client_name", label: "Company Name", type: "text", placeholder: "Acme Corporation" },
+        { key: "client_industry", label: "Industry", type: "text", placeholder: "Technology, Finance…" },
     ];
 
     const filledCount = Object.values(values).filter(Boolean).length;
@@ -67,18 +72,15 @@ export default function AddClientForm({ onClose, onClientCreated }: Props) {
                 <div className="h-1 bg-gray-100 w-full">
                     <div
                         className="h-full bg-indigo-500 transition-all duration-500 rounded-full"
-                        style={{ width: `${(filledCount / (fields.length + 1)) * 100}%` }}
+                        style={{ width: `${(filledCount / fields.length) * 100}%` }}
                     />
                 </div>
 
                 {/* Header */}
                 <div className="flex items-start justify-between px-7 pt-6 pb-0">
                     <div>
-                        <p className="text-[10px] font-semibold tracking-widest uppercase text-indigo-500 mb-1">
-                            New Client · Step 1 of 2
-                        </p>
-                        <h2 className="text-xl font-semibold text-gray-900 tracking-tight">
-                            Add Client
+                        <h2 className="text-[16px] font-semibold tracking-widest uppercase text-indigo-500 mb-1">
+                            Add New Client
                         </h2>
                     </div>
                     <button
@@ -92,7 +94,7 @@ export default function AddClientForm({ onClose, onClientCreated }: Props) {
                 {/* Body */}
                 <div className="px-7 py-6 flex flex-col gap-4">
                     {fields.map((f) => {
-                        const val = values[f.key as keyof typeof values];
+                        const val = values[f.key] ?? "";
                         const isFocused = focused === f.key;
                         const invalid = isInvalid(f.key);
                         return (
@@ -130,59 +132,21 @@ export default function AddClientForm({ onClose, onClientCreated }: Props) {
                         );
                     })}
 
-                    {/* Phone */}
-                    <div className="flex flex-col gap-1.5">
-                        <label className={`text-[11px] font-semibold uppercase tracking-widest transition-colors
-                            ${isInvalid("contact_phone") ? "text-red-400" : focused === "contact_phone" ? "text-indigo-500" : "text-gray-400"}`}>
-                            Contact Phone <span className="text-red-400">*</span>
-                        </label>
-                        <div className={`flex rounded-xl border overflow-hidden transition-all
-                            ${isInvalid("contact_phone")
-                                ? "border-red-300 ring-2 ring-red-100"
-                                : focused === "contact_phone"
-                                    ? "border-indigo-400 ring-2 ring-indigo-100"
-                                    : values.contact_phone
-                                        ? "border-indigo-200"
-                                        : "border-gray-200 hover:border-gray-300"
-                            }`}
-                        >
-                            <div className="flex items-center gap-1.5 px-3 bg-gray-50 border-r border-gray-200 text-sm font-medium text-gray-600 select-none whitespace-nowrap">
-                                🇮🇳 +91
-                            </div>
-                            <div className="relative flex-1">
-                                <input
-                                    type="tel"
-                                    placeholder="98765 43210"
-                                    value={values.contact_phone}
-                                    onChange={(e) => handleChange("contact_phone", e.target.value)}
-                                    onFocus={() => setFocused("contact_phone")}
-                                    onBlur={() => handleBlur("contact_phone")}
-                                    className="w-full px-4 py-2.5 text-sm text-gray-800 bg-white outline-none placeholder:text-gray-300"
-                                />
-                                {isInvalid("contact_phone") && (
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-red-400 text-xs font-medium">Required</span>
-                                )}
-                                {values.contact_phone && !isInvalid("contact_phone") && (
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-indigo-400" />
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
                     <div className="h-px bg-gray-100 my-1" />
 
                     {/* Actions */}
                     <div className="flex gap-2.5">
                         <button
                             onClick={handleSubmit}
+                            disabled={isLoading}
                             className={`flex-1 flex items-center justify-center gap-2 text-white text-sm font-medium py-2.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0
-                                ${allFilled
+                                ${allFilled && !isLoading
                                     ? "bg-gray-900 hover:bg-gray-700"
                                     : "bg-gray-300 cursor-not-allowed hover:translate-y-0 hover:shadow-none"
                                 }`}
                         >
-                            Save & Continue to Job
-                            <span className={allFilled ? "text-indigo-400" : "text-gray-400"}>→</span>
+                            {isLoading ? "Saving..." : "Save & Continue"}
+                            <span className={allFilled && !isLoading ? "text-indigo-400" : "text-gray-400"}>→</span>
                         </button>
                         <button
                             onClick={onClose}
