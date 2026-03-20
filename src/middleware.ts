@@ -56,34 +56,34 @@ function matchesRoute (pathname: string, routes: string[]) {
 }
 
 export function middleware(request: NextRequest) {
-  // const { pathname, search } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
 
-  // const token = request.cookies.get("access")?.value;
-  // const payload = token ? getPayloadFromToken(token) : null;
-  // const role = payload?.role;
+  const token = request.cookies.get("access")?.value;
+  const payload = token ? getPayloadFromToken(token) : null;
+  const role = payload?.role;
 
-  // const isPublic = matchesRoute(pathname, ROUTES.public);
-  // const isAdminRoute = matchesRoute(pathname, ROUTES.admin);
-  // const isEmployeeRoute = matchesRoute(pathname, ROUTES.employee);
-  // const isSharedRoute = matchesRoute(pathname, ROUTES.shared);
+  const isPublic = matchesRoute(pathname, ROUTES.public);
+  const isAdminRoute = matchesRoute(pathname, ROUTES.admin);
+  const isEmployeeRoute = matchesRoute(pathname, ROUTES.employee);
+  const isSharedRoute = matchesRoute(pathname, ROUTES.shared);
 
-  // if (!token || !payload) {
-  //   if (!isPublic) {
-  //     const loginUrl = new URL(LOGIN_PATH, ORIGIN);
-  //     loginUrl.searchParams.set("returnUrl", pathname + search);
-  //     return NextResponse.redirect(loginUrl);
-  //   }
-  //   return NextResponse.next();
-  // }
+  if (!token || !payload) {
+    if (!isPublic) {
+      const loginUrl = new URL(LOGIN_PATH, ORIGIN);
+      loginUrl.searchParams.set("returnUrl", pathname + search);
+      return NextResponse.redirect(loginUrl);
+    }
+    return NextResponse.next();
+  }
 
-  // /* ---------- Logged In but Wrong Role ---------- */
-  // if (isAdminRoute && role !== "admin") {
-  //   return NextResponse.redirect(new URL(EMPLOYEE_HOME, ORIGIN));
-  // }
+  /* ---------- Logged In but Wrong Role ---------- */
+  if (isAdminRoute && role !== "admin") {
+    return NextResponse.redirect(new URL(EMPLOYEE_HOME, ORIGIN));
+  }
 
-  // if (isEmployeeRoute && role === "admin") {
-  //   return NextResponse.redirect(new URL(ADMIN_HOME, ORIGIN));
-  // }
+  if (isEmployeeRoute && role === "admin") {
+    return NextResponse.redirect(new URL(ADMIN_HOME, ORIGIN));
+  }
 
   return NextResponse.next();
 }
