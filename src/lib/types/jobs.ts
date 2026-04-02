@@ -1,5 +1,7 @@
 // ─── Email Templates ────────────────────────────────────────────────────────
 
+import { pipeline } from "stream";
+
 export interface TemplateField {
     id: number;
     label: string;
@@ -79,7 +81,7 @@ export interface HR {
     name: string;
     email: string;
     designation: string;
-    number: string;
+    hr_phone: number;
 }
 
 export interface HRWithClient extends HR {
@@ -121,23 +123,45 @@ export interface Job {
     job_qualification?: string[];
     job_responsibilities?: string[];
     skill_ids?: number[];
+    skills?: Skill[];
     job_min_exp?: string;
     job_max_exp?: string;
+    job_min_salary?: number;
+    job_max_salary?: number;
     contacts?: JobContact[];
     hrs?: JobHR[];
 }
 
+export type Skill = { skill_id: number; skill_name: string };
+
 // ─── Pipeline ────────────────────────────────────────────────────────────────
 
+// Stage shape for POST (create)
 export type PipelineStage = {
-    name: string;
+    stage_name: string;
     order: number;
     is_final: boolean;
 };
 
-export type JobPipelinePayload = {
+// POST body — creating a new pipeline
+export type PipelineSavePayload = {
     job_id: number;
+    pipeline_name: string;
     stages: PipelineStage[];
+};
+
+// GET response & PATCH body — existing pipeline from API
+export type EditPipelinePayload = {
+    pipeline_id: number;
+    job_id: number;
+    pipeline_name: string;
+    created_by: number;
+    stages: {
+        id: number;
+        name: string;        // GET returns `name`, not `stage_name`
+        order: number;
+        is_final: boolean;
+    }[];
 };
 
 // ─── Job Details ─────────────────────────────────────────────────────────────

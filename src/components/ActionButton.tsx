@@ -1,18 +1,43 @@
+import { clientApi } from "@/apis/clients/routes";
 import AddClientForm from "@/components/clients/AddClientModal";
 import AddJobForm from "@/components/jobs/AddJobModal";
 import Image from "next/image";
 import { useState } from "react";
 
+type Client = {
+  client_id: number | null;
+  client_name: string;
+  client_industry: string;
+};
+
+
 const ActionButton = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [openJob, setOpenJob] = useState(false);
   const [openClient, setOpenClient] = useState(false);
+  const [existingClients, setExistingClients] = useState<Client[]>([]);
 
-  const handleOpen = (type: "job" | "client") => {
+  const handleOpen = async (type: "job") => {
     setIsCreateOpen(false);
-    if (type === "job") setOpenJob(true);
-    if (type === "client") setOpenClient(true);
+
+    if (type === "job") {
+      try {
+        const clients = await clientApi.getClient();
+        setExistingClients(clients || []);
+
+        setOpenJob(true);
+      } catch (error) {
+        console.error("Failed to fetch clients:", error);
+        setExistingClients([]);
+        setOpenJob(true); // still open modal
+      }
+    }
   };
+
+  const handleOpenClient = (type: "client") => {
+    setIsCreateOpen(false);
+    if (type === "client") setOpenClient(true);
+  }
 
   return (
     <>
@@ -39,7 +64,7 @@ const ActionButton = () => {
                 </li>
                 <li
                   className="px-4 py-1 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => handleOpen("client")}
+                  onClick={() => handleOpenClient("client")}
                 >
                   Add Client
                 </li>
@@ -52,7 +77,7 @@ const ActionButton = () => {
       {openJob && (
         <AddJobForm
           onClose={() => setOpenJob(false)}
-          existingClients={[]}
+          existingClients={existingClients}
         />
       )}
 

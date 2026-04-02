@@ -1,8 +1,6 @@
 import { backendApi } from "@/lib/backendApi";
-import { Job } from "@/lib/types/jobs";
-import { JobPipelinePayload, PipelineStage } from "@/lib/types/jobs";
-
-export type Skill = { id: number; name: string };
+import { EditPipelinePayload, Job, PipelineSavePayload} from "@/lib/types/jobs";
+import { Skill } from "@/lib/types/jobs";
 
 export const jobsApi = {
 
@@ -13,11 +11,28 @@ export const jobsApi = {
 
     async getJobById(id: number): Promise<Job> {
         const res = await backendApi.get(`/api/jobs/jobs/${id}/`);
+        console.log(res);
         return res.data;
     },
-
-    async createJob(data: Partial<Job>): Promise<Job> {
+    async getJobPipelineCandidate(id: number): Promise<Job> {
+        const res = await backendApi.get(`/api/jobs/jobs/${id}/board`);
+        console.log(res);
+        return res.data;
+    },
+async createJob(data: Partial<Job>): Promise<Job> {
+    try {
+        console.log("Sending payload:", JSON.stringify(data, null, 2));
         const res = await backendApi.post("/api/jobs/jobs/", data);
+        return res.data;
+    } catch (err: any) {
+        console.error("Status:", err.response?.status);
+        console.error("Data:", err.response?.data);
+        console.error("Headers:", err.response?.headers);
+        throw err;
+    }
+},
+    async updateJob(id: number, data: Partial<Job>): Promise<Job> {
+        const res = await backendApi.patch(`/api/jobs/jobs/${id}/`, data);
         return res.data;
     },
 
@@ -31,7 +46,7 @@ export const jobsApi = {
     },
 
     async searchSkills(query: string): Promise<Skill[]> {
-        const res = await backendApi.get(`/api/jobs/skills/?q=${encodeURIComponent(query)}`);
+        const res = await backendApi.get(`/api/skills/?q=${encodeURIComponent(query)}`);
         return res.data.map((s: { skill_id: number; skill_name: string }) => ({
             id: s.skill_id,
             name: s.skill_name,
@@ -40,44 +55,30 @@ export const jobsApi = {
 
     // ── Pipeline ──────────────────────────────────────────────────────────
 
-    async getPipeline(jobId: number): Promise<JobPipelinePayload> {
+    async getPipeline(jobId: number): Promise<EditPipelinePayload> {
         const res = await backendApi.get(`/api/jobs/jobs/${jobId}/pipeline/`);
         return res.data;
     },
 
-    /**
-     * Builds the correct payload from a raw stage name list:
-     *  - assigns order = index
-     *  - marks is_final = true only on the last stage
-     * Then POSTs to the backend.
-     */
-    async savePipeline(jobId: number, stageNames: string[]): Promise<JobPipelinePayload> {
-        const stages: PipelineStage[] = stageNames.map((name, index) => ({
-            name,
-            order: index,
-            is_final: index === stageNames.length - 1,
-        }));
+   async savePipeline(payload: PipelineSavePayload): Promise<EditPipelinePayload> {
+    console.log("🚀 Sending to backend:", JSON.stringify(payload, null, 2));
+    const res = await backendApi.post(
+        `/api/jobs/jobs/${payload.job_id}/pipeline/`,
+        payload  // ← must be payload directly, NOT { payload } or { data: payload }
+    );
+    console.log("✅ Backend response:", res.data);
+    return res.data;
+},
 
-        const payload: JobPipelinePayload = { job_id: jobId, stages };
-
-        const res = await backendApi.post(`/api/jobs/jobs/${jobId}/pipeline/`, payload);
-        return res.data;
-    },
-
-    async updatePipeline(jobId: number, stageNames: string[]): Promise<JobPipelinePayload> {
-        const stages: PipelineStage[] = stageNames.map((name, index) => ({
-            name,
-            order: index,
-            is_final: index === stageNames.length - 1,
-        }));
-
-        const payload: JobPipelinePayload = { job_id: jobId, stages };
-
-        const res = await backendApi.patch(`/api/jobs/jobs/${jobId}/pipeline/`, payload);
-        return res.data;
-    },
+async updatePipeline(payload: EditPipelinePayload): Promise<EditPipelinePayload> {
+    const res = await backendApi.patch(
+        `/api/jobs/pipelines/${payload.pipeline_id}/`,
+        payload
+    );
+    return res.data;
+},
 
     async deletePipeline(jobId: number): Promise<void> {
-        await backendApi.delete(`/api/jobs/jobs/${jobId}/pipeline/`);
+        await backendApi.delete(`/api/jobs/pipeline/`);
     },
 };

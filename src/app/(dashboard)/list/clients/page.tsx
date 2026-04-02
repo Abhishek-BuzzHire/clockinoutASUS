@@ -33,6 +33,8 @@ const ClientsPage = () => {
 
             const basicClients = await clientApi.getClient();
 
+            console.log(basicClients);
+
             // For each client, fetch HRs and contacts in parallel
             const toArray = (data: any): any[] => {
                 if (!data) return [];
@@ -51,7 +53,7 @@ const ClientsPage = () => {
                 name: hr.hr_name ?? hr.name,
                 email: hr.hr_email ?? hr.email,
                 designation: hr.hr_designation ?? hr.designation ?? "",
-                number: hr.hr_phone ?? hr.number ?? "",
+                hr_phone: hr.hr_phone ?? hr.number ?? "",
             });
 
             const normalizeContact = (c: any) => ({
@@ -68,6 +70,7 @@ const ClientsPage = () => {
                         clientApi.getClientHRs(client.client_id).catch(() => []),
                         clientApi.getClientContacts(client.client_id).catch(() => []),
                     ]);
+                    console.log(hrsRaw);
                     const hrs = toArray(hrsRaw).map(normalizeHR);
                     const contacts = toArray(contactsRaw).map(normalizeContact);
                     return { ...client, hrs, contacts };
@@ -88,9 +91,9 @@ const ClientsPage = () => {
     }, []);
 
     // ─── Handlers ────────────────────────────────────────────────────────────
-    const handleClientCreated = (client: { id: number | null; name: string }) => {
-        setNewClientId(client.id);
-        setNewClientName(client.name);
+    const handleClientCreated = (client: { client_id: number | null; client_name: string; client_industry: string }) => {
+        setNewClientId(client.client_id);
+        setNewClientName(client.client_name);
         setModal("addContact");
         fetchClients();
     };

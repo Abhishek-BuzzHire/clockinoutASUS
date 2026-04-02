@@ -1,3 +1,4 @@
+import { clientApi } from "@/apis/clients/routes";
 import { useState } from "react";
 
 type Props = {
@@ -10,10 +11,10 @@ export default function AddClientHRForm({ onClose, clientId, onHRAdded }: Props)
     const [focused, setFocused] = useState<string | null>(null);
     const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [values, setValues] = useState({
-        name: "",
-        email: "",
-        phone: "",
-        job_title: "",
+        hr_name: "",
+        hr_email: "",
+        hr_phone: "",
+        hr_job_title: "",
     });
 
     const handleChange = (field: string, value: string) => {
@@ -30,7 +31,7 @@ export default function AddClientHRForm({ onClose, clientId, onHRAdded }: Props)
 
     const allFilled = Object.values(values).every(Boolean);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const allTouched = Object.keys(values).reduce(
             (acc, key) => ({ ...acc, [key]: true }),
             {}
@@ -40,19 +41,27 @@ export default function AddClientHRForm({ onClose, clientId, onHRAdded }: Props)
         if (!allFilled) return;
 
         const payload = {
-            ...values,
-            phone: `+91${values.phone}`,
-            clientId,
+            hr_name: values.hr_name,
+            hr_email: values.hr_email,
+            hr_job_title: values.hr_job_title,
+            hr_phone: `+91${values.hr_phone}`,
         };
-        console.log("Submitting HR:", payload);
-        onHRAdded?.();
-        onClose();
+
+        try {
+            await clientApi.createClientHRs(clientId, payload);
+            console.log("HR successfully added!", payload);
+            onHRAdded?.();
+            onClose();
+        } catch (error) {
+            console.error("Failed to add HR:", error);
+        }
     };
 
     const fields = [
-        { key: "name", label: "Full Name", type: "text", placeholder: "Jane Smith" },
-        { key: "email", label: "Email", type: "email", placeholder: "jane@acme.com" },
-        { key: "job_title", label: "Job Title", type: "text", placeholder: "HR Manager" },
+        { key: "hr_name", label: "Full Name", type: "text", placeholder: "Jane Smith" },
+        { key: "hr_email", label: "Email", type: "email", placeholder: "jane@acme.com" },
+        { key: "hr_job_title", label: "Job Title", type: "text", placeholder: "HR Manager" },
+
     ];
 
     const filledCount = Object.values(values).filter(Boolean).length;
@@ -141,41 +150,33 @@ export default function AddClientHRForm({ onClose, clientId, onHRAdded }: Props)
                     {/* Phone field */}
                     <div className="flex flex-col gap-1.5">
                         <label className={`text-[11px] font-semibold uppercase tracking-widest transition-colors
-                            ${isInvalid("phone") ? "text-red-400" : focused === "phone" ? "text-indigo-500" : "text-gray-400"}`}>
+    ${isInvalid("hr_phone") ? "text-red-400" : focused === "hr_phone" ? "text-indigo-500" : "text-gray-400"}`}>
                             Phone <span className="text-red-400">*</span>
                         </label>
+
                         <div className={`flex rounded-xl border overflow-hidden transition-all
-                            ${isInvalid("phone")
+    ${isInvalid("hr_phone")
                                 ? "border-red-300 ring-2 ring-red-100"
-                                : focused === "phone"
+                                : focused === "hr_phone"
                                     ? "border-indigo-400 ring-2 ring-indigo-100"
-                                    : values.phone
+                                    : values.hr_phone
                                         ? "border-indigo-200"
                                         : "border-gray-200 hover:border-gray-300"
                             }`}
                         >
-                            <div className="flex items-center gap-1.5 px-3 bg-gray-50 border-r border-gray-200 text-sm font-medium text-gray-600 select-none whitespace-nowrap">
+                            <div className="flex items-center px-3 bg-gray-50 border-r text-sm">
                                 🇮🇳 +91
                             </div>
-                            <div className="relative flex-1">
-                                <input
-                                    type="tel"
-                                    placeholder="98765 43210"
-                                    value={values.phone}
-                                    onChange={(e) => handleChange("phone", e.target.value)}
-                                    onFocus={() => setFocused("phone")}
-                                    onBlur={() => handleBlur("phone")}
-                                    className="w-full px-4 py-2.5 text-sm text-gray-800 bg-white outline-none placeholder:text-gray-300"
-                                />
-                                {isInvalid("phone") && (
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-red-400 text-xs font-medium">
-                                        Required
-                                    </span>
-                                )}
-                                {values.phone && !isInvalid("phone") && (
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-indigo-400" />
-                                )}
-                            </div>
+
+                            <input
+                                type="tel"
+                                placeholder="98765 43210"
+                                value={values.hr_phone}
+                                onChange={(e) => handleChange("hr_phone", e.target.value)}
+                                onFocus={() => setFocused("hr_phone")}
+                                onBlur={() => handleBlur("hr_phone")}
+                                className="w-full px-4 py-2.5 text-sm outline-none"
+                            />
                         </div>
                     </div>
 

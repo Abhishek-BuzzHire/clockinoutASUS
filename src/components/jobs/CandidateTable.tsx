@@ -38,10 +38,27 @@ const renderRow = ({ item, stages, onRowClick }: { item: Candidate, stages?: str
     const stageIndex = stages ? stages.indexOf(item.pipelineStatus) : -1;
     const stageColor = stageIndex >= 0 ? colors[stageIndex % colors.length] : undefined;
     return (
-        <tr key={item.id} className="border-b-2 font-semibold border-gray-200 bg-white text-sm hover:bg-sky-50 cursor-pointer" onClick={() => onRowClick?.(item)}>
-            <td className="flex items-center gap-4 p-4">
-                <Image src={item.photo} alt={item.name} width={40} height={40} className="md:hidden xl:block w-10 h-10 rounded-full object-cover" />
-                <h3>{item.name}</h3>
+        <tr key={item.id} className=" font-semibold  bg-white text-sm hover:bg-sky-50 cursor-pointer" onClick={() => onRowClick?.(item)}>
+            <td className="p-4">
+                <div className="flex items-center gap-3">
+                    <Image
+                        src={item.photo}
+                        alt={item.name}
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                    />
+
+                    <div className="flex flex-col">
+                        <span className="font-medium text-gray-800">
+                            {item.name}
+                        </span>
+                        {/* Optional secondary info */}
+                        <span className="text-xs text-gray-500">
+                            Candidate
+                        </span>
+                    </div>
+                </div>
             </td>
             <td className="hidden md:table-cell">{item.id}</td>
             <td className="hidden md:table-cell">

@@ -1,10 +1,18 @@
 "use client";
 
+import { clientApi } from "@/apis/clients/routes";
 import { jobsApi } from "@/apis/jobs/route";
-import AddJobForm from "@/components/jobs/AddJobModal";
+import AddJobModal from "@/components/jobs/AddJobModal";
 import JobCard from "@/components/jobs/JobCard";
 import { Job } from "@/lib/types/jobs";
 import { useEffect, useState } from "react";
+
+type Client = {
+    client_id: number | null;
+    client_name: string;
+    client_industry: string;
+};
+
 
 const JobsPage = () => {
     const [jobs, setJobs] = useState<Job[]>([]);
@@ -15,6 +23,10 @@ const JobsPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // NEW: dedicated client list state
+    const [clientList, setClientList] = useState<Client[]>([]);
+    const [clientsLoading, setClientsLoading] = useState(false);
+
     async function fetchJobs() {
         setLoading(true);
         setError(null);
@@ -22,7 +34,6 @@ const JobsPage = () => {
             const data: Job[] = await jobsApi.getJobs();
             setJobs(data);
             console.log(data);
-            // Apply current tab and client filters to freshly fetched data
             applyFilters(data, activeTab, selectedClient);
         } catch (err) {
             console.error("Failed to fetch jobs", err);
@@ -32,16 +43,27 @@ const JobsPage = () => {
         }
     }
 
-    function applyFilters(
-        source: Job[],
-        tab: Job["job_status"],
-        client: string
-    ) {
+    // NEW: fetch clients from dedicated API, called only when "Add Job" is pressed
+    async function handleOpenAddJob() {
+        setClientsLoading(true);
+        try {
+            const data: Client[] = await clientApi.getClient(); // ← your getClients endpoint
+            setClientList(data);
+        } catch (err) {
+            console.error("Failed to fetch clients", err);
+            setClientList([]); // fallback to empty; modal handles the empty state
+        } finally {
+            setClientsLoading(false);
+        }
+        setOpen(true);
+    }
+
+    function applyFilters(source: Job[], tab: Job["job_status"], client: string) {
         const byStatus = source.filter((job) => job.job_status === tab);
         setFilteredJobs(
             client === "All"
                 ? byStatus
-                : byStatus.filter((job) => job.client_id === client)
+                : byStatus.filter((job) => job.client_name === client)  // ← was client_id
         );
     }
 
@@ -61,7 +83,7 @@ const JobsPage = () => {
 
     const handleJobCreated = () => {
         setOpen(false);
-        fetchJobs(); // Refresh list after adding
+        fetchJobs();
     };
 
     const handleJobDeleted = (deletedId: number) => {
@@ -70,9 +92,14 @@ const JobsPage = () => {
         applyFilters(updated, activeTab, selectedClient);
     };
 
+    const tabs: { label: string; value: Job["job_status"] }[] = [
+        { label: "Active", value: "open" },
+        { label: "Inactive", value: "close" },
+    ];
+
     const clients: string[] = [
         "All",
-        ...Array.from(new Set(jobs.map((job) => job.client_id))),
+        ...Array.from(new Set(jobs.map((job) => job.client_name).filter(Boolean))),  // ← was client_id
     ];
 
     return (
@@ -81,27 +108,29 @@ const JobsPage = () => {
             {/* Tabs */}
             <div className="flex items-end justify-between border-b border-gray-300 mb-6">
                 <div className="flex space-x-8 text-lg font-semibold">
-                    {(["Active", "Inactive"] as Job["job_status"][]).map((tab) => (
+                    {tabs.map((tab) => (
                         <button
-                            key={tab}
-                            onClick={() => handleTabChange(tab)}
-                            className={`pb-4 ${activeTab === tab
+                            key={tab.value}
+                            onClick={() => handleTabChange(tab.value)}
+                            className={`pb-4 ${activeTab === tab.value
                                 ? "border-b-2 border-blue-600 text-blue-600"
                                 : "text-gray-500"
                                 }`}
                         >
-                            {tab.toUpperCase()} JOBS
+                            {tab.label.toUpperCase()} JOBS
                         </button>
                     ))}
                 </div>
 
                 <div className="pb-3">
+                    {/* CHANGED: onClick now calls handleOpenAddJob instead of setOpen(true) */}
                     <button
-                        onClick={() => setOpen(true)}
-                        className="flex items-center gap-2 bg-indigo-500 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                        onClick={handleOpenAddJob}
+                        disabled={clientsLoading}
+                        className="flex items-center gap-2 bg-indigo-500 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-70 disabled:cursor-wait disabled:hover:translate-y-0 disabled:hover:shadow-lg"
                     >
                         <span className="text-lg">+</span>
-                        Add Job
+                        {clientsLoading ? "Loading…" : "Add Job"}
                     </button>
                 </div>
             </div>
@@ -157,18 +186,13 @@ const JobsPage = () => {
                 </div>
             )}
 
+            {/* CHANGED: pass clientList (from getClients API) instead of deriving from jobs */}
             {open && (
-                <AddJobForm
+                // Pass directly — no .map() needed anymore
+                <AddJobModal
                     onClose={() => setOpen(false)}
                     onSuccess={handleJobCreated}
-                    existingClients={jobs
-                        .filter((j, index, self) =>
-                            index === self.findIndex((t) => t.client_id === j.client_id)
-                        )
-                        .map((j) => ({
-                            id: Number(j.client_id),
-                            name: j.client_name,
-                        }))}
+                    existingClients={clientList}
                 />
             )}
         </div>

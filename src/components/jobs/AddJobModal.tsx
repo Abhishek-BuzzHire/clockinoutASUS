@@ -1,4 +1,4 @@
-import AddClientForm from "@/components/clients/AddClientModal";
+import AddClientModal from "@/components/clients/AddClientModal";
 import { useEffect, useState } from "react";
 import { jobsApi } from "@/apis/jobs/route";
 import { Job } from "@/lib/types/jobs";
@@ -6,9 +6,11 @@ import { Job } from "@/lib/types/jobs";
 type JobStatus = "open" | "closed" | "draft";
 type Skill = { id: number; name: string };
 
+// CHANGED: added industry field
 type Client = {
-    id: number | null;
-    name: string;
+    client_id: number | null;
+    client_name: string;
+    client_industry: string;
 };
 
 type Props = {
@@ -17,7 +19,7 @@ type Props = {
     existingClients: Client[];
 };
 
-export default function AddJobForm({ onClose, onSuccess, existingClients }: Props) {
+export default function AddJobModal({ onClose, onSuccess, existingClients }: Props) {
     const [focused, setFocused] = useState<string | null>(null);
     const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [showClientForm, setShowClientForm] = useState(false);
@@ -33,6 +35,8 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
         min_exp: "",
         max_exp: "",
         status: "open" as JobStatus,
+        min_salary: "",
+        max_salary: "",
     });
 
     const [qualifications, setQualifications] = useState<string[]>([""]);
@@ -50,11 +54,9 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
             setSkillSuggestions([]);
             return;
         }
-        console.log("Fetching skills for:", query); // 👈 confirm what's being sent
         setSkillsLoading(true);
         try {
             const data = await jobsApi.searchSkills(query);
-            console.log(data);
             setSkillSuggestions(data);
         } catch (err) {
             console.error("Skill search failed", err);
@@ -65,9 +67,10 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
     };
 
     useEffect(() => {
-        const timer = setTimeout(() => fetchSkills(skillInput), 3000);
+        const timer = setTimeout(() => fetchSkills(skillInput), 800);
         return () => clearTimeout(timer);
     }, [skillInput]);
+
     const handleChange = (field: string, value: string) => {
         setValues((prev) => ({ ...prev, [field]: value }));
     };
@@ -128,13 +131,15 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
             job_title: values.title,
             job_location: values.location,
             job_status: values.status,
-            client_id: String(selectedClient!.id),
+            client_id: String(selectedClient!.client_id),
             job_overview: values.overview,
             job_min_exp: values.min_exp,
             job_max_exp: values.max_exp,
             job_qualification: qualifications.filter((q) => q.trim()),
             job_responsibilities: responsibilities.filter((r) => r.trim()),
             skill_ids: selectedSkills.map((s) => s.id),
+            job_min_salary: toActualSalary(values.min_salary),
+            job_max_salary: toActualSalary(values.max_salary),
         };
 
         setSubmitting(true);
@@ -177,6 +182,16 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
         { value: "draft", label: "Draft", color: "bg-amber-100 text-amber-700 border-amber-300" },
         { value: "closed", label: "Closed", color: "bg-red-100 text-red-600 border-red-300" },
     ];
+
+    const [salaryUnit, setSalaryUnit] = useState<"thou" | "lakh" | "cr">("lakh");
+
+    function toActualSalary(displayValue: string | number): number {
+        const n = Number(displayValue);
+        if (!n) return 0;
+        if (salaryUnit === "lakh") return n * 100_000;
+        if (salaryUnit === "cr") return n * 10_000_000;
+        return n; // thou — no conversion, send as-is
+    }
 
     return (
         <>
@@ -224,14 +239,24 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
                             </label>
 
                             {selectedClient ? (
+                                // CHANGED: selected pill now shows industry if available
                                 <div className="flex items-center justify-between px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50">
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-indigo-400" />
-                                        <span className="text-sm font-semibold text-indigo-700">{selectedClient.name}</span>
+                                    <div className="flex items-center gap-3">
+                                        <span className="w-2 h-2 rounded-full bg-indigo-400 flex-shrink-0" />
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-semibold text-indigo-700 leading-tight">
+                                                #{selectedClient.client_id} · {selectedClient.client_name}
+                                            </span>
+                                            {selectedClient.client_industry && (
+                                                <span className="text-xs text-indigo-400 leading-tight mt-0.5">
+                                                    {selectedClient.client_industry}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                     <button
                                         onClick={() => setSelectedClient(null)}
-                                        className="text-indigo-300 hover:text-red-400 transition-colors text-xs"
+                                        className="text-indigo-300 hover:text-red-400 transition-colors text-xs ml-2"
                                     >
                                         ✕
                                     </button>
@@ -254,18 +279,30 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
                                         {clientDropdownOpen && (
                                             <>
                                                 <div className="fixed inset-0 z-10" onClick={() => setClientDropdownOpen(false)} />
-                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 max-h-44 overflow-y-auto">
+                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 max-h-52 overflow-y-auto">
                                                     {existingClients.length === 0 ? (
                                                         <p className="px-4 py-3 text-sm text-gray-400">No existing clients</p>
                                                     ) : (
-                                                        existingClients.map((c) => (
+                                                        existingClients.map((c, index) => (
+                                                            // CHANGED: each row shows number · name · industry
                                                             <button
-                                                                key={c.id}
+                                                                key={c.client_id ?? `client-${index}`}
                                                                 onClick={() => { setSelectedClient(c); setClientDropdownOpen(false); }}
-                                                                className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                                                                className="w-full flex items-center justify-between px-4 py-3 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors border-b border-gray-50 last:border-0"
                                                             >
-                                                                <span>{c.name}</span>
-                                                                <span className="text-xs text-gray-400">#{c.id}</span>
+                                                                {/* Left: number + name */}
+                                                                <div className="flex items-center gap-2 min-w-0">
+                                                                    <span className="text-xs font-semibold text-gray-400 flex-shrink-0">
+                                                                        #{c.client_id}
+                                                                    </span>
+                                                                    <span className="font-medium truncate">{c.client_name}</span>
+                                                                </div>
+                                                                {/* Right: industry badge */}
+                                                                {c.client_industry && (
+                                                                    <span className="ml-3 flex-shrink-0 text-[10px] font-semibold uppercase tracking-wide bg-indigo-50 text-indigo-400 border border-indigo-100 px-2 py-0.5 rounded-md">
+                                                                        {c.client_industry}
+                                                                    </span>
+                                                                )}
                                                             </button>
                                                         ))
                                                     )}
@@ -398,7 +435,7 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
                             <div className="relative">
                                 <input
                                     type="text"
-                                    placeholder="Type to search skills… (searches after 3s)"
+                                    placeholder="Type to search skills… "
                                     value={skillInput}
                                     onChange={(e) => {
                                         setSkillInput(e.target.value);
@@ -493,6 +530,65 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
                             })}
                         </div>
 
+                        {/* ── SALARY ── */}
+                        <div className="flex flex-col gap-1.5">
+                            <div className="flex items-center justify-between">
+                                <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+                                    Salary Range <span className="text-gray-300">(optional)</span>
+                                </label>
+                                <select
+                                    value={salaryUnit}
+                                    onChange={(e) => setSalaryUnit(e.target.value as "thou" | "lakh" | "cr")}
+                                    className="text-xs rounded-lg px-2.5 py-1.5 border border-gray-200 bg-gray-50 text-gray-600 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all cursor-pointer"
+                                >
+                                    <option value="thou">Thou / yr</option>
+                                    <option value="lakh">Lakh / yr</option>
+                                    <option value="cr">Cr / yr</option>
+                                </select>
+                            </div>
+                            {/* Min / Max salary */}
+                            {(["min_salary", "max_salary"] as const).map((key) => {
+                                const label = key === "min_salary" ? "Min Salary" : "Max Salary";
+                                const isFocused = focused === key;
+                                const val = values[key];
+
+                                return (
+                                    <div key={key} className="flex-1 flex flex-col gap-1.5">
+                                        <label className={`text-[10px] font-semibold uppercase tracking-widest transition-colors ${isFocused ? "text-indigo-500" : "text-gray-300"}`}>
+                                            {label}
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                placeholder="0"
+                                                min={0}
+                                                value={val}
+                                                onChange={(e) => handleChange(key, e.target.value)}
+                                                onFocus={() => setFocused(key)}
+                                                onBlur={() => setFocused(null)}
+                                                className={`w-full rounded-xl px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border outline-none transition-all placeholder:text-gray-300 ${isFocused
+                                                    ? "border-indigo-400 bg-white ring-2 ring-indigo-100"
+                                                    : val
+                                                        ? "border-indigo-200 bg-white"
+                                                        : "border-gray-200 hover:border-gray-300"
+                                                    }`}
+                                            />
+                                            {/* Unit hint inside input */}
+                                            {!isFocused && (
+                                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-300 pointer-events-none">
+                                                    {salaryUnit === "lakh" ? "L" : salaryUnit === "cr" ? "Cr" : "K"}
+                                                </span>
+                                            )}
+                                            {val && !isFocused && (
+                                                <span className="absolute right-7 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-indigo-400" />
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+
                         {/* ── STATUS ── */}
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
@@ -546,7 +642,7 @@ export default function AddJobForm({ onClose, onSuccess, existingClients }: Prop
             </div>
 
             {showClientForm && (
-                <AddClientForm
+                <AddClientModal
                     onClose={() => setShowClientForm(false)}
                     onClientCreated={handleClientCreated}
                 />

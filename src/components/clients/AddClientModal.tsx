@@ -4,10 +4,10 @@ import { ClientPayload } from "@/lib/types/jobs";
 
 type Props = {
     onClose: () => void;
-    onClientCreated: (client: { id: number | null; name: string }) => void;
+    onClientCreated: (client: { client_id: number | null; client_name: string; client_industry: string }) => void;
 };
 
-export default function AddClientForm({ onClose, onClientCreated }: Props) {
+export default function AddClientModal({ onClose, onClientCreated }: Props) {
     const [focused, setFocused] = useState<string | null>(null);
     const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [isLoading, setIsLoading] = useState(false);
@@ -43,8 +43,13 @@ export default function AddClientForm({ onClose, onClientCreated }: Props) {
 
         try {
             setIsLoading(true);
+            // Change the onClientCreated call in handleSubmit
             const newClient = await clientApi.createClient(payload);
-            onClientCreated({ id: newClient.client_id, name: newClient.client_name });
+            onClientCreated({
+                client_id: newClient.client_id,
+                client_name: newClient.client_name,
+                client_industry: newClient.client_industry,
+            });
         } catch (error) {
             console.error("Failed to create client:", error);
         } finally {

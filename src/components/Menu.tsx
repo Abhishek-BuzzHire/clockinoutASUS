@@ -13,7 +13,7 @@ const menuItems = [
       // { icon: "/calendar.png", label: "Calendar", href: "/list/calendar", visible: ["admin", "employee", "developer"] },
       { icon: "/jobs.png", label: "Jobs", href: "/list/jobs", visible: ["admin", "employee", "developer"] },
       // { icon: "/candidates.png", label: "Candidates", href: "/list/candidates", visible: ["admin", "employee", "developer"] },
-      // { icon: "/referrals.png", label: "My Referrals", href: "/list/referrals", visible: ["admin", "employee", "developer"] },
+      { icon: "/referrals.png", label: "My Referrals", href: "/list/referrals", visible: ["admin", "employee", "developer"] },
     ],
   },
   {

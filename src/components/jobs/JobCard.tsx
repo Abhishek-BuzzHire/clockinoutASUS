@@ -1,14 +1,9 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Job } from "@/lib/types/jobs";
-import { JobPipelinePayload } from "@/lib/types/jobs";
-import PipelineForm from "./PipelineModal";
+import { Job, EditPipelinePayload } from "@/lib/types/jobs";
+import PipelineModal from "./PipelineModal";
 import { jobsApi } from "@/apis/jobs/route";
-
-const STAGE_COLORS = [
-    "#f97316", "#eab308", "#3b82f6", "#ef4444",
-    "#14b8a6", "#22c55e", "#a855f7", "#6366f1",
-];
 
 const JobCard = ({
     job: initialJob,
@@ -17,25 +12,31 @@ const JobCard = ({
     job: Job;
     onDeleted?: (id: number) => void;
 }) => {
-    const [pipeline, setPipeline] = useState<JobPipelinePayload | null>(null);
+    const router = useRouter();
+    const [pipeline, setPipeline] = useState<EditPipelinePayload | null>(
+        initialJob.pipeline ? ({ pipeline_name: initialJob.pipeline } as EditPipelinePayload) : null
+    );
     const [showForm, setShowForm] = useState(false);
-    const [saving, setSaving] = useState(false);
-    const [saveError, setSaveError] = useState<string | null>(null);
+    const [loadingPipeline, setLoadingPipeline] = useState(false);
 
-    const handleSave = async (stageNames: string[]) => {
-        setSaving(true);
-        setSaveError(null);
-        try {
-            const saved = pipeline
-                ? await jobsApi.updatePipeline(initialJob.job_id, stageNames)
-                : await jobsApi.savePipeline(initialJob.job_id, stageNames);
-            setPipeline(saved);
-            setShowForm(false);
-        } catch {
-            setSaveError("Failed to save pipeline. Please try again.");
-        } finally {
-            setSaving(false);
+    const handleOpenPipeline = async () => {
+        if (initialJob.pipeline) {
+            setLoadingPipeline(true);
+            try {
+                const full = await jobsApi.getPipeline(initialJob.job_id);
+                setPipeline(full);
+            } catch (err) {
+                console.error("Failed to fetch pipeline", err);
+            } finally {
+                setLoadingPipeline(false);
+            }
         }
+        setShowForm(true);
+    };
+
+    const handleSeeDetails = (id: number) => {
+        if (!id || isNaN(id)) return;
+        router.push(`/list/jobs/${id}`);
     };
 
     return (
@@ -65,32 +66,6 @@ const JobCard = ({
                     </div>
                 </div>
 
-                {/* ── Pipeline stages strip ── */}
-                {pipeline && pipeline.stages.length > 0 && (
-                    <div className="mt-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
-                            Pipeline Stages
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                            {pipeline.stages.map((s, i) => (
-                                <span
-                                    key={i}
-                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full text-white
-                                        ${s.is_final ? "ring-2 ring-green-400 ring-offset-1" : ""}`}
-                                    style={{ background: STAGE_COLORS[i % STAGE_COLORS.length] }}
-                                    title={s.is_final ? "Final stage" : `Stage ${s.order + 1}`}
-                                >
-                                    {s.name}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {saveError && (
-                    <p className="text-xs text-red-500 mt-2">{saveError}</p>
-                )}
-
                 {/* ── Meta row ── */}
                 <div className="flex items-center space-x-4 text-sm font-semibold text-gray-400 mt-4">
                     <span>{initialJob.job_location}</span>
@@ -110,37 +85,51 @@ const JobCard = ({
                     </span>
 
                     <button
-                        onClick={() => setShowForm(true)}
+                        onClick={handleOpenPipeline}
+                        disabled={loadingPipeline}
                         className="flex items-center text-xs font-semibold text-indigo-600 hover:text-indigo-800
-                                   border border-indigo-200 hover:border-indigo-400 px-2.5 py-1 rounded-full transition-colors"
+                       border border-indigo-200 hover:border-indigo-400 px-2.5 py-1 rounded-full 
+                       transition-colors disabled:opacity-50"
                     >
                         <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
-                        {pipeline ? "Edit Pipeline" : "Add Pipeline"}
+                        {loadingPipeline ? "Loading…" : pipeline ? "Edit Pipeline" : "Add Pipeline"}
                     </button>
 
-                    <a
-                        href={`/jobs/${initialJob.job_id}`}
+                    <button
+                        onClick={() => handleSeeDetails(initialJob.job_id)}
                         className="flex items-center text-sm font-semibold text-blue-600 hover:underline"
                     >
                         See Details
                         <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                         </svg>
-                    </a>
+                    </button>
                 </div>
             </div>
 
+            {/* Backdrop + Modal — clicking backdrop closes the form */}
             {showForm && (
-                <PipelineForm
-                    job={initialJob}
-                    existing={pipeline}
-                    saving={saving}
-                    onSave={handleSave}
-                    onCancel={() => { setShowForm(false); setSaveError(null); }}
-                />
+                <div
+                    className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center"
+                    onClick={() => setShowForm(false)}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <PipelineModal
+                            job={initialJob}
+                            existing={pipeline}
+                            onSaved={(result) => {
+                                setPipeline(result);
+                                setShowForm(false);
+                            }}
+                            onCancel={() => setShowForm(false)}
+                        />
+                    </div>
+                </div>
             )}
         </>
     );
