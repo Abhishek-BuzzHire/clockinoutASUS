@@ -15,7 +15,7 @@ export const emptyEducation = (): Education => ({
 });
 
 export const emptySkill = (): Skill => ({
-  id: uid(), name: "", level: null, category: null,
+  skill_id: uid(), skill_name: "",
 });
 
 export const emptyCertification = (): Certification => ({
@@ -31,7 +31,14 @@ export const defaultFormData = (): ReferralFormData => ({
   jobId: null, referredBy: null, referralNote: null, resumeFileUrl: null,
   basicInfo: {
     firstName: null, lastName: null, email: null, phone: null,
-    location: null, linkedIn: null, portfolio: null, summary: null,
+    location: null,
+    profile_experience: { years: null, months: null },
+    current_designation: null,
+    current_company: null,
+    current_ctc: null,
+    expected_ctc: null,
+    notice_period_days: null,
+    summary: null,
   },
   experience: [], education: [], skills: [],
   certifications: [], languages: [],
