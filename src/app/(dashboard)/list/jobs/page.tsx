@@ -94,7 +94,7 @@ const JobsPage = () => {
 
     const tabs: { label: string; value: Job["job_status"] }[] = [
         { label: "Active", value: "open" },
-        { label: "Inactive", value: "close" },
+        { label: "Inactive", value: "Closed" },
     ];
 
     const clients: string[] = [
@@ -159,17 +159,15 @@ const JobsPage = () => {
             </div>
 
             {/* States */}
-            {loading && (
-                <div className="flex justify-center items-center py-20 text-gray-500">
-                    Loading jobs...
-                </div>
-            )}
-            {error && (
-                <div className="text-red-500 text-sm text-center py-4">{error}</div>
-            )}
             {!loading && !error && filteredJobs.length === 0 && (
                 <div className="text-center text-gray-400 py-20">
-                    No {activeTab} jobs found.
+                    No {activeTab} jobs found.   {/* ← says "No close jobs found" */}
+                </div>
+            )}
+
+            {!loading && !error && filteredJobs.length === 0 && (
+                <div className="text-center text-gray-400 py-20">
+                    No {activeTab === "open" ? "active" : "inactive"} jobs found.
                 </div>
             )}
 

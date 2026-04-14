@@ -85,7 +85,7 @@ const renderRow = ({
                             height={20}
                             className="opacity-65"
                         />
-                        {item.number}
+                        {item.hr_phone}
                     </div>
                 </td>
 

@@ -50,7 +50,7 @@ const HRCard = ({ details }: ClientCardProps) => {
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
                         <Image src="/phone.png" alt="" width={14} height={14} className="opacity-50 shrink-0" />
-                        <span>{details.number}</span>
+                        <span>{details.hr_phone}</span>
                     </div>
                 </div>
 

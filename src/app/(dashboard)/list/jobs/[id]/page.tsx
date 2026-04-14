@@ -13,15 +13,11 @@ import JobSettings from "@/components/jobs/JobSetting";
 import PipelineModal from "@/components/jobs/PipelineModal";
 import Image from "next/image";
 
-// The board API returns pipeline as a full object, whereas Job.pipeline is typed as string.
-// BoardStage extends PipelineStage (which has stage_name, order, is_final) with the extra
-// fields the board endpoint adds: stage_id and the candidates array.
 type BoardStage = PipelineStage & {
     stage_id: number;
     candidates: Candidate[];
 };
 
-// JobBoard replaces the `pipeline: string` field on Job with the real board shape.
 type JobBoard = Omit<Job, "pipeline"> & {
     pipeline: {
         pipeline_id: number;
@@ -77,22 +73,14 @@ const SingleJobPage = () => {
     const fetchBoard = async () => {
         setBoardLoading(true);
         try {
-            // Cast needed because getJobPipelineCandidate is typed as Promise<Job>,
-            // but the board endpoint actually returns JobBoard at runtime.
             const result = (await jobsApi.getJobPipelineCandidate(jobId)) as unknown as JobBoard;
             console.log(result);
 
             if (result?.pipeline?.stages?.length) {
-                // Respect the `order` field from the API
                 const sortedStages = [...result.pipeline.stages].sort(
                     (a, b) => a.order - b.order
                 );
-
-                // stage_name comes from PipelineStage which BoardStage extends
                 setStages(sortedStages.map((s) => s.stage_name));
-
-                // Candidates already have all Candidate fields from the API;
-                // we just stamp pipelineStatus so CandidatePipeline can bucket them.
                 const allCandidates: Candidate[] = sortedStages.flatMap((stage) =>
                     (stage.candidates ?? []).map((c) => ({
                         ...c,
@@ -128,18 +116,12 @@ const SingleJobPage = () => {
         const confirmChange = window.confirm(
             `Are you sure you want to change status to "${newStatus}"?`
         );
-
         if (!confirmChange) return;
 
         try {
             setStatusLoading(true);
-
             await jobsApi.updateJobStatus(job.job_id, newStatus);
-
-            // update UI instantly
-            setJob((prev) =>
-                prev ? { ...prev, job_status: newStatus } : prev
-            );
+            setJob((prev) => prev ? { ...prev, job_status: newStatus } : prev);
         } catch (err) {
             console.error("Failed to update status", err);
             alert("Failed to update status");
@@ -173,13 +155,22 @@ const SingleJobPage = () => {
                         </div>
                     </div>
 
+                    {/* ── Status Button + Dropdown ── */}
                     <div className="flex items-center space-x-2 relative">
                         <button
-                            onClick={() => setStatusOpen((prev) => !prev)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setStatusOpen((prev) => !prev);
+                            }}
                             disabled={statusLoading}
-                            className="flex items-center bg-blue-600 text-white rounded-md px-4 py-2 text-sm font-semibold"
+                            className={`flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white ${job.job_status === "open" ? "bg-blue-600" : "bg-red-600"
+                                }`}
                         >
-                            {statusLoading ? "Updating..." : job.job_status ?? "Published"}
+                            {statusLoading
+                                ? "Updating..."
+                                : job.job_status === "open"
+                                    ? "Opened"
+                                    : "Closed"}
                             <Image
                                 src="/chev-down.png"
                                 alt=""
@@ -190,20 +181,39 @@ const SingleJobPage = () => {
                         </button>
 
                         {statusOpen && (
-                            <div className="absolute top-full mt-2 right-0 w-40 bg-white border rounded-md shadow-lg z-50">
-                                {["Published", "Draft", "Closed"].map((status) => (
-                                    <div
-                                        key={status}
-                                        onClick={() => handleStatusChange(status)}
-                                        className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${job.job_status === status
-                                            ? "font-semibold text-blue-600"
-                                            : ""
-                                            }`}
-                                    >
-                                        {status}
-                                    </div>
-                                ))}
-                            </div>
+                            <>
+                                {/* Transparent backdrop — click outside closes dropdown */}
+                                <div
+                                    className="fixed inset-0 z-40"
+                                    onClick={() => setStatusOpen(false)}
+                                />
+
+                                {/* Dropdown panel — stop clicks from reaching the backdrop */}
+                                <div
+                                    className="absolute top-full mt-2 right-0 w-40 bg-white border rounded-md shadow-lg z-50"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {["open", "Closed"].map((status) => {
+                                        const isSelected = job.job_status === status;
+                                        const label = isSelected
+                                            ? status === "open" ? "Opened" : "Closed"
+                                            : status === "open" ? "Open This Job" : "Close This Job";
+                                        const selectedColor =
+                                            status === "open" ? "text-blue-600" : "text-red-600";
+
+                                        return (
+                                            <div
+                                                key={status}
+                                                onClick={() => handleStatusChange(status)}
+                                                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${isSelected ? `font-semibold ${selectedColor}` : ""
+                                                    }`}
+                                            >
+                                                {label}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>
@@ -215,8 +225,8 @@ const SingleJobPage = () => {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`p-2 ${activeTab === tab
-                                ? "border-b-2 border-blue-600 text-gray-900"
-                                : "text-gray-500"
+                                    ? "border-b-2 border-blue-600 text-gray-900"
+                                    : "text-gray-500"
                                 }`}
                         >
                             {tab.toUpperCase()}
@@ -253,8 +263,8 @@ const SingleJobPage = () => {
                                         <button
                                             onClick={() => setView("pipeline")}
                                             className={`px-4 py-2 text-sm focus:outline-none transition-colors duration-200 ${view === "pipeline"
-                                                ? "bg-white text-gray-900"
-                                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                                                    ? "bg-white text-gray-900"
+                                                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                                 }`}
                                         >
                                             Pipeline View
@@ -262,8 +272,8 @@ const SingleJobPage = () => {
                                         <button
                                             onClick={() => setView("table")}
                                             className={`px-4 py-2 text-sm focus:outline-none transition-colors duration-200 ${view === "table"
-                                                ? "bg-white text-gray-900"
-                                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                                                    ? "bg-white text-gray-900"
+                                                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                                 }`}
                                         >
                                             Table View
@@ -309,7 +319,7 @@ const SingleJobPage = () => {
                     onSaved={(res) => {
                         setPipeline(res);
                         setShowPipelineForm(false);
-                        fetchBoard(); // refresh board after pipeline changes
+                        fetchBoard();
                     }}
                 />
             )}

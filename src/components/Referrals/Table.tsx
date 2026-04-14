@@ -7,6 +7,10 @@ const Table = ({
     renderRow: (item: any) => React.ReactNode;
     data: any[];
 }) => {
+    const safeData = Array.isArray(data)
+        ? data.filter(Boolean)
+        : [];
+
     return (
         <table className="w-full mt-0">
             <thead>
@@ -19,11 +23,7 @@ const Table = ({
                 </tr>
             </thead>
 
-            <tbody>
-                {(Array.isArray(data) ? data : [])
-                    .filter(Boolean)
-                    .map((item) => renderRow(item))}
-            </tbody>
+            <tbody>{safeData.map((item) => renderRow(item))}</tbody>
         </table>
     );
 };

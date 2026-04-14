@@ -1,10 +1,9 @@
 import AddClientModal from "@/components/clients/AddClientModal";
 import { useEffect, useState } from "react";
 import { jobsApi } from "@/apis/jobs/route";
-import { Job } from "@/lib/types/jobs";
+import { Job, Skill } from "@/lib/types/jobs";
 
 type JobStatus = "open" | "closed" | "draft";
-type Skill = { id: number; name: string };
 
 // CHANGED: added industry field
 type Client = {
@@ -137,7 +136,7 @@ export default function AddJobModal({ onClose, onSuccess, existingClients }: Pro
             job_max_exp: values.max_exp,
             job_qualification: qualifications.filter((q) => q.trim()),
             job_responsibilities: responsibilities.filter((r) => r.trim()),
-            skill_ids: selectedSkills.map((s) => s.id),
+            skill_ids: selectedSkills.map((s) => s.skill_id),
             job_min_salary: toActualSalary(values.min_salary),
             job_max_salary: toActualSalary(values.max_salary),
         };
@@ -197,11 +196,9 @@ export default function AddJobModal({ onClose, onSuccess, existingClients }: Pro
         <>
             <div
                 className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-                onClick={onClose}
             >
                 <div
                     className="bg-white w-[520px] max-w-[calc(100vw-32px)] rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
-                    onClick={(e) => e.stopPropagation()}
                 >
                     {/* Progress bar */}
                     <div className="h-1 bg-gray-100 w-full flex-shrink-0">
@@ -415,13 +412,13 @@ export default function AddJobModal({ onClose, onSuccess, existingClients }: Pro
                                 <div className="flex flex-wrap gap-2 mb-1">
                                     {selectedSkills.map((skill) => (
                                         <span
-                                            key={skill.id}
+                                            key={skill.skill_id}
                                             className="flex items-center gap-1.5 bg-indigo-100 text-indigo-700 text-xs font-semibold px-3 py-1.5 rounded-lg"
                                         >
-                                            {skill.name}
+                                            {skill.skill_name}
                                             <button
                                                 onClick={() =>
-                                                    setSelectedSkills((prev) => prev.filter((s) => s.id !== skill.id))
+                                                    setSelectedSkills((prev) => prev.filter((s) => s.skill_id !== skill.skill_id))
                                                 }
                                                 className="text-indigo-400 hover:text-red-500 transition-colors leading-none"
                                             >
@@ -465,10 +462,10 @@ export default function AddJobModal({ onClose, onSuccess, existingClients }: Pro
                                 {skillDropdownOpen && skillSuggestions.length > 0 && (
                                     <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 max-h-44 overflow-y-auto">
                                         {skillSuggestions
-                                            .filter((s) => !selectedSkills.find((sel) => sel.id === s.id))
+                                            .filter((s) => !selectedSkills.find((sel) => sel.skill_id === s.skill_id))
                                             .map((skill, index) => (
                                                 <button
-                                                    key={`${skill.id}-${index}`}
+                                                    key={`${skill.skill_id}-${index}`}
                                                     onMouseDown={() => {
                                                         setSelectedSkills((prev) => [...prev, skill]);
                                                         setSkillInput("");
@@ -476,7 +473,7 @@ export default function AddJobModal({ onClose, onSuccess, existingClients }: Pro
                                                     }}
                                                     className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
                                                 >
-                                                    {skill.name}
+                                                    {skill.skill_name}
                                                 </button>
                                             ))}
                                     </div>

@@ -102,8 +102,13 @@ const Candidature = ({ data, stages }: { data: Candidate, stages?: string[] }) =
                                 <div className="flex flex-col gap-1">
                                     <span className="text-gray-500">Skill Set</span>
                                     <div className="flex flex-wrap gap-2 mt-1">
-                                        {data.skills.map(skill => (
-                                            <span key={skill} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded-full">{skill}</span>
+                                        {data.skills.map((skill: any, index: number) => (
+                                            <span
+                                                key={skill.id ?? `${skill.skill_name}-${index}`}
+                                                className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded-full"
+                                            >
+                                                {skill.skill_name ?? skill.name ?? skill}
+                                            </span>
                                         ))}
                                     </div>
                                 </div>

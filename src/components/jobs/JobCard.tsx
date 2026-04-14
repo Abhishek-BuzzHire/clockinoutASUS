@@ -9,18 +9,39 @@ const JobCard = ({
     job: initialJob,
     onDeleted,
 }: {
-    job: Job;
+    job: Job & Partial<EditPipelinePayload>;
     onDeleted?: (id: number) => void;
 }) => {
     const router = useRouter();
     const [pipeline, setPipeline] = useState<EditPipelinePayload | null>(
-        initialJob.pipeline ? ({ pipeline_name: initialJob.pipeline } as EditPipelinePayload) : null
+        initialJob.pipeline_id ? ({ pipeline_name: initialJob.pipeline_name } as EditPipelinePayload) : null
     );
     const [showForm, setShowForm] = useState(false);
     const [loadingPipeline, setLoadingPipeline] = useState(false);
 
+    const status = initialJob.job_status?.toLowerCase();
+    const isClosed = status === "closed" || status === "close";
+    const isDraft = status === "draft";
+
+    const borderColor = isClosed
+        ? "border-red-400"
+        : isDraft
+            ? "border-gray-300"
+            : "border-emerald-400";
+
+    const counterAccent = isClosed ? "border-red-300" : "border-emerald-400";
+    const counterBg = isDraft ? "bg-gray-50" : "bg-sky-50";
+
+    const badgeClass = isClosed
+        ? "bg-red-100 text-red-600"
+        : isDraft
+            ? "bg-gray-200 text-gray-600"
+            : "bg-emerald-100 text-emerald-600";
+
+    const badgeLabel = isClosed ? "Closed" : isDraft ? "Draft" : "Open";
+
     const handleOpenPipeline = async () => {
-        if (initialJob.pipeline) {
+        if (initialJob.pipeline_id) {
             setLoadingPipeline(true);
             try {
                 const full = await jobsApi.getPipeline(initialJob.job_id);
@@ -42,8 +63,7 @@ const JobCard = ({
     return (
         <>
             <div
-                className={`bg-white p-4 rounded-lg border-t-4 flex flex-col justify-between ${initialJob.job_status === "Draft" ? "border-gray-300" : "border-green-400"
-                    }`}
+                className={`bg-white p-4 rounded-lg border-t-4 flex flex-col justify-between ${borderColor}`}
                 style={{ minWidth: "200px" }}
             >
                 {/* ── Top info ── */}
@@ -55,12 +75,12 @@ const JobCard = ({
                 </div>
 
                 {/* ── Counters ── */}
-                <div className="flex gap-12 mt-2 w-full p-8 pl-4 bg-sky-50 rounded-md">
+                <div className={`flex gap-12 mt-2 w-full p-8 pl-4 rounded-md ${counterBg}`}>
                     <div className="border-l-2 pl-2 border-gray-300">
                         <span className="text-gray-500 text-md font-semibold block mb-3">TOTAL</span>
                         <span className="text-3xl">{initialJob.total_candidates ?? 0}</span>
                     </div>
-                    <div className="border-l-2 pl-2 border-green-400">
+                    <div className={`border-l-2 pl-2 ${counterAccent}`}>
                         <span className="text-gray-500 text-md font-semibold block mb-3">NEW</span>
                         <span className="text-3xl">{initialJob.new_candidates ?? 0}</span>
                     </div>
@@ -75,13 +95,8 @@ const JobCard = ({
 
                 {/* ── Footer row ── */}
                 <div className="flex items-center justify-between mt-4 gap-2 flex-wrap">
-                    <span
-                        className={`text-xs font-semibold px-2 py-1 rounded-full ${initialJob.job_status === "draft"
-                            ? "bg-gray-200 text-gray-600"
-                            : "bg-green-100 text-green-600"
-                            }`}
-                    >
-                        {initialJob.job_status ?? "Published"}
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${badgeClass}`}>
+                        {badgeLabel}
                     </span>
 
                     <button
@@ -110,15 +125,12 @@ const JobCard = ({
                 </div>
             </div>
 
-            {/* Backdrop + Modal — clicking backdrop closes the form */}
             {showForm && (
                 <div
                     className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center"
                     onClick={() => setShowForm(false)}
                 >
-                    <div
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                    <div onClick={(e) => e.stopPropagation()}>
                         <PipelineModal
                             job={initialJob}
                             existing={pipeline}

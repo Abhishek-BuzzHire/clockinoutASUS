@@ -27,9 +27,16 @@ export interface BasicInfo {
   email:      string | null;
   phone:      string | null;
   location:   string | null;
-  linkedIn:   string | null;
-  portfolio:  string | null;
-  summary:    string | null;
+  profile_experience: {
+    years: number | null;
+    months: number | null;
+  };
+  current_designation: string | null;
+  current_company: string | null;
+  current_ctc: string | null;
+  expected_ctc: string | null;
+  notice_period_days: number | null;  
+  summary:string | null;
 }
 
 export interface WorkExperience {
@@ -57,10 +64,8 @@ export interface Education {
 }
 
 export interface Skill {
-  id:       string;
-  name:     string;
-  level:    SkillLevel | null;
-  category: string | null;
+  skill_id:       string;
+  skill_name:     string;
 }
 
 export interface Certification {

@@ -46,12 +46,12 @@ async createJob(data: Partial<Job>): Promise<Job> {
     },
 
     async searchSkills(query: string): Promise<Skill[]> {
-        const res = await backendApi.get(`/api/skills/?q=${encodeURIComponent(query)}`);
-        return res.data.map((s: { skill_id: number; skill_name: string }) => ({
-            id: s.skill_id,
-            name: s.skill_name,
-        }));
-    },
+    const res = await backendApi.get(`/api/skills/?q=${encodeURIComponent(query)}`);
+    return res.data.map((s: { skill_id: number; skill_name: string }) => ({
+        skill_id: s.skill_id,   // was: id: s.skill_id  ← wrong key
+        skill_name: s.skill_name, // was: name: s.skill_name ← wrong key
+    }));
+},
 
     // ── Pipeline ──────────────────────────────────────────────────────────
 

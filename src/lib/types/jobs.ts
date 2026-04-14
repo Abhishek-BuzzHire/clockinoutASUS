@@ -180,21 +180,20 @@ export interface JobData {
 
 // ─── Candidates ──────────────────────────────────────────────────────────────
 
-export interface Candidate {
-    id: number;
-    name: string;
-    pipelineStatus: string;
-    dateApplied: Date | string;
-    photo: string;
-    email: string;
-    phone: string;
-    sourcedBy: string;
-    location: string;
-    currentCompany: string;
-    currentJob: string;
-    appliedFor: string;
-    experience: string;
-    education: string;
-    skills: string[];
-    currentCTC: string;
-}
+export type Candidate = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  photo: string;
+  currentJob: string;
+  currentCompany: string;
+  currentCTC: string;
+  education: string;
+  experience: string;
+  location: string;
+  skills: string[];
+  sourcedBy: string;
+  dateApplied: string;
+  pipelineStatus: string;
+};
