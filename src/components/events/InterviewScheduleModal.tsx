@@ -107,7 +107,7 @@ export default function InterviewScheduleModal({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-indigo-950/20 backdrop-blur-sm"
+                className="absolute inset-0 bg-indigo-950/20"
                 onClick={onClose}
             />
 
@@ -146,18 +146,18 @@ export default function InterviewScheduleModal({
                                 key={n}
                                 onClick={() => setStep(n as 1 | 2 | 3)}
                                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${step === n
-                                        ? "bg-white text-indigo-700"
-                                        : step > n
-                                            ? "bg-white/30 text-white"
-                                            : "bg-white/10 text-indigo-200"
+                                    ? "bg-white text-indigo-700"
+                                    : step > n
+                                        ? "bg-white/30 text-white"
+                                        : "bg-white/10 text-indigo-200"
                                     }`}
                             >
                                 <span
                                     className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${step === n
-                                            ? "bg-indigo-600 text-white"
-                                            : step > n
-                                                ? "bg-emerald-400 text-white"
-                                                : "bg-white/20 text-indigo-200"
+                                        ? "bg-indigo-600 text-white"
+                                        : step > n
+                                            ? "bg-emerald-400 text-white"
+                                            : "bg-white/20 text-indigo-200"
                                         }`}
                                 >
                                     {step > n ? "✓" : n}
@@ -197,8 +197,8 @@ export default function InterviewScheduleModal({
                                                 key={t.value}
                                                 onClick={() => setForm({ ...form, type: t.value })}
                                                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${form.type === t.value
-                                                        ? "bg-indigo-600 text-white shadow-sm shadow-indigo-300"
-                                                        : "bg-indigo-50 text-indigo-500 hover:bg-indigo-100"
+                                                    ? "bg-indigo-600 text-white shadow-sm shadow-indigo-300"
+                                                    : "bg-indigo-50 text-indigo-500 hover:bg-indigo-100"
                                                     }`}
                                             >
                                                 {t.label}
@@ -218,8 +218,8 @@ export default function InterviewScheduleModal({
                                                     key={m}
                                                     onClick={() => setForm({ ...form, mode: m })}
                                                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all capitalize ${form.mode === m
-                                                            ? "bg-indigo-600 text-white shadow-sm shadow-indigo-300"
-                                                            : "bg-indigo-50 text-indigo-500 hover:bg-indigo-100"
+                                                        ? "bg-indigo-600 text-white shadow-sm shadow-indigo-300"
+                                                        : "bg-indigo-50 text-indigo-500 hover:bg-indigo-100"
                                                         }`}
                                                 >
                                                     {m === "in-person"

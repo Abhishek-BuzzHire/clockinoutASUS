@@ -9,13 +9,7 @@ import SkillsSection from "./SkillsSection";
 import { CertificationsSection, LanguagesSection } from "@/components/Referrals/CertificationLanguageSection";
 import ReferralMetaSection from "./ReferralMetaSection";
 import {
-    ReferralFormData,
-    FormSectionId,
-    WorkExperience,
-    Education,
-    Skill,
-    Certification,
-    Language,
+    ReferralFormData, FormSectionId, WorkExperience, Education, Skill, Certification, Language,
 } from "@/lib/types/ReferalTypes/referalindex";
 import { defaultFormData } from "@/lib/types/ReferalTypes/referral";
 import { backendApi } from "@/lib/backendApi";
@@ -81,7 +75,30 @@ export default function ReferralForm({ initialData }: Props) {
         }
     };
 
-    if (submitted) return <div className="p-8 text-green-600 font-medium">Application submitted ✅</div>;
+    if (submitted) {
+        return (
+            <div className="flex flex-1 flex-col items-center justify-center gap-5 p-10 bg-sky-50 text-center">
+                <div className="w-20 h-20 rounded-full bg-emerald-50 border-2 border-emerald-300 flex items-center justify-center text-emerald-500">
+                    <svg width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight text-gray-900">Referral Submitted!</h2>
+                    <p className="text-sm text-gray-500 mt-2 max-w-xs leading-relaxed">
+                        Candidate added to the pipeline at the <strong className="text-emerald-600">Applied</strong> stage.
+                    </p>
+                </div>
+                <button
+                    className="mt-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-all shadow-sm"
+                    onClick={() => { setSubmitted(false); setForm(defaultFormData()); setDone(new Set()); }}
+                >
+                    Submit Another
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-1 overflow-hidden h-full">
@@ -89,9 +106,29 @@ export default function ReferralForm({ initialData }: Props) {
                 <SectionNav active={active} completedSections={done} onSelect={scrollTo} />
             </aside>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto bg-sky-50 scroll-smooth">
                 {FORM_SECTIONS.map((section) => (
                     <div key={section.id} ref={(el) => { refs.current[section.id] = el; }}>
+
+                        {/* Section header */}
+                        <div className="flex items-center gap-3 mb-7">
+                            <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-xl shadow-sm shrink-0">
+                                {section.icon}
+                            </div>
+                            <div className="flex-1">
+                                <h2 className="text-base font-bold text-gray-900 tracking-tight">{section.label}</h2>
+                                <p className="text-xs text-gray-400 mt-0.5">{section.description}</p>
+                            </div>
+                            {done.has(section.id) && (
+                                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                                    <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    Done
+                                </span>
+                            )}
+                        </div>
+
                         {section.id === "basic" && (
                             <BasicInfoSection
                                 data={form.basicInfo}

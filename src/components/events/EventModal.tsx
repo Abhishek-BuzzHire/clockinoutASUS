@@ -4,114 +4,122 @@ import { useState } from "react";
 import InterviewScheduleModal from "./InterviewScheduleModal";
 import EventBroadcastModal from "./EventBroadCastModal";
 
-export default function EventModalDemo() {
-    const [showInterview, setShowInterview] = useState(false);
-    const [showEvent, setShowEvent] = useState(false);
+type View = "picker" | "interview" | "event";
 
-    return (
-        <div
-            className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-violet-50 flex flex-col items-center justify-center gap-6 p-8"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
-        >
-            <div className="text-center mb-4">
-                <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-2">
-                    Component Preview
-                </p>
-                <h1 className="text-3xl font-bold text-slate-800">Event Modals</h1>
-                <p className="text-slate-400 text-sm mt-1">
-                    Trigger from notifications, action buttons, sidebars, etc.
-                </p>
-            </div>
+interface EventModalProps {
+    open: boolean;
+    onClose: () => void;
+}
 
-            <div className="flex gap-4 flex-wrap justify-center">
-                {/* Interview Trigger */}
-                <button
-                    onClick={() => setShowInterview(true)}
-                    className="group flex items-center gap-3 bg-white border border-indigo-100 hover:border-indigo-300 rounded-2xl px-6 py-4 shadow-sm shadow-indigo-100 hover:shadow-indigo-200 transition-all"
-                >
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white text-lg">
-                        🧑‍💼
-                    </div>
-                    <div className="text-left">
-                        <p className="text-sm font-bold text-slate-800">
-                            Schedule Interview
-                        </p>
-                        <p className="text-xs text-slate-400">Add interviewee, panel & time</p>
-                    </div>
-                    <span className="ml-2 text-indigo-300 group-hover:text-indigo-500 transition-colors">
-                        →
-                    </span>
-                </button>
+export default function EventModal({ open, onClose }: EventModalProps) {
+    const [view, setView] = useState<View>("picker");
 
-                {/* Event/Broadcast Trigger */}
-                <button
-                    onClick={() => setShowEvent(true)}
-                    className="group flex items-center gap-3 bg-white border border-indigo-100 hover:border-indigo-300 rounded-2xl px-6 py-4 shadow-sm shadow-indigo-100 hover:shadow-indigo-200 transition-all"
-                >
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-500 flex items-center justify-center text-white text-lg">
-                        📢
-                    </div>
-                    <div className="text-left">
-                        <p className="text-sm font-bold text-slate-800">
-                            Create Event / Notify
-                        </p>
-                        <p className="text-xs text-slate-400">
-                            Meeting, announcement, deadline
-                        </p>
-                    </div>
-                    <span className="ml-2 text-indigo-300 group-hover:text-indigo-500 transition-colors">
-                        →
-                    </span>
-                </button>
-            </div>
+    if (!open) return null;
 
-            {/* Usage hint */}
-            <div className="mt-4 bg-white border border-indigo-100 rounded-2xl px-6 py-4 max-w-lg w-full shadow-sm">
-                <p className="text-xs font-semibold text-indigo-500 uppercase tracking-widest mb-3">
-                    Usage Example
-                </p>
-                <pre className="text-xs text-slate-600 bg-slate-50 rounded-xl p-4 overflow-x-auto">
-                    {`// In a notification, action bar, sidebar:
-<button onClick={() => setShowInterview(true)}>
-  Schedule Interview
-</button>
+    const handleClose = () => {
+        setView("picker"); // reset back to picker on close
+        onClose();
+    };
 
-<InterviewScheduleModal
-  open={showInterview}
-  onClose={() => setShowInterview(false)}
-  onSubmit={(data) => {
-    // handle form data — connect API here
-    console.log(data);
-  }}
-/>
-
-<EventBroadcastModal
-  open={showEvent}
-  onClose={() => setShowEvent(false)}
-  onSubmit={(data) => {
-    // handle form data — connect API here
-  }}
-/>`}
-                </pre>
-            </div>
-
+    // If one of the sub-modals is active, render it directly
+    if (view === "interview") {
+        return (
             <InterviewScheduleModal
-                open={showInterview}
-                onClose={() => setShowInterview(false)}
+                open={true}
+                onClose={handleClose}
                 onSubmit={(data) => {
-                    console.log("Interview scheduled:", data);
-                    setShowInterview(false);
+                    console.log("[Interview] submitted:", data);
+                    // TODO: connect API
+                    handleClose();
                 }}
+            />
+        );
+    }
+
+    if (view === "event") {
+        return (
+            <EventBroadcastModal
+                open={true}
+                onClose={handleClose}
+                onSubmit={(data) => {
+                    console.log("[Event] submitted:", data);
+                    // TODO: connect API
+                    handleClose();
+                }}
+            />
+        );
+    }
+
+    // Picker view
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-indigo-950/20 "
+                onClick={handleClose}
             />
 
-            <EventBroadcastModal
-                open={showEvent}
-                onClose={() => setShowEvent(false)}
-                onSubmit={(data) => {
-                    console.log("Event created:", data);
-                    setShowEvent(false);
-                }}
-            />
+            {/* Picker card */}
+            <div className="relative bg-white rounded-2xl shadow-2xl shadow-indigo-200/60 border border-indigo-100 overflow-hidden w-full max-w-sm">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-5 flex items-center justify-between">
+                    <div>
+                        <p className="text-indigo-200 text-xs font-semibold tracking-widest uppercase mb-1">
+                            New
+                        </p>
+                        <h2 className="text-white text-xl font-bold">Add Event</h2>
+                    </div>
+                    <button
+                        onClick={handleClose}
+                        className="text-white/60 hover:text-white w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                {/* Options */}
+                <div className="p-4 flex flex-col gap-3">
+                    <p className="text-xs text-slate-400 font-medium px-1">
+                        What would you like to create?
+                    </p>
+
+                    <button
+                        onClick={() => setView("interview")}
+                        className="group flex items-center gap-4 p-4 rounded-xl border border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50/60 transition-all text-left"
+                    >
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-xl shrink-0 shadow-sm shadow-indigo-300">
+                            🧑‍💼
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-slate-800">Schedule Interview</p>
+                            <p className="text-xs text-slate-400 mt-0.5">
+                                Add interviewee, panel members & time slot
+                            </p>
+                        </div>
+                        <span className="text-indigo-300 group-hover:text-indigo-500 transition-colors text-lg">
+                            →
+                        </span>
+                    </button>
+
+                    <button
+                        onClick={() => setView("event")}
+                        className="group flex items-center gap-4 p-4 rounded-xl border border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50/60 transition-all text-left"
+                    >
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-500 flex items-center justify-center text-xl shrink-0 shadow-sm shadow-violet-300">
+                            📢
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-slate-800">Create Event / Notify</p>
+                            <p className="text-xs text-slate-400 mt-0.5">
+                                Meeting, announcement, deadline or workshop
+                            </p>
+                        </div>
+                        <span className="text-indigo-300 group-hover:text-indigo-500 transition-colors text-lg">
+                            →
+                        </span>
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

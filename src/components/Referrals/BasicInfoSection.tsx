@@ -12,7 +12,6 @@ export default function BasicInfoSection({ data, onChange }: Props) {
     const setStr = (k: keyof BasicInfo) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
         set(k as any, e.target.value || null);
 
-    // ✅ Safe setter (handles undefined profile_experience)
     const setExp = (field: "years" | "months", val: string) =>
         set("profile_experience", {
             ...(data.profile_experience ?? { years: null, months: null }),

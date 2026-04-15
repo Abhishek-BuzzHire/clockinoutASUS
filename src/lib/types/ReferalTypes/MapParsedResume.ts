@@ -5,6 +5,7 @@ import {
   Education,
   Skill,
 } from "@/lib/types/ReferalTypes/referalindex";
+import { Candidate } from "../jobs";
 
 // ─── API Types ─────────────────────────────────
 
@@ -89,4 +90,48 @@ export function mapParsedResumeToForm(raw: ApiParsedData): Partial<ReferralFormD
     skills: mapSkills(raw.skills),
     resumeFileUrl: raw.resume?.file_url ?? null,
   };
+}
+
+
+export const stagesData = ['Screening', 'Test', 'Interview', 'Rejected', 'Hired']
+
+export function mapApiToCandidate(raw: any): Candidate {
+    return {
+        id: String(raw?.id ?? raw?.candidate_id ?? ""),
+        name: raw?.candidate_name ?? raw?.full_name ?? "Unknown",
+        email: raw?.candidate_email ?? raw?.primary_email ?? "",
+        phone: raw?.candidate_phone ?? raw?.primary_phone ?? "",
+        photo: raw?.photo || "/avatar.png",
+        currentJob: raw?.current_designation ?? raw?.currentJob ?? "",
+        currentCompany: raw?.headline ?? raw?.current_company ?? "",
+        currentCTC: raw?.current_salary_amount
+            ? `${raw?.salary_currency ?? ""} ${raw.current_salary_amount}`
+            : raw?.expectedCTC || "N/A",
+        education: raw?.education ?? "N/A",
+        experience:
+            raw?.total_experience_months != null
+                ? `${Math.floor(raw.total_experience_months / 12)} yrs ${raw.total_experience_months % 12
+                } mo`
+                : raw?.experience || "N/A",
+        location: raw?.location
+            ? typeof raw.location === "string"
+                ? raw.location
+                : [
+                    raw.location?.city,
+                    raw.location?.state,
+                    raw.location?.country,
+                ]
+                    .filter(Boolean)
+                    .join(", ")
+            : raw?.candidate_location || "N/A",
+        skills: Array.isArray(raw?.skills)
+            ? raw.skills.map((s: any) => s?.name ?? s?.skill_name ?? s)
+            : [],
+        sourcedBy: raw?.sourced_by ?? raw?.source ?? "N/A",
+        dateApplied: raw?.created_at ?? raw?.dateApplied ?? null,
+        pipelineStatus:
+            typeof raw?.pipeline_status === "string"
+                ? raw.pipeline_status
+                : raw?.pipeline_status?.name ?? raw?.pipelineStatus ?? stagesData[0],
+    };
 }

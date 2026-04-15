@@ -1,16 +1,15 @@
 "use client";
-import { referralApi } from "@/apis/referrals/route";
+
+import { candidateApi } from "@/apis/candidates/routes";
+import CandidateTable from "@/components/jobs/CandidateTable";
 import Pagination from "@/components/Pagination";
 import { Candidate } from "@/lib/types/jobs";
-import { mapApiToCandidate, stagesData } from "@/lib/types/ReferalTypes/MapParsedResume";
+import { stagesData, mapApiToCandidate } from "@/lib/types/ReferalTypes/MapParsedResume";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import CandidateTable from "@/components/jobs/CandidateTable";
 
 
-export default function AddReferralSection() {
-    const router = useRouter();
+export default function TotalCandidates() {
     const [data, setData] = useState<Candidate[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -20,15 +19,15 @@ export default function AddReferralSection() {
         try {
             setLoading(true);
 
-            const response = await referralApi.getReferrals();
+            const response = await candidateApi.getCandidates();
             console.log("apiData", response);
 
-            // Response is Array(1) where [0] has { count, data: [...], message }
+
             const raw: any[] = Array.isArray(response)
                 ? response.flatMap((item: any) =>
-                    Array.isArray(item?.data) ? item.data : []
+                    Array.isArray(item?.profiles) ? item.profiles : [item]
                 )
-                : response?.data ?? [];
+                : response?.profiles ?? (response ? [response] : []);
 
             console.log("raw candidates", raw);
 
@@ -48,9 +47,6 @@ export default function AddReferralSection() {
         fetchCandidates();
     }, []);
 
-    const handleAddCandidate = () => {
-        router.push("/list/referrals/addReferral");
-    };
 
     if (loading) {
         return (
@@ -86,13 +82,6 @@ export default function AddReferralSection() {
                         Filter
                     </button>
                 </div>
-
-                <button
-                    onClick={handleAddCandidate}
-                    className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition"
-                >
-                    Add a Candidate
-                </button>
             </div>
 
             <CandidateTable data={data} stages={stages} />

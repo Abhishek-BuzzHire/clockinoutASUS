@@ -534,7 +534,6 @@ export const candidateJobData = [
   }
 ];
 
-export const stagesData = ['Screening', 'Test', 'Interview', 'Rejected', 'Hired']
 
 export const employeeData = [
   {

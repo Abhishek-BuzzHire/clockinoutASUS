@@ -186,7 +186,7 @@ export default function EventBroadcastModal({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-indigo-950/20 backdrop-blur-sm"
+                className="absolute inset-0 bg-indigo-950/20 "
                 onClick={onClose}
             />
 
@@ -195,8 +195,8 @@ export default function EventBroadcastModal({
                 {/* Header */}
                 <div
                     className={`px-6 py-5 ${form.isUrgent
-                            ? "bg-gradient-to-r from-rose-500 to-orange-500"
-                            : "bg-gradient-to-r from-indigo-600 to-violet-600"
+                        ? "bg-gradient-to-r from-rose-500 to-orange-500"
+                        : "bg-gradient-to-r from-indigo-600 to-violet-600"
                         } transition-all duration-500`}
                 >
                     <div className="flex items-center justify-between mb-4">
@@ -229,8 +229,8 @@ export default function EventBroadcastModal({
                                 key={t.value}
                                 onClick={() => setForm({ ...form, type: t.value })}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${form.type === t.value
-                                        ? "bg-white text-indigo-700"
-                                        : "bg-white/10 text-white/70 hover:bg-white/20"
+                                    ? "bg-white text-indigo-700"
+                                    : "bg-white/10 text-white/70 hover:bg-white/20"
                                     }`}
                             >
                                 {t.icon} {t.label}
@@ -267,8 +267,8 @@ export default function EventBroadcastModal({
                                     setForm({ ...form, isUrgent: !form.isUrgent })
                                 }
                                 className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-all ${form.isUrgent
-                                        ? "bg-rose-50 border-rose-300 text-rose-600"
-                                        : "bg-slate-50 border-slate-200 text-slate-400 hover:border-rose-200"
+                                    ? "bg-rose-50 border-rose-300 text-rose-600"
+                                    : "bg-slate-50 border-slate-200 text-slate-400 hover:border-rose-200"
                                     }`}
                             >
                                 🔴 Urgent
@@ -389,8 +389,8 @@ export default function EventBroadcastModal({
                                     key={v}
                                     onClick={() => setForm({ ...form, audienceType: v })}
                                     className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${form.audienceType === v
-                                            ? "bg-indigo-600 text-white shadow-sm shadow-indigo-300"
-                                            : "bg-indigo-50 text-indigo-500 hover:bg-indigo-100"
+                                        ? "bg-indigo-600 text-white shadow-sm shadow-indigo-300"
+                                        : "bg-indigo-50 text-indigo-500 hover:bg-indigo-100"
                                         }`}
                                 >
                                     {label}
@@ -436,14 +436,14 @@ export default function EventBroadcastModal({
                                                 key={c.id}
                                                 onClick={() => toggleCandidate(c)}
                                                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${selected
-                                                        ? "bg-indigo-50"
-                                                        : "hover:bg-slate-50"
+                                                    ? "bg-indigo-50"
+                                                    : "hover:bg-slate-50"
                                                     } border-b border-indigo-50 last:border-0`}
                                             >
                                                 <div
                                                     className={`w-4 h-4 rounded flex items-center justify-center border-2 transition-all ${selected
-                                                            ? "bg-indigo-600 border-indigo-600"
-                                                            : "border-slate-300"
+                                                        ? "bg-indigo-600 border-indigo-600"
+                                                        : "border-slate-300"
                                                         }`}
                                                 >
                                                     {selected && (
@@ -501,8 +501,8 @@ export default function EventBroadcastModal({
                                         key={v}
                                         onClick={() => toggleChannel(v)}
                                         className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${form.channels.includes(v)
-                                                ? "bg-indigo-600 text-white shadow-sm shadow-indigo-300"
-                                                : "bg-indigo-50 text-indigo-400 hover:bg-indigo-100"
+                                            ? "bg-indigo-600 text-white shadow-sm shadow-indigo-300"
+                                            : "bg-indigo-50 text-indigo-400 hover:bg-indigo-100"
                                             }`}
                                     >
                                         <span>{icon}</span>
@@ -519,8 +519,8 @@ export default function EventBroadcastModal({
                                 </label>
                                 <div
                                     className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-colors ${form.requireRSVP
-                                            ? "bg-indigo-50 border border-indigo-200"
-                                            : "bg-slate-50 border border-slate-100"
+                                        ? "bg-indigo-50 border border-indigo-200"
+                                        : "bg-slate-50 border border-slate-100"
                                         }`}
                                     onClick={() =>
                                         setForm({ ...form, requireRSVP: !form.requireRSVP })
@@ -571,8 +571,8 @@ export default function EventBroadcastModal({
                         <button
                             onClick={handleSubmit}
                             className={`px-5 py-2 rounded-xl text-white text-sm font-semibold transition-all shadow-sm ${form.isUrgent
-                                    ? "bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 shadow-rose-300"
-                                    : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-indigo-300"
+                                ? "bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 shadow-rose-300"
+                                : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-indigo-300"
                                 }`}
                         >
                             {form.isUrgent ? "🔴 " : ""}
