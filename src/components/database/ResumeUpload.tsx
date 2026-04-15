@@ -1,4 +1,4 @@
-import React, { useRef, useState} from 'react';
+import React, { useRef, useState } from 'react';
 import { uploadAndParseResume } from '@/utils/apiService';
 import { Button } from '../ui/button';
 import { Candidate } from '@/lib/types';
@@ -38,7 +38,7 @@ const ResumeUpload: React.FC<ResumeUploadProps> = ({ onParsedData }) => {
                 accept='.pdf, .doc, .docx'
                 ref={fileInputRef}
                 onChange={handleFileChange}
-                style={{display: 'none'}}
+                style={{ display: 'none' }}
             />
 
             <Button size='lg' variant='default' type='button' onClick={handleCvButton}>{text}</Button>
