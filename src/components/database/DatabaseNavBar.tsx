@@ -15,6 +15,12 @@ const DatabaseNavbar: React.FC = () => {
 
           <div className="hidden md:flex space-x-4">
             <NavLink
+              to="/database/bulk-upload"
+              icon={<Users size={18} />}
+              label="Bulk Upload"
+              isActive={pathname === '/database/bulk-upload'}
+            />
+            <NavLink
               to="/database/add-candidate"
               icon={<Users size={18} />}
               label="Add Candidate"
@@ -35,6 +41,12 @@ const DatabaseNavbar: React.FC = () => {
       {/* Mobile nav - simplified for MVP */}
       <div className="md:hidden border-t border-gray-200 bg-white fixed bottom-0 w-full shadow-lg">
         <div className="flex justify-around py-2">
+          <MobileNavLink
+            to="/database/bulk-upload"
+            icon={<Users size={20} />}
+            label="Bulk"
+            isActive={pathname === '/database/bulk-upload'}
+          />
           <MobileNavLink
             to="/database/add-candidate"
             icon={<Users size={20} />}
