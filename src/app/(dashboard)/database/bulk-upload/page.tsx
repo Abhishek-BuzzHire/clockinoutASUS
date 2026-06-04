@@ -46,6 +46,15 @@ const BulkUploadForm: React.FC = () => {
 
         setCandidates(prev => [...prev, ...newCandidates]);
         if (fileInputRef.current) fileInputRef.current.value = ''; // reset input
+        
+        // Automatically start parsing the newly added files sequentially
+        setIsProcessingAll(true);
+        for (const c of newCandidates) {
+            if (c.file) {
+                await parseFile(c._uiId, c.file);
+            }
+        }
+        setIsProcessingAll(false);
     };
 
     const parseFile = async (uiId: string, file: File) => {
@@ -76,17 +85,11 @@ const BulkUploadForm: React.FC = () => {
         }
     };
 
-    const handleParseAllPending = async () => {
-        setIsProcessingAll(true);
-        const pending = candidates.filter(c => c.status === 'pending');
-        
-        // Process sequentially to not overload the API limit too quickly
-        for (const c of pending) {
-            if (c.file) {
-                await parseFile(c._uiId, c.file);
-            }
+    const handleRetryParse = async (uiId: string) => {
+        const candidate = candidates.find(c => c._uiId === uiId);
+        if (candidate && candidate.file) {
+            await parseFile(uiId, candidate.file);
         }
-        setIsProcessingAll(false);
     };
 
     const toggleExpand = (uiId: string) => {
@@ -226,13 +229,6 @@ const BulkUploadForm: React.FC = () => {
                         </div>
                     </div>
                     <div className="space-x-3">
-                        <Button 
-                            variant="secondary" 
-                            disabled={isProcessingAll || candidates.filter(c => c.status === 'pending').length === 0}
-                            onClick={handleParseAllPending}
-                        >
-                            {isProcessingAll ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Parsing...</> : "Parse All Pending"}
-                        </Button>
                         <Button 
                             variant="default"
                             disabled={isSavingAll || candidates.filter(c => c.status === 'parsed').length === 0}
