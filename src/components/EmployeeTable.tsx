@@ -45,8 +45,12 @@ const renderRow = ({ item, onRowClick }: { item: any, onRowClick?: (employee: Em
 
     const getProfilePhoto = () => {
         if (item.profile_photo) {
-            // If profile_photo is base64 already
+            // If profile_photo is a URL string
             if (typeof item.profile_photo === 'string') {
+                if (item.profile_photo.startsWith('/api/')) {
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                    return `${apiUrl}${item.profile_photo}`;
+                }
                 return `data:image/jpeg;base64,${item.profile_photo}`;
             }
             // If it's binary, convert to base64

@@ -19,8 +19,12 @@ const EmployeeDetails = ({
 
   const getProfilePhoto = () => {
     if (data.profile_photo) {
-      // If profile_photo is base64 already
+      // If profile_photo is a URL string
       if (typeof data.profile_photo === 'string') {
+        if (data.profile_photo.startsWith('/api/')) {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+          return `${apiUrl}${data.profile_photo}`;
+        }
         return `data:image/jpeg;base64,${data.profile_photo}`;
       }
       // If it's binary, convert to base64

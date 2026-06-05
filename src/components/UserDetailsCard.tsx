@@ -28,11 +28,21 @@ export function UserDetailsCard() {
 
   const displayName = employee?.name ?? user?.username ?? "User";
   const role = user?.role ?? "employee";
-  const avatarSrc = employee?.profile_photo
-    ? employee.profile_photo.startsWith("data:")
-      ? employee.profile_photo
-      : `data:image/png;base64,${employee.profile_photo}`
-    : "/avatar.png";
+  const getAvatarSrc = () => {
+    if (!employee?.profile_photo) return "/avatar.png";
+    if (typeof employee.profile_photo === 'string') {
+      if (employee.profile_photo.startsWith('/api/')) {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        return `${apiUrl}${employee.profile_photo}`;
+      }
+      return employee.profile_photo.startsWith("data:")
+        ? employee.profile_photo
+        : `data:image/png;base64,${employee.profile_photo}`;
+    }
+    return `data:image/png;base64,${btoa(String.fromCharCode(...new Uint8Array(employee.profile_photo)))}`;
+  };
+  
+  const avatarSrc = getAvatarSrc();
 
   const handleLogout = () => {
     logout();
