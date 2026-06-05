@@ -116,12 +116,12 @@ export default function DailyOverview() {
 
   return (
     <>
-      <div className="bg-white border border-[#E9EBF0] rounded-xl p-6">
+      <div className="bg-white border border-[#E9EBF0] rounded-xl p-8">
         {/* Header with arrows */}
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <p className="text-lg font-bold text-gray-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>{dateLabel}</p>
-            <p className="text-sm text-gray-400 mt-0.5">
+            <p className="text-2xl font-medium text-gray-900 tracking-tight" style={{ fontFamily: "'Georgia', serif" }}>{dateLabel}</p>
+            <p className="text-sm text-gray-500 mt-1.5">
               {isToday(selectedDate) ? "Live snapshot" : "Historical data"} · {format(selectedDate, "EEEE, MMMM d, yyyy")}
             </p>
           </div>

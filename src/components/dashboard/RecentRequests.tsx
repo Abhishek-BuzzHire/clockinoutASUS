@@ -174,6 +174,14 @@ export default function RecentRequests() {
     return "bg-amber-50 text-amber-800";
   };
 
+  const getTypeBadge = (type: string) => {
+    const t = type.toUpperCase();
+    if (t === "LEAVE") return "bg-rose-50 text-rose-600";
+    if (t === "WFH") return "bg-sky-50 text-sky-600";
+    if (t === "REGULARIZE") return "bg-purple-50 text-purple-600";
+    return "bg-gray-50 text-gray-600";
+  };
+
   const filterPills: { key: FilterType; label: string }[] = [
     { key: "all", label: "All" },
     { key: "pending", label: "Pending" },
@@ -226,7 +234,7 @@ export default function RecentRequests() {
                     <span className="font-semibold text-gray-900 hover:underline">{req.name}</span>
                   </td>
                   <td className="py-3.5 px-3 border-b border-gray-50">
-                    <span className="bg-gray-100 text-gray-700 text-xs px-2.5 py-1 rounded font-medium">{req.type}</span>
+                    <span className={`${getTypeBadge(req.type)} text-xs px-2.5 py-1 rounded font-medium`}>{req.type}</span>
                   </td>
                   <td className="py-3.5 px-3 border-b border-gray-50 text-gray-500">{req.dates}</td>
                   <td className="py-3.5 px-3 border-b border-gray-50">
