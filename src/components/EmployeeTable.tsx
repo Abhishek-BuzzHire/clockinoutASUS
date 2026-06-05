@@ -62,9 +62,10 @@ const renderRow = ({ item, onRowClick }: { item: any, onRowClick?: (employee: Em
     return (
         <tr key={item.id} className="border-b-2 font-semibold border-gray-200 bg-white text-sm hover:bg-sky-50 cursor-pointer" onClick={() => onRowClick?.(item)}>
             <td className="flex items-center gap-4 p-4">
-                <Image src={getProfilePhoto()} alt={item.name} width={40} height={40} className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
+                <img src={getProfilePhoto()} alt={item.name} className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
                     onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/avatar.png";
+                        const target = e.target as HTMLImageElement;
+                        if (!target.src.includes("/avatar.png")) target.src = "/avatar.png";
                     }} />
                 <div className="space-y-1">
                     <h3>{item.name}</h3>

@@ -176,12 +176,14 @@ const EmployeeDetails = ({
         <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
 
           {/* Profile Image */}
-          <Image
+          <img
             src={getProfilePhoto()}
-            alt=""
-            width={136}
-            height={136}
+            alt="Profile"
             className="rounded-full w-24 h-24 sm:w-32 sm:h-32 object-cover shrink-0"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (!target.src.includes("/avatar.png")) target.src = "/avatar.png";
+            }}
           />
 
           {/* Right Content */}

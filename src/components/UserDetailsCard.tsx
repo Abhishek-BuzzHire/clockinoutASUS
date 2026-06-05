@@ -61,13 +61,14 @@ export function UserDetailsCard() {
             <span className="text-xs leading-3 font-medium text-gray-700">{displayName}</span>
             <span className="text-[10px] text-gray-500 capitalize">{role}</span>
           </div>
-          <Image
+          <img
             src={avatarSrc}
-            alt=""
-            width={36}
-            height={36}
-            className="rounded-full border-2 border-white shadow-sm"
-            unoptimized={!!employee?.profile_photo}
+            alt="User avatar"
+            className="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (!target.src.includes("/avatar.png")) target.src = "/avatar.png";
+            }}
           />
         </button>
       </DropdownMenuTrigger>
@@ -83,13 +84,14 @@ export function UserDetailsCard() {
           <CardHeader className="pb-3 pt-5 px-5">
             <div className="flex items-center gap-3">
               <div className="relative shrink-0">
-                <Image
+                <img
                   src={avatarSrc}
-                  alt=""
-                  width={48}
-                  height={48}
-                  className="rounded-full border-2 border-slate-200"
-                  unoptimized={!!employee?.profile_photo}
+                  alt="User avatar"
+                  className="w-12 h-12 rounded-full border-2 border-slate-200 object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    if (!target.src.includes("/avatar.png")) target.src = "/avatar.png";
+                  }}
                 />
               </div>
               <div className="min-w-0 flex-1">

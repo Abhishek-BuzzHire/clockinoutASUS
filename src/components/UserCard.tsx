@@ -33,7 +33,12 @@ const UserCard = ({ data }: { data: any }) => {
       </div>
       <div className="py-4 space-y-2">
         <div className="flex justify-center">
-          <Image src={getProfilePhoto()} alt="data.name" width={68} height={68} className="rounded-full" />
+          <img src={getProfilePhoto()} alt="Profile" className="w-[68px] h-[68px] rounded-full object-cover" 
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (!target.src.includes("/avatar.png")) target.src = "/avatar.png";
+            }}
+          />
         </div>
         <div className="text-center">
           <p className="text-lg">{data.name}</p>
