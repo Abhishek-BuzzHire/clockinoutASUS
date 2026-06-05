@@ -5,7 +5,7 @@ import { Employee } from "@/lib/types";
 import { Linkedin } from "lucide-react";
 import Image from "next/image"
 import { useState } from "react";
-import { apiUrl } from "@/lib/data";
+
 
 const EmployeeDetails = ({
   data,
@@ -19,18 +19,10 @@ const EmployeeDetails = ({
 
 
   const getProfilePhoto = () => {
-    if (data.profile_photo) {
-      // If profile_photo is a URL string
-      if (typeof data.profile_photo === 'string') {
-        if (data.profile_photo.startsWith('/api/')) {
-          return `${apiUrl}${data.profile_photo}`;
-        }
-        return `data:image/jpeg;base64,${data.profile_photo}`;
-      }
-      // If it's binary, convert to base64
-      return `data:image/jpeg;base64,${btoa(String.fromCharCode(...new Uint8Array(data.profile_photo)))}`;
+    if (data.profile_photo && typeof data.profile_photo === 'string') {
+      return `data:image/jpeg;base64,${data.profile_photo}`;
     }
-    return "/avatar.png"; // Fallback image
+    return "/avatar.png";
   };
 
 

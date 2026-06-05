@@ -16,7 +16,7 @@ import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import ChangePassword from "./ChangePassword";
-import { apiUrl } from "@/lib/data";
+
 
 export function UserDetailsCard() {
   const router = useRouter();
@@ -32,14 +32,11 @@ export function UserDetailsCard() {
   const getAvatarSrc = () => {
     if (!employee?.profile_photo) return "/avatar.png";
     if (typeof employee.profile_photo === 'string') {
-      if (employee.profile_photo.startsWith('/api/')) {
-        return `${apiUrl}${employee.profile_photo}`;
-      }
       return employee.profile_photo.startsWith("data:")
         ? employee.profile_photo
         : `data:image/png;base64,${employee.profile_photo}`;
     }
-    return `data:image/png;base64,${btoa(String.fromCharCode(...new Uint8Array(employee.profile_photo)))}`;
+    return "/avatar.png";
   };
   
   const avatarSrc = getAvatarSrc();
