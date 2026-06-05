@@ -1,11 +1,9 @@
 'use client'
 
 import CVCount, { CVUserData } from "@/components/dashboard/CVCount"
-import Pipeline from "@/components/dashboard/Pipeline"
-import WeeklyStats from "@/components/dashboard/WeeklyStats"
-import RecentActivity from "@/components/dashboard/RecentActivity"
 import UpcomingEvents from "@/components/dashboard/UpcomingEvents"
 import RecentRequests from "@/components/dashboard/RecentRequests"
+import DailyOverview from "@/components/dashboard/DailyOverview"
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -54,31 +52,32 @@ const AdminDashboard = () => {
 
     return (
         <>
-            <>
-                <div className='p-4 flex gap-4 flex-col md:flex-row bg-blueLight-50 min-h-screen'>
-                    {/* LEFT / CENTER AREA - New Widgets */}
-                    <div className="w-full lg:w-2/3 flex flex-col gap-4">
-                        {/* Top Row: Activity & Events */}
-                        <div className="flex flex-col md:flex-row gap-4 h-[350px]">
-                            <div className="w-full md:w-1/2 h-full">
-                                <RecentActivity />
-                            </div>
-                            <div className="w-full md:w-1/2 h-full">
-                                <UpcomingEvents />
-                            </div>
-                        </div>
-                        {/* Bottom Row: Recent Requests */}
-                        <div className="w-full mt-2">
-                            <RecentRequests />
-                        </div>
+                <div className='p-6 flex flex-col gap-6 bg-slate-50 min-h-screen'>
+                    {/* TOP ROW: Live Pulse */}
+                    <div className="w-full">
+                        <DailyOverview />
                     </div>
 
-                    {/* RIGHT AREA - Existing CV Count */}
-                    <div className="w-full lg:w-1/3 flex flex-col gap-4">
-                        <CVCount data={todayCVData} loading={loading}/>
+                    {/* BOTTOM ROW: Content Grid */}
+                    <div className="flex flex-col lg:flex-row gap-6 w-full">
+                        {/* LEFT COLUMN: Actions & Requests */}
+                        <div className="w-full lg:w-2/3 flex flex-col gap-6">
+                            <div className="flex-1">
+                                <RecentRequests />
+                            </div>
+                        </div>
+
+                        {/* RIGHT COLUMN: Events & Recruitment */}
+                        <div className="w-full lg:w-1/3 flex flex-col gap-6">
+                            <div className="h-[350px]">
+                                <UpcomingEvents />
+                            </div>
+                            <div className="flex-1">
+                                <CVCount data={todayCVData} loading={loading} />
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </>
         </>
     )
 }
