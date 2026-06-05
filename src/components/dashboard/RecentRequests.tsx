@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/lib/data";
@@ -19,13 +17,15 @@ interface RequestData {
   typeKey: "leave" | "wfh" | "regularize";
   dates: string;
   status: string;
-  // Raw data for modals
   rawData: any;
 }
+
+type FilterType = "all" | "pending" | "approved";
 
 export default function RecentRequests() {
   const [requests, setRequests] = useState<RequestData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<FilterType>("all");
 
   // Modal states
   const [selectedLeave, setSelectedLeave] = useState<any | null>(null);
@@ -79,7 +79,7 @@ export default function RecentRequests() {
           combined.push({
             id: `reg-${r.approval_token || r.id}`,
             name: r.employee || "—",
-            type: `Regularize (${r.type || ""})`,
+            type: `Regularize`,
             typeKey: "regularize",
             dates: r.date || "—",
             status: r.status || "PENDING",
@@ -107,6 +107,12 @@ export default function RecentRequests() {
     fetchRequests();
   }, [fetchRequests]);
 
+  const filteredRequests = useMemo(() => {
+    if (filter === "pending") return requests.filter(r => r.status === "PENDING");
+    if (filter === "approved") return requests.filter(r => r.status === "APPROVED");
+    return requests;
+  }, [requests, filter]);
+
   // --- Click handler: open the right modal ---
   const handleRowClick = async (req: RequestData) => {
     if (req.typeKey === "leave") {
@@ -114,7 +120,6 @@ export default function RecentRequests() {
     } else if (req.typeKey === "wfh") {
       setSelectedWFH(req.rawData);
     } else if (req.typeKey === "regularize") {
-      // Need to fetch detail via approval_token
       try {
         const tkn = Cookies.get("access");
         const res = await axios.get(`${apiUrl}/api/admin/attendance-approval/${req.rawData.approval_token}`, {
@@ -139,7 +144,7 @@ export default function RecentRequests() {
       );
       alert(res.data.message);
       setSelectedLeave(null);
-      fetchRequests(); // refresh list
+      fetchRequests();
     } catch (err: any) {
       alert(err?.response?.data?.error || "Action failed");
     }
@@ -178,56 +183,93 @@ export default function RecentRequests() {
     }
   };
 
+  const getStatusDot = (status: string) => {
+    const s = status.toUpperCase();
+    if (s === "APPROVED") return "bg-green-500";
+    if (s === "REJECTED") return "bg-red-500";
+    return "bg-amber-500";
+  };
+
   const getStatusBadge = (status: string) => {
     const s = status.toUpperCase();
-    if (s === "APPROVED") return "bg-emerald-100 text-emerald-800 border-emerald-200";
-    if (s === "REJECTED") return "bg-red-100 text-red-800 border-red-200";
-    return "bg-orange-100 text-orange-800 border-orange-200";
+    if (s === "APPROVED") return "bg-emerald-50 text-emerald-800";
+    if (s === "REJECTED") return "bg-red-50 text-red-800";
+    return "bg-amber-50 text-amber-800";
   };
+
+  const filterPills: { key: FilterType; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "pending", label: "Pending" },
+    { key: "approved", label: "Approved" },
+  ];
 
   return (
     <>
-      <Card className="h-full border-none shadow-sm rounded-xl overflow-hidden flex flex-col w-full">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-semibold text-gray-800">Recent Requests</CardTitle>
-        </CardHeader>
-        <CardContent className="flex-1 px-4 pb-4">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent border-b-gray-100">
-                <TableHead className="font-semibold text-gray-600">Employee</TableHead>
-                <TableHead className="font-semibold text-gray-600">Type</TableHead>
-                <TableHead className="font-semibold text-gray-600">Date</TableHead>
-                <TableHead className="font-semibold text-gray-600">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8 text-gray-400">Loading live data...</TableCell></TableRow>
-              ) : requests.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8 text-gray-500">No pending requests found.</TableCell></TableRow>
-              ) : (
-                requests.map((req) => (
-                  <TableRow
-                    key={req.id}
-                    className="border-b-gray-50 hover:bg-blue-50/40 cursor-pointer transition-colors"
-                    onClick={() => handleRowClick(req)}
-                  >
-                    <TableCell className="font-medium text-blue-700 hover:underline">{req.name}</TableCell>
-                    <TableCell className="text-gray-600">{req.type}</TableCell>
-                    <TableCell className="text-gray-600 text-sm">{req.dates}</TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium border ${getStatusBadge(req.status)}`}>
-                        {req.status}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <div className="bg-white border border-[#E9EBF0] rounded-xl p-5">
+        {/* Header with filter pills */}
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <p className="text-[13px] font-semibold text-gray-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Recent Requests</p>
+            <p className="text-xs text-gray-400">Pending actions need your attention</p>
+          </div>
+          <div className="flex gap-1.5">
+            {filterPills.map((pill) => (
+              <button
+                key={pill.key}
+                onClick={() => setFilter(pill.key)}
+                className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-colors ${
+                  filter === pill.key
+                    ? "bg-blue-50 border-blue-200 text-blue-600 font-semibold"
+                    : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
+                }`}
+              >
+                {pill.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Table */}
+        <table className="w-full text-[13px]">
+          <thead>
+            <tr>
+              <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-semibold pb-2.5 px-3 border-b border-gray-100">Employee</th>
+              <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-semibold pb-2.5 px-3 border-b border-gray-100">Type</th>
+              <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-semibold pb-2.5 px-3 border-b border-gray-100">Date Range</th>
+              <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-semibold pb-2.5 px-3 border-b border-gray-100">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={4} className="text-center py-8 text-gray-400">Loading live data...</td></tr>
+            ) : filteredRequests.length === 0 ? (
+              <tr><td colSpan={4} className="text-center py-8 text-gray-500">No requests found.</td></tr>
+            ) : (
+              filteredRequests.map((req) => (
+                <tr
+                  key={req.id}
+                  className="hover:bg-[#FAFBFD] cursor-pointer transition-colors"
+                  onClick={() => handleRowClick(req)}
+                >
+                  <td className="py-2.5 px-3 border-b border-gray-50">
+                    <span className="font-medium text-blue-600 hover:underline cursor-pointer">{req.name}</span>
+                  </td>
+                  <td className="py-2.5 px-3 border-b border-gray-50">
+                    <span className="bg-gray-100 text-gray-700 text-[11px] px-2 py-0.5 rounded font-medium">{req.type}</span>
+                  </td>
+                  <td className="py-2.5 px-3 border-b border-gray-50 text-gray-500">{req.dates}</td>
+                  <td className="py-2.5 px-3 border-b border-gray-50">
+                    <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full ${getStatusBadge(req.status)}`}>
+                      <span className={`w-[5px] h-[5px] rounded-full inline-block ${getStatusDot(req.status)}`}></span>
+                      {req.status.charAt(0) + req.status.slice(1).toLowerCase()}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* === MODALS rendered right here on the dashboard === */}
 

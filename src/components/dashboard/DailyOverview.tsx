@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/lib/data";
 import { format } from "date-fns";
-import { UserCheck, Home, CalendarOff, UserX, X, Clock } from "lucide-react";
+import { Users, Home, CalendarOff, UserX, X, Clock } from "lucide-react";
 
 interface EmpDetail {
   name: string;
@@ -97,82 +96,43 @@ export default function DailyOverview() {
     absent: { title: "Absent Today", color: "text-slate-700", bgColor: "bg-slate-50", borderColor: "border-slate-200" },
   };
 
+  const cards: { key: StatCategory; label: string; icon: React.ReactNode; borderClass: string; iconBg: string; iconColor: string }[] = [
+    { key: "present", label: "Present", icon: <Users size={18} />, borderClass: "border-l-[3px] border-l-green-500", iconBg: "bg-green-50", iconColor: "text-green-600" },
+    { key: "wfh", label: "WFH", icon: <Home size={18} />, borderClass: "border-l-[3px] border-l-blue-500", iconBg: "bg-blue-50", iconColor: "text-blue-600" },
+    { key: "leave", label: "On Leave", icon: <CalendarOff size={18} />, borderClass: "border-l-[3px] border-l-amber-400", iconBg: "bg-amber-50", iconColor: "text-amber-600" },
+    { key: "absent", label: "Absent", icon: <UserX size={18} />, borderClass: "border-l-[3px] border-l-red-500", iconBg: "bg-red-50", iconColor: "text-red-500" },
+  ];
+
   return (
     <>
-      <Card className="w-full border-none shadow-sm rounded-xl overflow-hidden bg-white">
-        <CardContent className="p-6">
-          <div className="flex justify-between items-end mb-6">
-            <div>
-              <h2 className="text-lg font-bold text-gray-800">Today&apos;s Pulse</h2>
-              <p className="text-sm text-gray-500 mt-1">Live snapshot of workforce availability</p>
-            </div>
+      <div className="bg-white border border-[#E9EBF0] rounded-xl p-5">
+        <p className="text-[13px] font-semibold text-gray-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Today&apos;s Pulse</p>
+        <p className="text-xs text-gray-400 mb-4">Live snapshot · {format(new Date(), "MMMM d, yyyy")}</p>
+
+        {loading ? (
+          <div className="h-16 flex items-center justify-center bg-gray-50 rounded-lg animate-pulse">
+            <span className="text-sm text-gray-400">Syncing data...</span>
           </div>
-
-          {loading ? (
-            <div className="h-16 flex items-center justify-center bg-gray-50 rounded-lg animate-pulse">
-              <span className="text-sm text-gray-400">Syncing data...</span>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {/* PRESENT */}
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {cards.map((c) => (
               <button
-                onClick={() => setActiveModal("present")}
-                className="flex items-center gap-3 p-4 rounded-xl border border-transparent hover:border-emerald-200 hover:bg-emerald-50/50 transition-all duration-200 cursor-pointer text-left group"
+                key={c.key}
+                onClick={() => setActiveModal(c.key)}
+                className={`bg-[#F8F9FB] border border-[#EAECF0] ${c.borderClass} rounded-[10px] p-3.5 flex items-start gap-3 text-left hover:bg-[#F0F2F5] transition-colors cursor-pointer`}
               >
-                <div className="h-11 w-11 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
-                  <UserCheck size={20} />
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${c.iconBg} ${c.iconColor} shrink-0`}>
+                  {c.icon}
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-800 leading-none">{stats.present}</p>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mt-1">Present</p>
+                  <p className="text-[22px] font-semibold text-gray-900 leading-none" style={{ fontFamily: "'Sora', sans-serif" }}>{stats[c.key]}</p>
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500 mt-1">{c.label}</p>
                 </div>
               </button>
-
-              {/* WFH */}
-              <button
-                onClick={() => setActiveModal("wfh")}
-                className="flex items-center gap-3 p-4 rounded-xl border border-transparent hover:border-blue-200 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer text-left group"
-              >
-                <div className="h-11 w-11 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                  <Home size={20} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-800 leading-none">{stats.wfh}</p>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mt-1">WFH</p>
-                </div>
-              </button>
-
-              {/* ON LEAVE */}
-              <button
-                onClick={() => setActiveModal("leave")}
-                className="flex items-center gap-3 p-4 rounded-xl border border-transparent hover:border-amber-200 hover:bg-amber-50/50 transition-all duration-200 cursor-pointer text-left group"
-              >
-                <div className="h-11 w-11 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
-                  <CalendarOff size={20} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-800 leading-none">{stats.leave}</p>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mt-1">On Leave</p>
-                </div>
-              </button>
-
-              {/* ABSENT */}
-              <button
-                onClick={() => setActiveModal("absent")}
-                className="flex items-center gap-3 p-4 rounded-xl border border-transparent hover:border-slate-200 hover:bg-slate-100/50 transition-all duration-200 cursor-pointer text-left group"
-              >
-                <div className="h-11 w-11 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 group-hover:scale-110 transition-transform">
-                  <UserX size={20} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-800 leading-none">{stats.absent}</p>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mt-1">Absent</p>
-                </div>
-              </button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* DETAIL MODAL */}
       {activeModal && (
@@ -181,7 +141,6 @@ export default function DailyOverview() {
             className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[70vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
             <div className={`flex items-center justify-between px-6 py-4 border-b ${modalConfig[activeModal].borderColor} ${modalConfig[activeModal].bgColor}`}>
               <h3 className={`text-base font-bold ${modalConfig[activeModal].color}`}>
                 {modalConfig[activeModal].title} ({empsByCategory[activeModal].length})
@@ -191,7 +150,6 @@ export default function DailyOverview() {
               </button>
             </div>
 
-            {/* Modal Body */}
             <div className="flex-1 overflow-y-auto px-6 py-3 divide-y divide-gray-100">
               {empsByCategory[activeModal].length === 0 ? (
                 <p className="text-sm text-gray-500 py-8 text-center">No employees in this category today.</p>

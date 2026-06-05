@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Cake, Award } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { format } from "date-fns";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/lib/data";
@@ -55,29 +55,31 @@ export default function UpcomingEvents() {
   }, []);
 
   return (
-    <Card className="h-full border-none shadow-sm rounded-xl overflow-hidden flex flex-col">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold text-gray-800">Birthdays & Anniversaries</CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 px-6 pt-4 pb-6 flex flex-col gap-3">
-        {loading ? (
-          <p className="text-sm text-gray-400">Loading...</p>
-        ) : events.length === 0 ? (
-          <p className="text-sm text-gray-500 italic">No upcoming birthdays or anniversaries this month. Connect the API to see data here.</p>
-        ) : (
-          events.map((event) => (
+    <div className="bg-white border border-[#E9EBF0] rounded-xl p-5">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-[13px] font-semibold text-gray-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Birthdays & Anniversaries</p>
+        <span className="text-[11px] bg-gray-100 text-gray-500 px-2.5 py-1 rounded font-medium">{format(new Date(), "MMMM yyyy")}</span>
+      </div>
+
+      {loading ? (
+        <p className="text-xs text-gray-400 py-4">Loading...</p>
+      ) : events.length === 0 ? (
+        <p className="text-xs text-gray-400 leading-relaxed mt-2">No upcoming birthdays or anniversaries this month. Connect the API to see data here.</p>
+      ) : (
+        <div className="flex flex-col gap-2.5">
+          {events.map((event) => (
             <div key={event.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className={`h-9 w-9 rounded-full flex items-center justify-center ${event.type === "birthday" ? "bg-pink-50 text-pink-500" : "bg-indigo-50 text-indigo-500"}`}>
-                {event.type === "birthday" ? <Cake size={18} /> : <Award size={18} />}
+              <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${event.type === "birthday" ? "bg-pink-50 text-pink-500" : "bg-indigo-50 text-indigo-500"}`}>
+                {event.type === "birthday" ? <Cake size={16} /> : <Award size={16} />}
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-semibold text-gray-800 truncate">{event.name}</span>
-                <span className="text-xs text-gray-500">{event.date}{event.detail ? ` · ${event.detail}` : ""}</span>
+                <span className="text-[13px] font-medium text-gray-800 truncate">{event.name}</span>
+                <span className="text-[11px] text-gray-400">{event.date}{event.detail ? ` · ${event.detail}` : ""}</span>
               </div>
             </div>
-          ))
-        )}
-      </CardContent>
-    </Card>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
