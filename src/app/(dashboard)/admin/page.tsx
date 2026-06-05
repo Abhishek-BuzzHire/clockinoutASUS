@@ -67,13 +67,13 @@ const AdminDashboard = () => {
                             </div>
                         </div>
 
-                        {/* RIGHT COLUMN: Events & Recruitment */}
+                        {/* RIGHT COLUMN: Recruitment & Events */}
                         <div className="w-full lg:w-1/3 flex flex-col gap-6">
-                            <div className="h-[350px]">
-                                <UpcomingEvents />
-                            </div>
-                            <div className="flex-1">
+                            <div>
                                 <CVCount data={todayCVData} loading={loading} />
+                            </div>
+                            <div>
+                                <UpcomingEvents />
                             </div>
                         </div>
                     </div>
