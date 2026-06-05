@@ -5,6 +5,7 @@ import { Employee } from "@/lib/types";
 import { Linkedin } from "lucide-react";
 import Image from "next/image"
 import { useState } from "react";
+import { apiUrl } from "@/lib/data";
 
 const EmployeeDetails = ({
   data,
@@ -22,7 +23,6 @@ const EmployeeDetails = ({
       // If profile_photo is a URL string
       if (typeof data.profile_photo === 'string') {
         if (data.profile_photo.startsWith('/api/')) {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
           return `${apiUrl}${data.profile_photo}`;
         }
         return `data:image/jpeg;base64,${data.profile_photo}`;

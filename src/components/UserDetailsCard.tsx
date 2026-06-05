@@ -16,6 +16,7 @@ import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import ChangePassword from "./ChangePassword";
+import { apiUrl } from "@/lib/data";
 
 export function UserDetailsCard() {
   const router = useRouter();
@@ -32,7 +33,6 @@ export function UserDetailsCard() {
     if (!employee?.profile_photo) return "/avatar.png";
     if (typeof employee.profile_photo === 'string') {
       if (employee.profile_photo.startsWith('/api/')) {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
         return `${apiUrl}${employee.profile_photo}`;
       }
       return employee.profile_photo.startsWith("data:")

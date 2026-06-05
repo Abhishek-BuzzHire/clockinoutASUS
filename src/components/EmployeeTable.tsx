@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useState } from "react";
 import Table from "./Table";
 import EmployeeDetails from "./EmployeeDetails";
+import { apiUrl } from "@/lib/data";
 
 interface EmployeeTableProps {
     data: any[];
@@ -48,7 +49,6 @@ const renderRow = ({ item, onRowClick }: { item: any, onRowClick?: (employee: Em
             // If profile_photo is a URL string
             if (typeof item.profile_photo === 'string') {
                 if (item.profile_photo.startsWith('/api/')) {
-                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
                     return `${apiUrl}${item.profile_photo}`;
                 }
                 return `data:image/jpeg;base64,${item.profile_photo}`;
