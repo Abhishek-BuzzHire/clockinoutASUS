@@ -182,11 +182,11 @@ export default function RecentRequests() {
 
   return (
     <>
-      <div className="bg-white border border-[#E9EBF0] rounded-xl p-5">
-        <div className="flex items-start justify-between mb-4">
+      <div className="bg-white border border-[#E9EBF0] rounded-xl p-6">
+        <div className="flex items-start justify-between mb-5">
           <div>
-            <p className="text-[13px] font-semibold text-gray-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Recent Requests</p>
-            <p className="text-xs text-gray-400">Pending actions need your attention</p>
+            <p className="text-base font-semibold text-gray-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Recent Requests</p>
+            <p className="text-sm text-gray-400">Pending actions need your attention</p>
           </div>
           <div className="flex gap-1.5">
             {filterPills.map((pill) => (
@@ -205,13 +205,13 @@ export default function RecentRequests() {
           </div>
         </div>
 
-        <table className="w-full text-[13px]">
+        <table className="w-full text-sm">
           <thead>
             <tr>
-              <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-semibold pb-2.5 px-3 border-b border-gray-100">Employee</th>
-              <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-semibold pb-2.5 px-3 border-b border-gray-100">Type</th>
-              <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-semibold pb-2.5 px-3 border-b border-gray-100">Date Range</th>
-              <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-semibold pb-2.5 px-3 border-b border-gray-100">Status</th>
+              <th className="text-left text-xs uppercase tracking-wider text-gray-400 font-semibold pb-3 px-3 border-b border-gray-100">Employee</th>
+              <th className="text-left text-xs uppercase tracking-wider text-gray-400 font-semibold pb-3 px-3 border-b border-gray-100">Type</th>
+              <th className="text-left text-xs uppercase tracking-wider text-gray-400 font-semibold pb-3 px-3 border-b border-gray-100">Date Range</th>
+              <th className="text-left text-xs uppercase tracking-wider text-gray-400 font-semibold pb-3 px-3 border-b border-gray-100">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -222,16 +222,16 @@ export default function RecentRequests() {
             ) : (
               filteredRequests.map((req) => (
                 <tr key={req.id} className="hover:bg-[#FAFBFD] cursor-pointer transition-colors" onClick={() => handleRowClick(req)}>
-                  <td className="py-2.5 px-3 border-b border-gray-50">
-                    <span className="font-medium text-blue-600 hover:underline">{req.name}</span>
+                  <td className="py-3.5 px-3 border-b border-gray-50">
+                    <span className="font-semibold text-gray-900 hover:underline">{req.name}</span>
                   </td>
-                  <td className="py-2.5 px-3 border-b border-gray-50">
-                    <span className="bg-gray-100 text-gray-700 text-[11px] px-2 py-0.5 rounded font-medium">{req.type}</span>
+                  <td className="py-3.5 px-3 border-b border-gray-50">
+                    <span className="bg-gray-100 text-gray-700 text-xs px-2.5 py-1 rounded font-medium">{req.type}</span>
                   </td>
-                  <td className="py-2.5 px-3 border-b border-gray-50 text-gray-500">{req.dates}</td>
-                  <td className="py-2.5 px-3 border-b border-gray-50">
-                    <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full ${getStatusBadge(req.status)}`}>
-                      <span className={`w-[5px] h-[5px] rounded-full inline-block ${getStatusDot(req.status)}`}></span>
+                  <td className="py-3.5 px-3 border-b border-gray-50 text-gray-500">{req.dates}</td>
+                  <td className="py-3.5 px-3 border-b border-gray-50">
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full ${getStatusBadge(req.status)}`}>
+                      <span className={`w-[6px] h-[6px] rounded-full inline-block ${getStatusDot(req.status)}`}></span>
                       {req.status.charAt(0) + req.status.slice(1).toLowerCase()}
                     </span>
                   </td>

@@ -97,36 +97,35 @@ export default function DailyOverview() {
   };
 
   const cards: { key: StatCategory; label: string; icon: React.ReactNode; borderClass: string; iconBg: string; iconColor: string }[] = [
-    { key: "present", label: "Present", icon: <Users size={18} />, borderClass: "border-l-[3px] border-l-green-500", iconBg: "bg-green-50", iconColor: "text-green-600" },
-    { key: "wfh", label: "WFH", icon: <Home size={18} />, borderClass: "border-l-[3px] border-l-blue-500", iconBg: "bg-blue-50", iconColor: "text-blue-600" },
-    { key: "leave", label: "On Leave", icon: <CalendarOff size={18} />, borderClass: "border-l-[3px] border-l-amber-400", iconBg: "bg-amber-50", iconColor: "text-amber-600" },
-    { key: "absent", label: "Absent", icon: <UserX size={18} />, borderClass: "border-l-[3px] border-l-red-500", iconBg: "bg-red-50", iconColor: "text-red-500" },
+    { key: "present", label: "Present", icon: <Users size={20} />, borderClass: "border-l-[3px] border-l-green-500", iconBg: "bg-green-50", iconColor: "text-green-600" },
+    { key: "leave", label: "On Leave", icon: <CalendarOff size={20} />, borderClass: "border-l-[3px] border-l-amber-400", iconBg: "bg-amber-50", iconColor: "text-amber-600" },
+    { key: "absent", label: "Absent", icon: <UserX size={20} />, borderClass: "border-l-[3px] border-l-red-500", iconBg: "bg-red-50", iconColor: "text-red-500" },
   ];
 
   return (
     <>
-      <div className="bg-white border border-[#E9EBF0] rounded-xl p-5">
-        <p className="text-[13px] font-semibold text-gray-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Today&apos;s Pulse</p>
-        <p className="text-xs text-gray-400 mb-4">Live snapshot · {format(new Date(), "MMMM d, yyyy")}</p>
+      <div className="bg-white border border-[#E9EBF0] rounded-xl p-6">
+        <p className="text-base font-semibold text-gray-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Today&apos;s Pulse</p>
+        <p className="text-sm text-gray-400 mb-5">Live snapshot · {format(new Date(), "MMMM d, yyyy")}</p>
 
         {loading ? (
           <div className="h-16 flex items-center justify-center bg-gray-50 rounded-lg animate-pulse">
             <span className="text-sm text-gray-400">Syncing data...</span>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 gap-4">
             {cards.map((c) => (
               <button
                 key={c.key}
                 onClick={() => setActiveModal(c.key)}
-                className={`bg-[#F8F9FB] border border-[#EAECF0] ${c.borderClass} rounded-[10px] p-3.5 flex items-start gap-3 text-left hover:bg-[#F0F2F5] transition-colors cursor-pointer`}
+                className={`bg-[#F8F9FB] border border-[#EAECF0] ${c.borderClass} rounded-xl p-5 flex items-center gap-4 text-left hover:bg-[#F0F2F5] transition-colors cursor-pointer`}
               >
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${c.iconBg} ${c.iconColor} shrink-0`}>
+                <div className={`w-11 h-11 rounded-lg flex items-center justify-center ${c.iconBg} ${c.iconColor} shrink-0`}>
                   {c.icon}
                 </div>
                 <div>
-                  <p className="text-[22px] font-semibold text-gray-900 leading-none" style={{ fontFamily: "'Sora', sans-serif" }}>{stats[c.key]}</p>
-                  <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500 mt-1">{c.label}</p>
+                  <p className="text-3xl font-bold text-gray-900 leading-none" style={{ fontFamily: "'Sora', sans-serif" }}>{stats[c.key]}</p>
+                  <p className="text-xs font-medium uppercase tracking-wider text-gray-500 mt-1.5">{c.label}</p>
                 </div>
               </button>
             ))}
