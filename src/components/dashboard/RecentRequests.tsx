@@ -39,9 +39,9 @@ export default function RecentRequests() {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [leavesRes, wfhRes, regRes] = await Promise.allSettled([
-        axios.get(`${apiUrl}/api/admin/leaves/`, { headers, params: { status: "PENDING" } }),
-        axios.get(`${apiUrl}/wfh/admin/requests/`, { headers, params: { status: "PENDING" } }),
-        axios.get(`${apiUrl}/api/admin/attendance-regularization/requests/`, { headers, params: { status: "PENDING" } })
+        axios.get(`${apiUrl}/api/admin/leaves/`, { headers }),
+        axios.get(`${apiUrl}/wfh/admin/requests/`, { headers }),
+        axios.get(`${apiUrl}/api/admin/attendance-regularization/requests/`, { headers })
       ]);
 
       const combined: RequestData[] = [];
@@ -88,7 +88,14 @@ export default function RecentRequests() {
         });
       }
 
-      setRequests(combined.slice(0, 15));
+      // Sort: PENDING first, then others
+      combined.sort((a, b) => {
+        if (a.status === "PENDING" && b.status !== "PENDING") return -1;
+        if (a.status !== "PENDING" && b.status === "PENDING") return 1;
+        return 0;
+      });
+
+      setRequests(combined.slice(0, 25));
     } catch (err) {
       console.error("Error fetching recent requests", err);
     } finally {
