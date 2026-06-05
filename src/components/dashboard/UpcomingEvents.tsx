@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Calendar, PartyPopper } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import axios from "axios";
@@ -13,7 +13,7 @@ interface EventData {
   type: string;
   title: string;
   date: string;
-  icon: JSX.Element;
+  icon: React.ReactNode;
   bg: string;
 }
 
