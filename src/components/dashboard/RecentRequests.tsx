@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/lib/data";
@@ -15,10 +14,12 @@ interface RequestData {
   type: string;
   dates: string;
   status: string;
+  // For redirect
+  redirectUrl: string;
 }
 
 export default function RecentRequests() {
-  const { toast } = useToast();
+  const router = useRouter();
   const [requests, setRequests] = useState<RequestData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,7 +29,6 @@ export default function RecentRequests() {
         const token = Cookies.get("access");
         const headers = { Authorization: `Bearer ${token}` };
 
-        // Fetch all three types concurrently
         const [leavesRes, wfhRes, regRes] = await Promise.allSettled([
           axios.get(`${apiUrl}/api/admin/leaves/`, { headers, params: { status: "PENDING" } }),
           axios.get(`${apiUrl}/wfh/admin/requests/`, { headers, params: { status: "PENDING" } }),
@@ -41,10 +41,11 @@ export default function RecentRequests() {
           leavesRes.value.data.results.forEach((l: any) => {
             combined.push({
               id: `leave-${l.leave_id}`,
-              name: l.employee_name || "Unknown",
+              name: l.user_name || l.user_email || "—",
               type: l.leave_type || "Leave",
-              dates: `${l.start_date} to ${l.end_date}`,
-              status: l.status || "Pending"
+              dates: `${l.start_date || ""} → ${l.end_date || ""}`,
+              status: l.status || "PENDING",
+              redirectUrl: `/list/attendance/admin?tab=leave&leaveId=${l.leave_id}`
             });
           });
         }
@@ -53,10 +54,11 @@ export default function RecentRequests() {
           wfhRes.value.data.results.forEach((w: any) => {
             combined.push({
               id: `wfh-${w.wfh_id}`,
-              name: w.employee_name || "Unknown",
+              name: w.user_name || w.user_email || "—",
               type: "WFH",
-              dates: `${w.start_date} to ${w.end_date}`,
-              status: w.status || "Pending"
+              dates: w.date || "—",
+              status: w.status || "PENDING",
+              redirectUrl: `/list/attendance/admin?tab=regularization&wfhId=${w.wfh_id}`
             });
           });
         }
@@ -64,16 +66,17 @@ export default function RecentRequests() {
         if (regRes.status === "fulfilled" && regRes.value.data.data) {
           regRes.value.data.data.forEach((r: any) => {
             combined.push({
-              id: `reg-${r.token}`,
-              name: r.employee_name || "Unknown",
-              type: "Regularize",
-              dates: r.date || "Unknown Date",
-              status: r.status || "Pending"
+              id: `reg-${r.approval_token || r.id}`,
+              name: r.employee || "—",
+              type: `Regularize (${r.type || ""})`,
+              dates: r.date || "—",
+              status: r.status || "PENDING",
+              redirectUrl: `/list/attendance/admin?tab=regularization&regularizationToken=${r.approval_token}`
             });
           });
         }
 
-        setRequests(combined.slice(0, 10)); // take top 10
+        setRequests(combined.slice(0, 15));
       } catch (err) {
         console.error("Error fetching recent requests", err);
       } finally {
@@ -84,12 +87,11 @@ export default function RecentRequests() {
     fetchRequests();
   }, []);
 
-  const handleEdit = (id: string) => {
-    toast({ title: "Action not available", description: `Please use the main tabs to edit ${id}` });
-  };
-
-  const handleDelete = (id: string) => {
-    toast({ title: "Action not available", description: `Cannot delete ${id} from here`, variant: "destructive" });
+  const getStatusBadge = (status: string) => {
+    const s = status.toUpperCase();
+    if (s === "APPROVED") return "bg-emerald-100 text-emerald-800 border-emerald-200";
+    if (s === "REJECTED") return "bg-red-100 text-red-800 border-red-200";
+    return "bg-orange-100 text-orange-800 border-orange-200";
   };
 
   return (
@@ -101,38 +103,31 @@ export default function RecentRequests() {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent border-b-gray-100">
-              <TableHead className="font-semibold text-gray-600">Employee Name</TableHead>
-              <TableHead className="font-semibold text-gray-600">Request Type</TableHead>
-              <TableHead className="font-semibold text-gray-600">Dates</TableHead>
+              <TableHead className="font-semibold text-gray-600">Employee</TableHead>
+              <TableHead className="font-semibold text-gray-600">Type</TableHead>
+              <TableHead className="font-semibold text-gray-600">Date</TableHead>
               <TableHead className="font-semibold text-gray-600">Status</TableHead>
-              <TableHead className="text-right font-semibold text-gray-600">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={5} className="text-center">Loading live data...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center py-8 text-gray-400">Loading live data...</TableCell></TableRow>
             ) : requests.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center text-gray-500">No pending requests found.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center py-8 text-gray-500">No pending requests found.</TableCell></TableRow>
             ) : (
               requests.map((req) => (
-                <TableRow key={req.id} className="border-b-gray-50 hover:bg-gray-50/50">
-                  <TableCell className="font-medium text-gray-800">{req.name}</TableCell>
+                <TableRow
+                  key={req.id}
+                  className="border-b-gray-50 hover:bg-blue-50/40 cursor-pointer transition-colors"
+                  onClick={() => router.push(req.redirectUrl)}
+                >
+                  <TableCell className="font-medium text-blue-700 hover:underline">{req.name}</TableCell>
                   <TableCell className="text-gray-600">{req.type}</TableCell>
-                  <TableCell className="text-gray-600">{req.dates}</TableCell>
+                  <TableCell className="text-gray-600 text-sm">{req.dates}</TableCell>
                   <TableCell>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium border ${getStatusBadge(req.status)}`}>
                       {req.status}
                     </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-3 text-gray-400">
-                      <button onClick={() => handleEdit(req.id)} className="hover:text-blue-600 transition-colors">
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button onClick={() => handleDelete(req.id)} className="hover:text-red-600 transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
                   </TableCell>
                 </TableRow>
               ))
