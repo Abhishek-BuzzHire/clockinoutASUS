@@ -176,9 +176,9 @@ export default function RecentRequests() {
 
   const getTypeBadge = (type: string) => {
     const t = type.toUpperCase();
-    if (t === "LEAVE") return "bg-rose-50 text-rose-600";
+    if (t === "LEAVE") return "bg-orange-50 text-orange-500";
     if (t === "WFH") return "bg-sky-50 text-sky-600";
-    if (t === "REGULARIZE") return "bg-purple-50 text-purple-600";
+    if (t === "REGULARIZE") return "bg-white border border-gray-200 text-gray-600 shadow-sm";
     return "bg-gray-50 text-gray-600";
   };
 
@@ -190,11 +190,11 @@ export default function RecentRequests() {
 
   return (
     <>
-      <div className="bg-white border border-[#E9EBF0] rounded-xl p-6">
-        <div className="flex items-start justify-between mb-5">
+      <div className="bg-white border border-[#E9EBF0] rounded-xl p-8">
+        <div className="flex items-start justify-between mb-6">
           <div>
-            <p className="text-base font-semibold text-gray-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Recent Requests</p>
-            <p className="text-sm text-gray-400">Pending actions need your attention</p>
+            <p className="text-2xl font-medium text-gray-900 tracking-tight" style={{ fontFamily: "'Georgia', serif" }}>Recent Requests</p>
+            <p className="text-sm text-gray-500 mt-1.5">Pending actions need your attention</p>
           </div>
           <div className="flex gap-1.5">
             {filterPills.map((pill) => (
