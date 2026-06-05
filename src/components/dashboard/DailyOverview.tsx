@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/lib/data";
-import { format } from "date-fns";
-import { Users, Home, CalendarOff, UserX, X, Clock } from "lucide-react";
+import { format, subDays, addDays, isToday } from "date-fns";
+import { Users, CalendarOff, UserX, X, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface EmpDetail {
   name: string;
@@ -15,85 +15,93 @@ interface EmpDetail {
   work_status?: string;
 }
 
-type StatCategory = "present" | "wfh" | "leave" | "absent";
+type StatCategory = "present" | "leave" | "absent";
 
 export default function DailyOverview() {
-  const [stats, setStats] = useState({ present: 0, wfh: 0, leave: 0, absent: 0 });
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [stats, setStats] = useState({ present: 0, leave: 0, absent: 0 });
   const [empsByCategory, setEmpsByCategory] = useState<Record<StatCategory, EmpDetail[]>>({
-    present: [], wfh: [], leave: [], absent: []
+    present: [], leave: [], absent: []
   });
   const [loading, setLoading] = useState(true);
   const [activeModal, setActiveModal] = useState<StatCategory | null>(null);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const token = Cookies.get("access");
-        const today = format(new Date(), "yyyy-MM-dd");
+  const fetchStats = useCallback(async (date: Date) => {
+    setLoading(true);
+    try {
+      const token = Cookies.get("access");
+      const dateStr = format(date, "yyyy-MM-dd");
 
-        const res = await axios.get(`${apiUrl}/api/admin/emp-total-details/`, {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { start_date: today, end_date: today }
-        });
+      const res = await axios.get(`${apiUrl}/api/admin/emp-total-details/`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { start_date: dateStr, end_date: dateStr }
+      });
 
-        let p = 0, w = 0, l = 0, a = 0;
-        const presentList: EmpDetail[] = [];
-        const wfhList: EmpDetail[] = [];
-        const leaveList: EmpDetail[] = [];
-        const absentList: EmpDetail[] = [];
+      let p = 0, l = 0, a = 0;
+      const presentList: EmpDetail[] = [];
+      const leaveList: EmpDetail[] = [];
+      const absentList: EmpDetail[] = [];
 
-        const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
+      const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
 
-        res.data.emps?.forEach((emp: any) => {
-          if (EXCLUDED_EMP_IDS.has(emp.emp_id)) return;
+      res.data.emps?.forEach((emp: any) => {
+        if (EXCLUDED_EMP_IDS.has(emp.emp_id)) return;
 
-          const day = emp.attendance?.find((d: any) => d.date === today);
-          const detail: EmpDetail = {
-            name: emp.employee_name || `Employee #${emp.emp_id}`,
-            emp_id: emp.emp_id,
-            punch_in: day?.punch_in || undefined,
-            punch_out: day?.punch_out || undefined,
-            work_status: day?.work_status || undefined,
-          };
+        const day = emp.attendance?.find((d: any) => d.date === dateStr);
+        const detail: EmpDetail = {
+          name: emp.employee_name || `Employee #${emp.emp_id}`,
+          emp_id: emp.emp_id,
+          punch_in: day?.punch_in || undefined,
+          punch_out: day?.punch_out || undefined,
+          work_status: day?.work_status || undefined,
+        };
 
-          if (!day) {
-            a++;
-            absentList.push(detail);
-            return;
-          }
+        if (!day) {
+          a++;
+          absentList.push(detail);
+          return;
+        }
 
-          if (day.work_status === "LEAVE") {
-            l++;
-            leaveList.push(detail);
-          } else if (day.work_status === "WFH") {
-            w++;
-            wfhList.push(detail);
-          } else if (day.punch_in) {
-            p++;
-            presentList.push(detail);
-          } else {
-            a++;
-            absentList.push(detail);
-          }
-        });
+        if (day.work_status === "LEAVE") {
+          l++;
+          leaveList.push(detail);
+        } else if (day.work_status === "WFH") {
+          // Count WFH as present
+          p++;
+          presentList.push(detail);
+        } else if (day.punch_in) {
+          p++;
+          presentList.push(detail);
+        } else {
+          a++;
+          absentList.push(detail);
+        }
+      });
 
-        setStats({ present: p, wfh: w, leave: l, absent: a });
-        setEmpsByCategory({ present: presentList, wfh: wfhList, leave: leaveList, absent: absentList });
-      } catch (error) {
-        console.error("Failed to fetch daily overview", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
+      setStats({ present: p, leave: l, absent: a });
+      setEmpsByCategory({ present: presentList, leave: leaveList, absent: absentList });
+    } catch (error) {
+      console.error("Failed to fetch daily overview", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    fetchStats(selectedDate);
+  }, [selectedDate, fetchStats]);
+
+  const goBack = () => setSelectedDate(prev => subDays(prev, 1));
+  const goForward = () => {
+    if (!isToday(selectedDate)) {
+      setSelectedDate(prev => addDays(prev, 1));
+    }
+  };
+
   const modalConfig: Record<StatCategory, { title: string; color: string; bgColor: string; borderColor: string }> = {
-    present: { title: "Present Today", color: "text-emerald-700", bgColor: "bg-emerald-50", borderColor: "border-emerald-200" },
-    wfh: { title: "WFH Today", color: "text-blue-700", bgColor: "bg-blue-50", borderColor: "border-blue-200" },
-    leave: { title: "On Leave Today", color: "text-amber-700", bgColor: "bg-amber-50", borderColor: "border-amber-200" },
-    absent: { title: "Absent Today", color: "text-slate-700", bgColor: "bg-slate-50", borderColor: "border-slate-200" },
+    present: { title: "Present", color: "text-emerald-700", bgColor: "bg-emerald-50", borderColor: "border-emerald-200" },
+    leave: { title: "On Leave", color: "text-amber-700", bgColor: "bg-amber-50", borderColor: "border-amber-200" },
+    absent: { title: "Absent", color: "text-slate-700", bgColor: "bg-slate-50", borderColor: "border-slate-200" },
   };
 
   const cards: { key: StatCategory; label: string; icon: React.ReactNode; borderClass: string; iconBg: string; iconColor: string }[] = [
@@ -102,11 +110,39 @@ export default function DailyOverview() {
     { key: "absent", label: "Absent", icon: <UserX size={20} />, borderClass: "border-l-[3px] border-l-red-500", iconBg: "bg-red-50", iconColor: "text-red-500" },
   ];
 
+  const dateLabel = isToday(selectedDate)
+    ? "Today's Activity"
+    : `${format(selectedDate, "MMM d")} Activity`;
+
   return (
     <>
       <div className="bg-white border border-[#E9EBF0] rounded-xl p-6">
-        <p className="text-base font-semibold text-gray-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Today&apos;s Pulse</p>
-        <p className="text-sm text-gray-400 mb-5">Live snapshot · {format(new Date(), "MMMM d, yyyy")}</p>
+        {/* Header with arrows */}
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <p className="text-lg font-bold text-gray-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>{dateLabel}</p>
+            <p className="text-sm text-gray-400 mt-0.5">
+              {isToday(selectedDate) ? "Live snapshot" : "Historical data"} · {format(selectedDate, "EEEE, MMMM d, yyyy")}
+            </p>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={goBack}
+              className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              onClick={goForward}
+              disabled={isToday(selectedDate)}
+              className={`w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center transition-colors ${
+                isToday(selectedDate) ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"
+              }`}
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
 
         {loading ? (
           <div className="h-16 flex items-center justify-center bg-gray-50 rounded-lg animate-pulse">
@@ -142,7 +178,7 @@ export default function DailyOverview() {
           >
             <div className={`flex items-center justify-between px-6 py-4 border-b ${modalConfig[activeModal].borderColor} ${modalConfig[activeModal].bgColor}`}>
               <h3 className={`text-base font-bold ${modalConfig[activeModal].color}`}>
-                {modalConfig[activeModal].title} ({empsByCategory[activeModal].length})
+                {modalConfig[activeModal].title} — {isToday(selectedDate) ? "Today" : format(selectedDate, "MMM d")} ({empsByCategory[activeModal].length})
               </h3>
               <button onClick={() => setActiveModal(null)} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <X size={18} />
@@ -151,7 +187,7 @@ export default function DailyOverview() {
 
             <div className="flex-1 overflow-y-auto px-6 py-3 divide-y divide-gray-100">
               {empsByCategory[activeModal].length === 0 ? (
-                <p className="text-sm text-gray-500 py-8 text-center">No employees in this category today.</p>
+                <p className="text-sm text-gray-500 py-8 text-center">No employees in this category.</p>
               ) : (
                 empsByCategory[activeModal].map((emp) => (
                   <div key={emp.emp_id} className="flex items-center justify-between py-3">
@@ -164,7 +200,7 @@ export default function DailyOverview() {
                     {emp.punch_in && (
                       <div className="flex items-center gap-1 text-xs text-gray-500">
                         <Clock size={12} />
-                        <span>{emp.punch_in}{emp.punch_out ? ` — ${emp.punch_out}` : " (active)"}</span>
+                        <span>{emp.punch_in}{emp.punch_out ? ` — ${emp.punch_out}` : isToday(selectedDate) ? " (active)" : ""}</span>
                       </div>
                     )}
                   </div>
