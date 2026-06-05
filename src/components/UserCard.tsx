@@ -1,12 +1,18 @@
-import { employeeData } from "@/lib/data"
+import { employeeData, apiUrl } from "@/lib/data"
 import { Employee } from "@/lib/types"
 import Image from "next/image"
 
 const UserCard = ({ data }: { data: any }) => {
 
   const getProfilePhoto = () => {
-    if (data.profile_photo && typeof data.profile_photo === 'string') {
-      return `data:image/jpeg;base64,${data.profile_photo}`;
+    if (data.profile_photo) {
+      if (typeof data.profile_photo === 'string') {
+        if (data.profile_photo.startsWith('/api/')) {
+          return `${apiUrl}${data.profile_photo}`;
+        }
+        return `data:image/jpeg;base64,${data.profile_photo}`;
+      }
+      return `data:image/jpeg;base64,${btoa(String.fromCharCode(...new Uint8Array(data.profile_photo)))}`;
     }
     return "/avatar.png";
   };
