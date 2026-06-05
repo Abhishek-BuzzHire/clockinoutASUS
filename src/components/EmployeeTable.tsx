@@ -3,7 +3,6 @@ import Image from "next/image";
 import { useState } from "react";
 import Table from "./Table";
 import EmployeeDetails from "./EmployeeDetails";
-import { apiUrl } from "@/lib/data";
 
 
 interface EmployeeTableProps {
@@ -46,14 +45,8 @@ const columns = [
 const renderRow = ({ item, onRowClick }: { item: any, onRowClick?: (employee: Employee) => void; }) => {
 
     const getProfilePhoto = () => {
-        if (item.profile_photo) {
-            if (typeof item.profile_photo === 'string') {
-                if (item.profile_photo.startsWith('/api/')) {
-                    return `${apiUrl}${item.profile_photo}`;
-                }
-                return `data:image/jpeg;base64,${item.profile_photo}`;
-            }
-            return `data:image/jpeg;base64,${btoa(String.fromCharCode(...new Uint8Array(item.profile_photo)))}`;
+        if (item.profile_photo && typeof item.profile_photo === 'string') {
+            return `data:image/jpeg;base64,${item.profile_photo}`;
         }
         return "/avatar.png";
     };
