@@ -1,22 +1,24 @@
 'use client';
 
 import CVCount from "@/components/dashboard/CVCount";
+import UpcomingEvents from "@/components/dashboard/UpcomingEvents";
 
 const EmployeeDashboard = () => {
     return (
-        <>
-            <>
-                <div className='p-4 flex gap-4 flex-col md:flex-row bg-blueLight-50'>
-                    <div className="w-full lg:w-2/3 flex flex-col">
-                        {/* <Pipeline /> */}
-                        {/* <WeeklyStats /> */}
-                    </div>
-                    <div className="w-full lg:w-1/3 flex flex-col gap-4">
-                        <CVCount />
-                    </div>
+        <div className='p-6 flex flex-col gap-5 bg-[#F4F5F7] min-h-screen'>
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5">
+                {/* LEFT COLUMN */}
+                <div className="flex flex-col gap-5">
+                    {/* Future employee components */}
                 </div>
-            </>
-        </>
+
+                {/* RIGHT COLUMN */}
+                <div className="flex flex-col gap-5">
+                    <CVCount />
+                    <UpcomingEvents />
+                </div>
+            </div>
+        </div>
     )
 }
 
