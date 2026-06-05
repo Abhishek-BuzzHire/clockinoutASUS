@@ -12,6 +12,18 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'randomuser.me',
+      },
+      {
+        protocol: 'https',
+        hostname: 'crmbackend.bytebuzz.in',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.bytebuzz.in',
+      },
+      {
+        protocol: 'https',
+        hostname: 'hrms.bytebuzz.in',
       }
     ],
   },
