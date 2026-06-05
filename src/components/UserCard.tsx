@@ -1,4 +1,4 @@
-import { employeeData } from "@/lib/data"
+import { employeeData, apiUrl } from "@/lib/data"
 import { Employee } from "@/lib/types"
 import Image from "next/image"
 

@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import { apiUrl } from '@/lib/data'
 import axios from 'axios'
+import useSWR from 'swr'
 import Cookies from "js-cookie"
 import EmployeeTable from "@/components/EmployeeTable";
 import Pagination from "@/components/Pagination";
@@ -33,17 +34,56 @@ import Image from "next/image";
 
 const data = employeeData;
 
-const EmployeesListPage = () => {
-  const [employees, setEmployees] = useState<any[]>([])
-  const [employeesLoading, setEmployeesLoading] = useState(false)
+const fetcher = (url: string) => {
+  const token = Cookies.get("access");
+  return axios.get(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.data);
+};
 
-  const [loading, setLoading] = useState(false)
-  const [managers, setManagers] = useState<any[]>([])
+const EmployeesListPage = () => {
+  const { data: rawEmployees, isLoading: employeesLoading, mutate: mutateEmployees } = useSWR(`${apiUrl}/api/profile/`, fetcher);
+  const { data: users = [], isLoading: loading, mutate: mutateUsers } = useSWR(`${apiUrl}/api/users/`, fetcher);
+  const managers = users;
+
+  const employees = React.useMemo(() => {
+    if (!rawEmployees) return [];
+    return rawEmployees.map((profile: any) => ({
+      id: profile.id,
+      user_id: profile.user.id,
+      username: profile.user.username,
+      name: profile.name || profile.user.name || profile.user.username,
+      email: profile.email || profile.user.email,
+      phone: profile.phone,
+      department: profile.department,
+      designation: profile.designation,
+      joining_date: profile.joining_date,
+      gender: profile.gender,
+      address: profile.address,
+      emergency_contact: profile.emergency_contact,
+      education_1: profile.education_1,
+      education_2: profile.education_2,
+      education_3: profile.education_3,
+      past_experience_1: profile.past_experience_1,
+      past_experience_2: profile.past_experience_2,
+      date_of_birth: profile.date_of_birth,
+      aadhar_file: profile.aadhar_file,
+      pan_file: profile.pan_file,
+      resume_file: profile.resume_file,
+      linkedIn: profile.linkedIn,
+      profile_photo: profile.profile_photo,
+      e_sign: profile.e_sign,
+      created_at: profile.created_at,
+      updated_at: profile.updated_at,
+      role: profile.user.role,
+      is_active: profile.user.is_active,
+      manager: profile.user.manager
+    }));
+  }, [rawEmployees]);
+
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
-  const [users, setUsers] = useState<any[]>([])
   const [search, setSearch] = useState("")
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const tabs = ["Employees", "Users"];
   const [activeTab, setActiveTab] = useState("Employees");
 
@@ -63,94 +103,12 @@ const EmployeesListPage = () => {
     is_active: true
   })
 
-  useEffect(() => {
-    fetchEmployees()
-    fetchUsers()
-    fetchManagers()
-  }, [])
-
-  const fetchEmployees = async () => {
-    const token = Cookies.get("access")
-    setEmployeesLoading(true)
-    try {
-      const res = await axios.get(`${apiUrl}/api/profile/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-
-      // Map API response to match EmployeeTable/UserCard expectations
-      const mappedEmployees = res.data.map((profile: any) => ({
-        id: profile.id,
-        user_id: profile.user.id,
-        username: profile.user.username,
-        name: profile.name || profile.user.name || profile.user.username,
-        email: profile.email || profile.user.email,
-        phone: profile.phone,
-        department: profile.department,
-        designation: profile.designation,
-        joining_date: profile.joining_date,
-        gender: profile.gender,
-        address: profile.address,
-        emergency_contact: profile.emergency_contact,
-        education_1: profile.education_1,
-        education_2: profile.education_2,
-        education_3: profile.education_3,
-        past_experience_1: profile.past_experience_1,
-        past_experience_2: profile.past_experience_2,
-        date_of_birth: profile.date_of_birth,
-        aadhar_file: profile.aadhar_file,
-        pan_file: profile.pan_file,
-        resume_file: profile.resume_file,
-        linkedIn: profile.linkedIn,
-        profile_photo: profile.profile_photo,
-        e_sign: profile.e_sign,
-        created_at: profile.created_at,
-        updated_at: profile.updated_at,
-        role: profile.user.role,
-        is_active: profile.user.is_active,
-        manager: profile.user.manager
-      }))
-
-      setEmployees(mappedEmployees)
-    } catch (err) {
-      console.error("Failed to load employees", err)
-    } finally {
-      setEmployeesLoading(false)
-    }
-  }
-
-  const fetchUsers = async () => {
-    const token = Cookies.get("access")
-    setLoading(true)
-    try {
-      const res = await axios.get(`${apiUrl}/api/users/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      setUsers(res.data)
-    } catch (err) {
-      console.error("Failed to load users")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchManagers = async () => {
-    const token = Cookies.get("access")
-    try {
-      const res = await axios.get(`${apiUrl}/api/users/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      setManagers(res.data)
-    } catch (err) {
-      console.error("Failed to load managers")
-    }
-  }
-
   // ------------------------
   // CREATE USER (unchanged)
   // ------------------------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    setIsSubmitting(true)
     setMessage(null)
 
     const payload: any = { ...formData }
@@ -173,14 +131,14 @@ const EmployeesListPage = () => {
         manager_id: "",
       })
 
-      fetchUsers()
+      mutateUsers()
     } catch (err: any) {
       setMessage({
         type: "error",
         text: err.response?.data?.error || "Registration failed",
       })
     } finally {
-      setLoading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -221,7 +179,7 @@ const EmployeesListPage = () => {
         headers: { Authorization: `Bearer ${token}` },
       })
 
-      fetchUsers()
+      mutateUsers()
       setSelectedUser(null)
     } catch (err) {
       console.error("Update failed", err)
@@ -230,7 +188,7 @@ const EmployeesListPage = () => {
     }
   }
 
-  const filteredUsers = users.filter(u =>
+  const filteredUsers = users.filter((u: any) =>
     u.username.toLowerCase().includes(search.toLowerCase()) ||
     (u.name && u.name.toLowerCase().includes(search.toLowerCase()))
   )
@@ -294,7 +252,7 @@ const EmployeesListPage = () => {
                   {view === 'userCard' && (
                     <>
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        {employees.map((employee) => (
+                        {employees.map((employee: any) => (
                           <UserCard key={employee.id} data={employee} />
                         ))}
                       </div>
@@ -400,7 +358,7 @@ const EmployeesListPage = () => {
                       className="w-full px-4 py-3 border rounded-xl font-semibold"
                     >
                       <option value="">Select a manager</option>
-                      {managers.map(m => (
+                      {managers.map((m: any) => (
                         <option key={m.id} value={m.id}>
                           {m.name} ({m.role})
                         </option>
@@ -411,10 +369,10 @@ const EmployeesListPage = () => {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={isSubmitting}
                   className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl flex items-center justify-center gap-2"
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <UserPlus className="w-5 h-5" />}
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <UserPlus className="w-5 h-5" />}
                   Create User
                 </button>
               </form>
@@ -439,7 +397,7 @@ const EmployeesListPage = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {filteredUsers.map(user => (
+                {filteredUsers.map((user: any) => (
                   <div key={user.id} className="bg-white border rounded-xl p-5">
                     <div className="flex justify-between mb-4">
                       <div className="flex items-center gap-3">
@@ -537,7 +495,7 @@ const EmployeesListPage = () => {
                         className="w-full px-4 py-3 border rounded-xl font-semibold"
                       >
                         <option value="">{editData.manager_id}</option>
-                        {managers.map(m => (
+                        {managers.map((m: any) => (
                           <option key={m.id} value={m.id}>
                             {m.name} ({m.role})
                           </option>
