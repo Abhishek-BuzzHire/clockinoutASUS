@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FileText, UserCheck, RefreshCw, Briefcase, Calendar, CheckCircle } from "lucide-react";
+import { FileText, UserCheck, RefreshCw, CheckCircle } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { apiUrl } from "@/lib/data";
 
 type ActivityType = "cv_parsed" | "leave_approved" | "shift_changed" | "wfh_approved" | "attendance_regularized";
 
@@ -14,20 +17,6 @@ interface Activity {
   time: string;
   timestamp: number;
 }
-
-const INITIAL_ACTIVITIES: Activity[] = [
-  { id: "1", type: "cv_parsed", title: "CV Parsed: John Doe (Senior Dev)", time: "11 hours ago", timestamp: Date.now() - 11 * 3600000 },
-  { id: "2", type: "leave_approved", title: "Leave Request Approved for Neha", time: "1 hour ago", timestamp: Date.now() - 3600000 },
-  { id: "3", type: "shift_changed", title: "Shift Changed for Ankur", time: "2 minutes ago", timestamp: Date.now() - 120000 },
-];
-
-const MOCK_LIVE_EVENTS = [
-  { type: "cv_parsed", title: "CV Parsed: Shivam Yadav (Full Stack)" },
-  { type: "leave_approved", title: "Leave Request Approved for Arshpreet" },
-  { type: "wfh_approved", title: "WFH Approved for Jyoti" },
-  { type: "attendance_regularized", title: "Attendance Regularized for Somya" },
-  { type: "cv_parsed", title: "CV Parsed: Emily Chen (UI/UX)" },
-];
 
 const getIcon = (type: ActivityType) => {
   switch (type) {
@@ -60,28 +49,41 @@ const getBgColor = (type: ActivityType) => {
 };
 
 export default function RecentActivity() {
-  const [activities, setActivities] = useState<Activity[]>(INITIAL_ACTIVITIES.sort((a, b) => b.timestamp - a.timestamp));
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Simulate live websocket updates
   useEffect(() => {
-    const interval = setInterval(() => {
-      const randomEvent = MOCK_LIVE_EVENTS[Math.floor(Math.random() * MOCK_LIVE_EVENTS.length)];
-      
-      const newActivity: Activity = {
-        id: Math.random().toString(36).substr(2, 9),
-        type: randomEvent.type as ActivityType,
-        title: randomEvent.title,
-        time: "Just now",
-        timestamp: Date.now(),
-      };
+    const fetchActivities = async () => {
+      try {
+        const token = Cookies.get("access");
+        const headers = { Authorization: `Bearer ${token}` };
 
-      setActivities((prev) => {
-        const updated = [newActivity, ...prev];
-        return updated.slice(0, 10); // keep only latest 10
-      });
-    }, 15000); // Add a new event every 15 seconds
+        // Fetching leaves to simulate activity stream with real data
+        const leavesRes = await axios.get(`${apiUrl}/api/admin/leaves/`, { headers, params: { status: "APPROVED" } });
+        
+        const fetchedActivities: Activity[] = [];
 
-    return () => clearInterval(interval);
+        if (leavesRes.data && leavesRes.data.results) {
+          leavesRes.data.results.forEach((l: any) => {
+            fetchedActivities.push({
+              id: `leave-act-${l.leave_id}`,
+              type: "leave_approved",
+              title: `Leave Approved for ${l.employee_name || 'Employee'}`,
+              time: l.start_date || "Recently",
+              timestamp: Date.now() - Math.random() * 100000 // sorting dummy
+            });
+          });
+        }
+
+        setActivities(fetchedActivities.slice(0, 10));
+      } catch (err) {
+        console.error("Error fetching activities", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivities();
   }, []);
 
   return (
@@ -92,19 +94,25 @@ export default function RecentActivity() {
       <CardContent className="flex-1 p-0 relative">
         <ScrollArea className="h-[300px] w-full px-6 pt-2 pb-6">
           <div className="relative border-l border-gray-200 ml-4 space-y-6">
-            {activities.map((activity, index) => (
-              <div key={activity.id} className="relative pl-6 flex flex-col gap-1 group animate-in fade-in slide-in-from-top-2 duration-500">
-                <div className={`absolute -left-4 top-0 h-8 w-8 rounded-full border-2 border-white flex items-center justify-center ${getBgColor(activity.type)}`}>
-                  {getIcon(activity.type)}
+            {loading ? (
+              <p className="text-sm text-gray-500 pl-4 mt-2">Loading live feed...</p>
+            ) : activities.length === 0 ? (
+              <p className="text-sm text-gray-500 pl-4 mt-2">No recent activity.</p>
+            ) : (
+              activities.map((activity) => (
+                <div key={activity.id} className="relative pl-6 flex flex-col gap-1 group animate-in fade-in slide-in-from-top-2 duration-500 mt-6">
+                  <div className={`absolute -left-4 top-0 h-8 w-8 rounded-full border-2 border-white flex items-center justify-center ${getBgColor(activity.type)}`}>
+                    {getIcon(activity.type)}
+                  </div>
+                  <p className="text-sm font-medium text-gray-800 leading-tight">
+                    {activity.title}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {activity.time}
+                  </p>
                 </div>
-                <p className="text-sm font-medium text-gray-800 leading-tight">
-                  {activity.title}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {activity.time}
-                </p>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </ScrollArea>
       </CardContent>
