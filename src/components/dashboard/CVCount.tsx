@@ -12,10 +12,25 @@ const getFirstName = (fullName: string) => {
     return fullName ? fullName.split(' ')[0] : 'Unknown';
 };
 
+// Dummy data for the jobs summary
 const colors = [
-    "#E24B4A", "#1D6AE5", "#16A34A", "#F59E0B", "#8B5CF6",
-    "#EC4899", "#0891B2", "#6B7280", "#D97706", "#64748B",
-    "#FF3B3B", "#0DD9C4", "#2A6BFF", "#FF8A1C", "#B12AF7",
+    "#FF3B3B", // from #FF6B6B → stronger red
+    "#0DD9C4", // from #4ECDC4 → brighter aqua
+    "#2A6BFF", // from #4F86F7 → deeper blue
+    "#FF8A1C", // from #F7A84F → punchier orange
+    "#B12AF7", // from #C755F7 → more neon purple
+
+    "#1E90FF", // from #39A0ED → bold azure
+    "#FF4C4C", // from #E87C7C → hot red
+    "#14C9A3", // from #7DD8C9 → vivid teal
+    "#FF6F1C", // from #F2944C → intense orange
+    "#C43CFF", // from #D68AF9 → glowing violet
+
+    "#00B4D8", // from #5DB8D3 → tropical cyan
+    "#FF7043", // from #FF9F80 → fiery coral
+    "#F5C518", // from #E0B354 → vibrant gold
+    "#7A3CFF", // from #9C6ADE → deep electric purple
+    "#1DD1A1", // from #7BCCB5 → bright mint
 ];
 
 export interface CVUserData {
@@ -82,44 +97,39 @@ const CVCount = () => {
 
     const totalCvs = data.reduce((acc, entry) => acc + entry.cv_count, 0);
 
-    const dateLabel = isToday(selectedDate)
-        ? "Today's CV Count"
-        : `${format(selectedDate, "MMM d")} CV Count`;
+    if (loading) return <div className="p-8 text-center bg-white rounded-2xl shadow-lg">Loading...</div>;
 
     return (
-        <div className="bg-white border border-[#E9EBF0] rounded-xl p-5">
-            {/* Header with arrows */}
-            <div className="flex items-center justify-between mb-1">
-                <div>
-                    <p className="text-[13px] font-semibold text-gray-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>{dateLabel}</p>
-                    <p className="text-xs text-gray-400">CVs received {isToday(selectedDate) ? "today" : format(selectedDate, "EEEE")}</p>
+        <div className="w-full mx-auto">
+            <div className="p-4 bg-white rounded-2xl shadow-lg">
+                {/* Header Section — SAME as original, just arrows added */}
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">
+                        {isToday(selectedDate) ? "Today's CV Count" : `${format(selectedDate, "MMM d")} CV Count`}
+                    </h2>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={goBack}
+                            className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors"
+                        >
+                            <ChevronLeft size={18} />
+                        </button>
+                        <button
+                            onClick={goForward}
+                            disabled={isToday(selectedDate)}
+                            className={`w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center transition-colors ${
+                                isToday(selectedDate) ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"
+                            }`}
+                        >
+                            <ChevronRight size={18} />
+                        </button>
+                    </div>
                 </div>
-                <div className="flex items-center gap-1">
-                    <button
-                        onClick={goBack}
-                        className="w-7 h-7 rounded-md border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors"
-                    >
-                        <ChevronLeft size={16} />
-                    </button>
-                    <button
-                        onClick={goForward}
-                        disabled={isToday(selectedDate)}
-                        className={`w-7 h-7 rounded-md border border-gray-200 flex items-center justify-center transition-colors ${
-                            isToday(selectedDate) ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"
-                        }`}
-                    >
-                        <ChevronRight size={16} />
-                    </button>
-                </div>
-            </div>
 
-            {loading ? (
-                <div className="h-[150px] flex items-center justify-center text-sm text-gray-400">Loading...</div>
-            ) : (
-                <>
-                    {/* Chart */}
-                    <div className="relative my-3">
-                        <ResponsiveContainer height={150}>
+                {/* Chart Section — EXACTLY same as original */}
+                <div className="items-center justify-center">
+                    <div className='relative w-full h-[75%]'>
+                        <ResponsiveContainer height={200}>
                             <PieChart>
                                 <Pie
                                     data={chartData.length > 0 ? chartData : [{ name: "No Data", value: 1, fill: "#F3F4F6" }]}
@@ -127,32 +137,31 @@ const CVCount = () => {
                                     nameKey="name"
                                     cx="50%"
                                     cy="50%"
-                                    outerRadius={65}
-                                    innerRadius={50}
+                                    outerRadius={85}
+                                    innerRadius={70}
                                     paddingAngle={chartData.length > 1 ? 2 : 0}
                                     stroke="none"
-                                />
+                                >
+                                </Pie>
                                 {chartData.length > 0 && <Tooltip />}
                             </PieChart>
                         </ResponsiveContainer>
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                            <span className="text-2xl font-semibold text-gray-900" style={{ fontFamily: "'Sora', sans-serif" }}>{totalCvs}</span><br />
-                            <span className="text-[10px] text-gray-400">CVs {isToday(selectedDate) ? "today" : format(selectedDate, "MMM d")}</span>
+                        <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center'>
+                            <span className='text-3xl font-bold'>{totalCvs}</span><br />
+                            <span className='text-sm text-gray-700'>CVs {isToday(selectedDate) ? "today" : format(selectedDate, "MMM d")}</span>
                         </div>
                     </div>
-
-                    {/* Recruiter chips */}
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap justify-center mt-4">
                         {data.map((entry, index) => (
-                            <div key={`legend-${entry.id}`} className="flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded text-[11px]">
-                                <div className="w-[7px] h-[7px] rounded-full shrink-0" style={{ backgroundColor: colors[index % colors.length] }}></div>
-                                <span className="text-gray-600">{getFirstName(entry.name)}</span>
-                                <span className="font-semibold text-gray-900">{entry.cv_count}</span>
+                            <div key={`legend-${entry.id}`} className="flex items-center m-2">
+                                <div className={`w-1 h-3 mr-2`} style={{ backgroundColor: colors[index % colors.length] }}></div>
+                                <span className="text-sm font-semibold">{getFirstName(entry.name)}</span>
+                                <span className="text-sm text-gray-500 ml-1">{entry.cv_count}</span>
                             </div>
                         ))}
                     </div>
-                </>
-            )}
+                </div>
+            </div>
         </div>
     );
 };
