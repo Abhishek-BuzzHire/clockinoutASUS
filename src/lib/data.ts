@@ -1,7 +1,7 @@
 export let role = "admin";
 
-export const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
+const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.bytebuzz.in';
+export const apiUrl = base.endsWith('/') ? base.slice(0, -1) : base;
 export const employeeData = [
   {
     "id": "EMP001",
