@@ -95,7 +95,7 @@ export default function RecentRequests() {
         return 0;
       });
 
-      setRequests(combined.slice(0, 25));
+      setRequests(combined.slice(0, 8));
     } catch (err) {
       console.error("Error fetching recent requests", err);
     } finally {
