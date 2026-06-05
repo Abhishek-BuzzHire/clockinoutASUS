@@ -94,7 +94,7 @@ export default function UpcomingEvents() {
                 <span className="text-[12px] text-gray-500 mt-0.5 leading-snug whitespace-normal">
                   {event.type === "anniversary" ? (
                     <>
-                      {event.date} · <span className="text-indigo-500 font-medium">{event.years} Yr Anniversary</span>
+                      {event.date} · <span className="text-indigo-500 font-medium">Completed {event.years} {(event.years ?? 0) === 1 ? "year" : "years"} with BuzzHire</span>
                     </>
                   ) : (
                     <>
