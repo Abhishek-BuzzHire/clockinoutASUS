@@ -43,8 +43,8 @@ export default function UpcomingEvents() {
     if (days === 0) return "Today! 🎉";
     if (days === 1) return "Tomorrow";
     if (days === -1) return "Yesterday";
-    if (days < 0) return `${Math.abs(days)}d ago`;
-    return `in ${days}d`;
+    if (days < 0) return `${Math.abs(days)} Days ago`;
+    return `in ${days} Days`;
   };
 
   return (
@@ -86,19 +86,19 @@ export default function UpcomingEvents() {
                 {event.type === "birthday" ? <Cake size={17} /> : <Award size={17} />}
               </div>
 
-              {/* Name & Detail - takes remaining space, truncates */}
-              <div className="flex flex-col justify-center min-w-0 overflow-hidden">
-                <span className="text-[14px] font-semibold text-gray-900 truncate leading-tight">
+              {/* Name & Detail - allow wrapping */}
+              <div className="flex flex-col justify-center min-w-0 pr-2">
+                <span className="text-[14px] font-semibold text-gray-900 leading-tight whitespace-normal break-words">
                   {event.name}
                 </span>
-                <span className="text-[11px] text-gray-400 mt-0.5 truncate">
+                <span className="text-[12px] text-gray-500 mt-0.5 leading-snug whitespace-normal">
                   {event.type === "anniversary" ? (
                     <>
-                      Completed <span className="text-indigo-500 font-semibold">{event.years} {(event.years ?? 0) === 1 ? "year" : "years"}</span> with BuzzHire
+                      {event.date} · <span className="text-indigo-500 font-medium">{event.years} Yr Anniversary</span>
                     </>
                   ) : (
                     <>
-                      {event.date} · <span className="text-rose-400">Birthday</span>
+                      {event.date} · <span className="text-rose-400 font-medium">Birthday</span>
                     </>
                   )}
                 </span>
