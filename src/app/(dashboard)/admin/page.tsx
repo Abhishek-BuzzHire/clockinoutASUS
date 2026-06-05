@@ -3,6 +3,9 @@
 import CVCount, { CVUserData } from "@/components/dashboard/CVCount"
 import Pipeline from "@/components/dashboard/Pipeline"
 import WeeklyStats from "@/components/dashboard/WeeklyStats"
+import RecentActivity from "@/components/dashboard/RecentActivity"
+import UpcomingEvents from "@/components/dashboard/UpcomingEvents"
+import RecentRequests from "@/components/dashboard/RecentRequests"
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -52,11 +55,25 @@ const AdminDashboard = () => {
     return (
         <>
             <>
-                <div className='p-4 flex gap-4 flex-col md:flex-row bg-blueLight-50'>
-                    <div className="w-full lg:w-2/3 flex flex-col">
-                        {/* < Pipeline /> */}
-                        {/* < WeeklyStats /> */}
+                <div className='p-4 flex gap-4 flex-col md:flex-row bg-blueLight-50 min-h-screen'>
+                    {/* LEFT / CENTER AREA - New Widgets */}
+                    <div className="w-full lg:w-2/3 flex flex-col gap-4">
+                        {/* Top Row: Activity & Events */}
+                        <div className="flex flex-col md:flex-row gap-4 h-[350px]">
+                            <div className="w-full md:w-1/2 h-full">
+                                <RecentActivity />
+                            </div>
+                            <div className="w-full md:w-1/2 h-full">
+                                <UpcomingEvents />
+                            </div>
+                        </div>
+                        {/* Bottom Row: Recent Requests */}
+                        <div className="w-full mt-2">
+                            <RecentRequests />
+                        </div>
                     </div>
+
+                    {/* RIGHT AREA - Existing CV Count */}
                     <div className="w-full lg:w-1/3 flex flex-col gap-4">
                         <CVCount data={todayCVData} loading={loading}/>
                     </div>
