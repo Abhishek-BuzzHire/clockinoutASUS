@@ -42,7 +42,9 @@ export default function UpcomingEvents() {
   const getDaysLabel = (days: number) => {
     if (days === 0) return "Today! 🎉";
     if (days === 1) return "Tomorrow";
-    return `${days}d`;
+    if (days === -1) return "Yesterday";
+    if (days < 0) return `${Math.abs(days)}d ago`;
+    return `in ${days}d`;
   };
 
   return (
@@ -53,7 +55,7 @@ export default function UpcomingEvents() {
           Birthdays & Anniversaries
         </h3>
         <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium whitespace-nowrap ml-2">
-          Next 30 days
+          Past 10 & Next 30 days
         </span>
       </div>
 
@@ -106,7 +108,9 @@ export default function UpcomingEvents() {
               <div className="flex items-center">
                 <span
                   className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${
-                    event.days_until === 0
+                    event.days_until < 0
+                      ? "bg-gray-100 text-gray-500" // Past events
+                      : event.days_until === 0
                       ? "bg-emerald-100 text-emerald-700"
                       : event.days_until <= 3
                       ? "bg-amber-100 text-amber-700"
