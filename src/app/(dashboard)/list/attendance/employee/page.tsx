@@ -866,6 +866,9 @@ const EmployeeAttendancePage = () => {
         else if (calendarDay?.calendar_type === "WEEKEND") {
             status = "weekend";
         }
+        else if (apiEntry?.work_status === "NOT_JOINED") {
+            status = "future";
+        }
         else if (apiEntry?.work_status === "LEAVE") {
             status = "leave";    // treated as absent visually
         }
@@ -943,6 +946,9 @@ const EmployeeAttendancePage = () => {
         }
         else if (calendarDay?.calendar_type === "WEEKEND") {
             status = "weekend";
+        }
+        else if (apiEntry?.work_status === "NOT_JOINED") {
+            status = "future";
         }
         else if (apiEntry?.work_status === "LEAVE") {
             status = "leave";    // treated as absent visually
