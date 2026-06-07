@@ -126,7 +126,13 @@ export default function ProfilePage() {
                             <div className="flex flex-col items-center space-y-3 p-4 bg-slate-50 rounded-lg">
                                 <div className="w-24 h-24 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">
                                     {profile?.profile_photo ? (
-                                        <img src={`data:image/png;base64,${profile.profile_photo}`} alt="Profile" className="w-full h-full object-cover" />
+                                        <img src={
+                                            profile.profile_photo.startsWith('/api/') 
+                                                ? `${apiUrl}${profile.profile_photo}` 
+                                                : profile.profile_photo.startsWith('data:') 
+                                                    ? profile.profile_photo 
+                                                    : `data:image/jpeg;base64,${profile.profile_photo}`
+                                        } alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">No Photo</div>
                                     )}

@@ -169,9 +169,17 @@ const EmployeeAttendancePage = () => {
 
     const { employee } = useCurrentEmployee();
 
-    const avatarSrc = employee?.profile_photo
-        ? (employee.profile_photo.startsWith("data:") ? employee.profile_photo : `data:image/png;base64,${employee.profile_photo}`)
-        : "/avatar.png";
+    const getProfilePhoto = (profilePhoto?: string) => {
+        if (!profilePhoto) return "/avatar.png";
+        if (typeof profilePhoto === 'string') {
+            if (profilePhoto.startsWith('/api/')) return `${apiUrl}${profilePhoto}`;
+            if (profilePhoto.startsWith("data:")) return profilePhoto;
+            return `data:image/jpeg;base64,${profilePhoto}`;
+        }
+        return `data:image/jpeg;base64,${btoa(String.fromCharCode(...new Uint8Array(profilePhoto)))}`;
+    };
+
+    const avatarSrc = getProfilePhoto(employee?.profile_photo);
     // Auth + router
     const { user, loading, logout } = useAuth();
     const router = useRouter();
