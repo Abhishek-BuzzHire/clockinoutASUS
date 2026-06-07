@@ -237,15 +237,10 @@ const AdminAttendancePage = () => {
           const isPastDay = isBefore(startOfDay(thisDate), startOfDay(today));
           const isFutureDay = isAfter(startOfDay(thisDate), startOfDay(today));
 
-          const isNotJoined = day.work_status === "NOT_JOINED";
-
           let status: "present" | "absent" | "leave" | null = null;
           let lateBy: string | null = null;
 
-          if (isNotJoined) {
-            status = null;
-          }
-          else if (isLeave) {
+          if (isLeave) {
             status = "leave";
           }
 
