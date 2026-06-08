@@ -49,8 +49,8 @@ const CVCount = () => {
     const [data, setData] = useState<CVUserData[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchCVCounts = useCallback(async (date: Date) => {
-        setLoading(true);
+    const fetchCVCounts = useCallback(async (date: Date, isBackground = false) => {
+        if (!isBackground) setLoading(true);
         try {
             const token = Cookies.get('access');
             const dateStr = format(date, 'yyyy-MM-dd');
@@ -70,14 +70,22 @@ const CVCount = () => {
             }
         } catch (error) {
             console.error("Error fetching CV counts:", error);
-            setData([]);
+            if (!isBackground) setData([]);
         } finally {
-            setLoading(false);
+            if (!isBackground) setLoading(false);
         }
     }, []);
 
     useEffect(() => {
+        // Initial fetch
         fetchCVCounts(selectedDate);
+
+        // Set up live polling (every 3 seconds) to feel like websockets
+        const intervalId = setInterval(() => {
+            fetchCVCounts(selectedDate, true);
+        }, 3000);
+
+        return () => clearInterval(intervalId);
     }, [selectedDate, fetchCVCounts]);
 
     const goBack = () => setSelectedDate(prev => subDays(prev, 1));
