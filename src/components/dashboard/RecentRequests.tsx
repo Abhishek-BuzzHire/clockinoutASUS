@@ -180,9 +180,9 @@ export default function RecentRequests() {
 
   const getTypeBadge = (type: string) => {
     const t = type.toUpperCase();
-    if (t === "LEAVE") return "bg-[#22c55e] text-white shadow-sm"; // Battery Green from settings
-    if (t === "WFH") return "bg-[#38bdf8] text-white shadow-sm"; // Storage Cyan from settings
-    if (t === "REGULARIZE") return "bg-[#3b82f6] text-white shadow-sm"; // Memory Blue from settings
+    if (t === "LEAVE") return "bg-rose-50 border border-rose-100 text-rose-600";
+    if (t === "WFH") return "bg-sky-50 border border-sky-100 text-sky-600";
+    if (t === "REGULARIZE") return "bg-slate-50 border border-slate-200 text-slate-600";
     return "bg-gray-50 text-gray-600";
   };
 
