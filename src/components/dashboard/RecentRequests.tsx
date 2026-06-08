@@ -176,9 +176,9 @@ export default function RecentRequests() {
 
   const getTypeBadge = (type: string) => {
     const t = type.toUpperCase();
-    if (t === "LEAVE") return "bg-[#FFF1F2] text-[#E11D48]"; // Very soft rose
-    if (t === "WFH") return "bg-[#F0F9FF] text-[#0284C7]"; // Very soft sky
-    if (t === "REGULARIZE") return "bg-[#F8FAFC] border border-[#E2E8F0] text-[#475569]"; // Clean slate
+    if (t === "LEAVE") return "bg-[#22c55e] text-white shadow-sm"; // Battery Green from settings
+    if (t === "WFH") return "bg-[#38bdf8] text-white shadow-sm"; // Storage Cyan from settings
+    if (t === "REGULARIZE") return "bg-[#3b82f6] text-white shadow-sm"; // Memory Blue from settings
     return "bg-gray-50 text-gray-600";
   };
 
