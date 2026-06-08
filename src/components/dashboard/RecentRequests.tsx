@@ -16,6 +16,7 @@ interface RequestData {
   typeKey: "leave" | "wfh" | "regularize";
   dates: string;
   status: string;
+  createdAt: number;
   rawData: any;
 }
 
@@ -53,6 +54,7 @@ export default function RecentRequests() {
             typeKey: "leave",
             dates: `${l.start_date || ""} → ${l.end_date || ""}`,
             status: l.status || "PENDING",
+            createdAt: new Date(l.applied_at).getTime() || 0,
             rawData: l
           });
         });
@@ -67,6 +69,7 @@ export default function RecentRequests() {
             typeKey: "wfh",
             dates: w.date || "—",
             status: w.status || "PENDING",
+            createdAt: new Date(w.applied_at).getTime() || 0,
             rawData: w
           });
         });
@@ -81,6 +84,7 @@ export default function RecentRequests() {
             typeKey: "regularize",
             dates: r.date || "—",
             status: r.status || "PENDING",
+            createdAt: new Date(r.created_at).getTime() || 0,
             rawData: r
           });
         });
@@ -89,7 +93,7 @@ export default function RecentRequests() {
       combined.sort((a, b) => {
         if (a.status === "PENDING" && b.status !== "PENDING") return -1;
         if (a.status !== "PENDING" && b.status === "PENDING") return 1;
-        return 0;
+        return b.createdAt - a.createdAt;
       });
 
       setRequests(combined.slice(0, 10));
