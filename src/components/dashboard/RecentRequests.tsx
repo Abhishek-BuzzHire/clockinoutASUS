@@ -180,10 +180,10 @@ export default function RecentRequests() {
 
   const getTypeBadge = (type: string) => {
     const t = type.toUpperCase();
-    if (t === "LEAVE") return "bg-red-50 border border-red-100 text-red-600";
-    if (t === "WFH") return "bg-cyan-50 border border-cyan-100 text-cyan-600";
-    if (t === "REGULARIZE") return "bg-blue-50 border border-blue-100 text-blue-600";
-    return "bg-gray-50 text-gray-600";
+    if (t === "LEAVE") return "bg-rose-100 border border-rose-200 text-rose-700";
+    if (t === "WFH") return "bg-cyan-100 border border-cyan-200 text-cyan-700";
+    if (t === "REGULARIZE") return "bg-blue-100 border border-blue-200 text-blue-700";
+    return "bg-gray-100 text-gray-700";
   };
 
   const filterPills: { key: FilterType; label: string }[] = [
