@@ -24,7 +24,7 @@ const fetcher = async (url: string) => {
   return res.data;
 };
 
-type StatCategory = "present" | "leave" | "absent";
+
 
 export default function DailyOverview() {
   const [selectedDate, setSelectedDate] = useState(new Date());
