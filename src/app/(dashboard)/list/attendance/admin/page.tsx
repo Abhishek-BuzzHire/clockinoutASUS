@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { format, startOfMonth, endOfMonth, isAfter, isWeekend, isToday, isBefore, startOfDay } from "date-fns";
 import axios from "axios";
 import Cookies from "js-cookie";
+import useSWR from "swr";
 
 import type { AttendanceRecord, CalendarDay, NewEmployee, ShiftConfig } from "@/lib/types";
 import AttendanceCalendar from "@/components/attendance/attendanceCalender";
@@ -335,14 +336,134 @@ const AdminAttendancePage = () => {
     }
   };
 
-  // Load once initially
+  // ⚡ SWR: Cache attendance data in browser RAM for nano-second loading
+  const swrAttendanceKey = `attendance_${format(currentDate, "yyyy-MM")}`;
+  
+  const swrFetcher = async () => {
+    const token = Cookies.get("access");
+    const start = format(startOfMonth(currentDate), "yyyy-MM-dd");
+    const end = format(endOfMonth(currentDate), "yyyy-MM-dd");
+    const headers = { Authorization: token ? `Bearer ${token}` : "" };
+
+    const [calRes, attRes] = await Promise.all([
+      axios.get(`${apiUrl}/api/company-calendar`, { headers, params: { start_date: start, end_date: end } }),
+      axios.get(`${apiUrl}/api/admin/emp-total-details/`, { headers, params: { start_date: start, end_date: end } })
+    ]);
+
+    return { calendar: calRes.data, attendance: attRes.data };
+  };
+
+  const { data: swrData } = useSWR(swrAttendanceKey, swrFetcher, {
+    revalidateOnFocus: true,
+    keepPreviousData: true,
+    refreshInterval: 30000, // silently refresh every 30 seconds
+  });
+
+  // Process SWR data into component state when it arrives
   useEffect(() => {
-    const load = async () => {
-      await fetchCompanyCalendar(currentDate);
-      await fetchAdminAttendance(currentDate);
-    };
-    load();
-  }, []);
+    if (!swrData) return;
+
+    // Process calendar
+    const calMap: Record<string, CalendarDay> = {};
+    swrData.calendar.calendar?.forEach((day: CalendarDay) => {
+      calMap[day.date] = day;
+    });
+    setCalendarMap(calMap);
+
+    // Process attendance (same logic as fetchAdminAttendance)
+    const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
+    const apiData = swrData.attendance.emps;
+
+    setEmployees(
+      apiData.map((e: any) => ({
+        id: String(e.emp_id),
+        name: e.employee_name,
+      }))
+    );
+
+    const mapped: Record<string, AttendanceDay> = {};
+
+    apiData.forEach((emp: any) => {
+      if (EXCLUDED_EMP_IDS.has(emp.emp_id)) return;
+
+      emp.attendance.forEach((day: any) => {
+        const dateKey = day.date;
+        const thisDate = new Date(dateKey);
+        const today = new Date();
+
+        const calendarDay = calMap[dateKey];
+
+        const isWorkingDay = calendarDay?.is_working_day ?? true;
+        const isLeave = day.work_status === "LEAVE";
+        const isWFH = day.work_status === "WFH";
+        const isWFO = day.work_status === "WFO";
+        const hasPunch = !!day.punch_in;
+        const isPastDay = isBefore(startOfDay(thisDate), startOfDay(today));
+        const isFutureDay = isAfter(startOfDay(thisDate), startOfDay(today));
+
+        let attendanceStatus: "present" | "absent" | "leave" | null = null;
+        let lateBy: string | null = null;
+
+        if (isLeave) {
+          attendanceStatus = "leave";
+        } else if (isFutureDay) {
+          attendanceStatus = null;
+        } else if (isPastDay) {
+          if (!hasPunch) {
+            attendanceStatus = "absent";
+          } else if (hasPunch && !day.punch_out) {
+            attendanceStatus = "absent";
+          } else {
+            attendanceStatus = "present";
+            const shiftStart = toMinutes(SHIFT_CONFIG.startTime);
+            const punchMinutes = toMinutes(day.punch_in);
+            if (punchMinutes > shiftStart + 30) {
+              const diff = punchMinutes - shiftStart;
+              const hrs = Math.floor(diff / 60);
+              const mins = diff % 60;
+              lateBy = `${hrs > 0 ? `${hrs}h ` : ""}${mins}m`;
+            }
+          }
+        } else {
+          if (hasPunch) {
+            attendanceStatus = "present";
+            const shiftStart = toMinutes(SHIFT_CONFIG.startTime);
+            const punchMinutes = toMinutes(day.punch_in);
+            if (punchMinutes > shiftStart + 30) {
+              const diff = punchMinutes - shiftStart;
+              const hrs = Math.floor(diff / 60);
+              const mins = diff % 60;
+              lateBy = `${hrs > 0 ? `${hrs}h ` : ""}${mins}m`;
+            }
+          } else {
+            attendanceStatus = "absent";
+          }
+        }
+
+        if (!mapped[dateKey]) {
+          mapped[dateKey] = { records: [], summary: { present: 0, absent: 0, leave: 0 } };
+        }
+
+        if (attendanceStatus) {
+          mapped[dateKey].summary[attendanceStatus]++;
+        }
+
+        mapped[dateKey].records.push({
+          employeeId: String(emp.emp_id),
+          name: emp.employee_name,
+          date: dateKey,
+          punchIn: day.punch_in || null,
+          punchOut: day.punch_out || null,
+          status: attendanceStatus || "absent",
+          lateBy: lateBy,
+          totalTime: day.total_time || null,
+          work_status: day.work_status || null,
+        } as AttendanceRecord);
+      });
+    });
+
+    setAttendanceRecords(mapped);
+  }, [swrData]);
 
   const loadList = async () => {
     try {
@@ -498,12 +619,11 @@ const AdminAttendancePage = () => {
   };
 
 
-  // When month changes via calendar
-  const handleMonthChange = async (newMonth: Date) => {
+  // When month changes via calendar — SWR auto-fetches based on currentDate
+  const handleMonthChange = (newMonth: Date) => {
     setCurrentDate(newMonth);
     setSelectedDate(newMonth);
-    await fetchCompanyCalendar(newMonth);
-    await fetchAdminAttendance(newMonth);
+    // SWR key changes with currentDate, so it auto-fetches or serves from cache ⚡
   };
 
   const recordsForSelectedDate =
