@@ -450,14 +450,13 @@ const AdminAttendancePage = () => {
 
         mapped[dateKey].records.push({
           employeeId: String(emp.emp_id),
-          name: emp.employee_name,
           date: dateKey,
-          punchIn: day.punch_in || null,
-          punchOut: day.punch_out || null,
+          checkInTime: day.punch_in || undefined,
+          checkOutTime: day.punch_out || undefined,
           status: attendanceStatus || "absent",
           lateBy: lateBy,
-          totalTime: day.total_time || null,
-          work_status: day.work_status || null,
+          hoursWorked: day.total_time || undefined,
+          workStatus: day.work_status || null,
         } as AttendanceRecord);
       });
     });
