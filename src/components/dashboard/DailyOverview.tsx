@@ -36,7 +36,6 @@ export default function DailyOverview() {
     `${apiUrl}/api/admin/emp-total-details/?start_date=${dateStr}&end_date=${dateStr}`,
     fetcher,
     {
-      refreshInterval: 30000, // 30 seconds instead of 3s to prevent network spam
       keepPreviousData: true,
       revalidateOnFocus: true
     }

@@ -62,7 +62,6 @@ const CVCount = () => {
         `${apiUrl}/api/cv-count/?start_date=${dateStr}`,
         fetcher,
         { 
-            refreshInterval: 3000, // Background polling every 3 seconds
             revalidateOnFocus: true, // Re-fetch when clicking back to tab
             keepPreviousData: true // Solves the "Loading..." spinner text issue on date change
         }
