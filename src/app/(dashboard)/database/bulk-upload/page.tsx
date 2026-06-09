@@ -47,14 +47,12 @@ const BulkUploadForm: React.FC = () => {
         setCandidates(prev => [...prev, ...newCandidates]);
         if (fileInputRef.current) fileInputRef.current.value = ''; // reset input
         
-        // Automatically start parsing the newly added files in batches of 10
+        // Automatically start parsing the newly added files sequentially
         setIsProcessingAll(true);
-        const BATCH_SIZE = 10;
-        for (let i = 0; i < newCandidates.length; i += BATCH_SIZE) {
-            const batch = newCandidates.slice(i, i + BATCH_SIZE);
-            await Promise.all(
-                batch.map(c => c.file ? parseFile(c._uiId, c.file) : Promise.resolve())
-            );
+        for (const c of newCandidates) {
+            if (c.file) {
+                await parseFile(c._uiId, c.file);
+            }
         }
         setIsProcessingAll(false);
     };
