@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/lib/data";
+import useSWR from "swr";
 
 import AdminLeaveDetailModal from "@/components/attendance/AdminLeaveDetailModal";
 import AdminWFHDetailModal from "@/components/attendance/AdminWFHDetailModal";
@@ -22,9 +23,73 @@ interface RequestData {
 
 type FilterType = "all" | "pending" | "approved";
 
+const fetcher = async () => {
+  const token = Cookies.get("access");
+  const headers = { Authorization: `Bearer ${token}` };
+
+  const [leavesRes, wfhRes, regRes] = await Promise.allSettled([
+    axios.get(`${apiUrl}/api/admin/leaves/`, { headers }),
+    axios.get(`${apiUrl}/wfh/admin/requests/`, { headers }),
+    axios.get(`${apiUrl}/api/admin/attendance-regularization/requests/`, { headers })
+  ]);
+
+  const combined: RequestData[] = [];
+
+  if (leavesRes.status === "fulfilled" && leavesRes.value.data.results) {
+    leavesRes.value.data.results.forEach((l: any) => {
+      combined.push({
+        id: `leave-${l.leave_id}`,
+        name: l.user_name || l.user_email || "—",
+        type: l.leave_type || "Leave",
+        typeKey: "leave",
+        dates: `${l.start_date || ""} → ${l.end_date || ""}`,
+        status: l.status || "PENDING",
+        createdAt: new Date(l.applied_at).getTime() || 0,
+        rawData: l
+      });
+    });
+  }
+
+  if (wfhRes.status === "fulfilled" && wfhRes.value.data.results) {
+    wfhRes.value.data.results.forEach((w: any) => {
+      combined.push({
+        id: `wfh-${w.wfh_id}`,
+        name: w.user_name || w.user_email || "—",
+        type: "WFH",
+        typeKey: "wfh",
+        dates: w.date || "—",
+        status: w.status || "PENDING",
+        createdAt: new Date(w.applied_at).getTime() || 0,
+        rawData: w
+      });
+    });
+  }
+
+  if (regRes.status === "fulfilled" && regRes.value.data.data) {
+    regRes.value.data.data.forEach((r: any) => {
+      combined.push({
+        id: `reg-${r.approval_token || r.id}`,
+        name: r.employee || "—",
+        type: "Regularize",
+        typeKey: "regularize",
+        dates: r.date || "—",
+        status: r.status || "PENDING",
+        createdAt: new Date(r.created_at).getTime() || 0,
+        rawData: r
+      });
+    });
+  }
+
+  combined.sort((a, b) => {
+    if (a.status === "PENDING" && b.status !== "PENDING") return -1;
+    if (a.status !== "PENDING" && b.status === "PENDING") return 1;
+    return b.createdAt - a.createdAt;
+  });
+
+  return combined.slice(0, 10);
+};
+
 export default function RecentRequests() {
-  const [requests, setRequests] = useState<RequestData[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>("all");
 
   const [selectedLeave, setSelectedLeave] = useState<any | null>(null);
@@ -32,87 +97,19 @@ export default function RecentRequests() {
   const [correctionDetail, setCorrectionDetail] = useState<any | null>(null);
   const [correctionToken, setCorrectionToken] = useState<string | null>(null);
 
-  const fetchRequests = useCallback(async () => {
-    try {
-      const token = Cookies.get("access");
-      const headers = { Authorization: `Bearer ${token}` };
+  const { data: requests, isLoading, mutate } = useSWR<RequestData[]>(
+    'dashboard_recent_requests',
+    fetcher,
+    { refreshInterval: 3000, keepPreviousData: true, revalidateOnFocus: true }
+  );
 
-      const [leavesRes, wfhRes, regRes] = await Promise.allSettled([
-        axios.get(`${apiUrl}/api/admin/leaves/`, { headers }),
-        axios.get(`${apiUrl}/wfh/admin/requests/`, { headers }),
-        axios.get(`${apiUrl}/api/admin/attendance-regularization/requests/`, { headers })
-      ]);
-
-      const combined: RequestData[] = [];
-
-      if (leavesRes.status === "fulfilled" && leavesRes.value.data.results) {
-        leavesRes.value.data.results.forEach((l: any) => {
-          combined.push({
-            id: `leave-${l.leave_id}`,
-            name: l.user_name || l.user_email || "—",
-            type: l.leave_type || "Leave",
-            typeKey: "leave",
-            dates: `${l.start_date || ""} → ${l.end_date || ""}`,
-            status: l.status || "PENDING",
-            createdAt: new Date(l.applied_at).getTime() || 0,
-            rawData: l
-          });
-        });
-      }
-
-      if (wfhRes.status === "fulfilled" && wfhRes.value.data.results) {
-        wfhRes.value.data.results.forEach((w: any) => {
-          combined.push({
-            id: `wfh-${w.wfh_id}`,
-            name: w.user_name || w.user_email || "—",
-            type: "WFH",
-            typeKey: "wfh",
-            dates: w.date || "—",
-            status: w.status || "PENDING",
-            createdAt: new Date(w.applied_at).getTime() || 0,
-            rawData: w
-          });
-        });
-      }
-
-      if (regRes.status === "fulfilled" && regRes.value.data.data) {
-        regRes.value.data.data.forEach((r: any) => {
-          combined.push({
-            id: `reg-${r.approval_token || r.id}`,
-            name: r.employee || "—",
-            type: "Regularize",
-            typeKey: "regularize",
-            dates: r.date || "—",
-            status: r.status || "PENDING",
-            createdAt: new Date(r.created_at).getTime() || 0,
-            rawData: r
-          });
-        });
-      }
-
-      combined.sort((a, b) => {
-        if (a.status === "PENDING" && b.status !== "PENDING") return -1;
-        if (a.status !== "PENDING" && b.status === "PENDING") return 1;
-        return b.createdAt - a.createdAt;
-      });
-
-      setRequests(combined.slice(0, 10));
-    } catch (err) {
-      console.error("Error fetching recent requests", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchRequests();
-  }, [fetchRequests]);
+  const safeRequests = requests || [];
 
   const filteredRequests = useMemo(() => {
-    if (filter === "pending") return requests.filter(r => r.status === "PENDING");
-    if (filter === "approved") return requests.filter(r => r.status === "APPROVED");
-    return requests;
-  }, [requests, filter]);
+    if (filter === "pending") return safeRequests.filter(r => r.status === "PENDING");
+    if (filter === "approved") return safeRequests.filter(r => r.status === "APPROVED");
+    return safeRequests;
+  }, [safeRequests, filter]);
 
   const handleRowClick = async (req: RequestData) => {
     if (req.typeKey === "leave") {
@@ -139,7 +136,7 @@ export default function RecentRequests() {
       const res = await axios.post(`${apiUrl}/api/admin/leaves/${leaveId}/action/`, { action }, { headers: { Authorization: `Bearer ${token}` } });
       alert(res.data.message);
       setSelectedLeave(null);
-      fetchRequests();
+      mutate();
     } catch (err: any) { alert(err?.response?.data?.error || "Action failed"); }
   };
 
@@ -149,7 +146,7 @@ export default function RecentRequests() {
       const res = await axios.post(`${apiUrl}/wfh/admin/action/${wfhId}/`, { action }, { headers: { Authorization: `Bearer ${token}` } });
       alert(res.data.message);
       setSelectedWFH(null);
-      fetchRequests();
+      mutate();
     } catch (err: any) { alert(err?.response?.data?.error || "Action failed"); }
   };
 
@@ -160,7 +157,7 @@ export default function RecentRequests() {
       alert(res.data.message);
       setCorrectionDetail(null);
       setCorrectionToken(null);
-      fetchRequests();
+      mutate();
     } catch (err: any) { alert(err?.response?.data?.message || "Action failed"); }
   };
 
@@ -227,7 +224,7 @@ export default function RecentRequests() {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {isLoading && !requests ? (
               <tr><td colSpan={4} className="text-center py-8 text-gray-400">Loading live data...</td></tr>
             ) : filteredRequests.length === 0 ? (
               <tr><td colSpan={4} className="text-center py-8 text-gray-500">No requests found.</td></tr>

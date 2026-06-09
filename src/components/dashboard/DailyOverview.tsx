@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/lib/data";
 import { format, subDays, addDays, isToday } from "date-fns";
 import { Users, CalendarOff, UserX, X, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import useSWR from "swr";
 
 interface EmpDetail {
   name: string;
@@ -17,79 +18,74 @@ interface EmpDetail {
 
 type StatCategory = "present" | "leave" | "absent";
 
+const fetcher = async (url: string) => {
+  const token = Cookies.get("access");
+  const res = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
+  return res.data;
+};
+
+type StatCategory = "present" | "leave" | "absent";
+
 export default function DailyOverview() {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [stats, setStats] = useState({ present: 0, leave: 0, absent: 0 });
-  const [empsByCategory, setEmpsByCategory] = useState<Record<StatCategory, EmpDetail[]>>({
-    present: [], leave: [], absent: []
-  });
-  const [loading, setLoading] = useState(true);
   const [activeModal, setActiveModal] = useState<StatCategory | null>(null);
 
-  const fetchStats = useCallback(async (date: Date) => {
-    setLoading(true);
-    try {
-      const token = Cookies.get("access");
-      const dateStr = format(date, "yyyy-MM-dd");
+  const dateStr = format(selectedDate, "yyyy-MM-dd");
 
-      const res = await axios.get(`${apiUrl}/api/admin/emp-total-details/`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { start_date: dateStr, end_date: dateStr }
-      });
-
-      let p = 0, l = 0, a = 0;
-      const presentList: EmpDetail[] = [];
-      const leaveList: EmpDetail[] = [];
-      const absentList: EmpDetail[] = [];
-
-      const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
-
-      res.data.emps?.forEach((emp: any) => {
-        if (EXCLUDED_EMP_IDS.has(emp.emp_id)) return;
-
-        const day = emp.attendance?.find((d: any) => d.date === dateStr);
-        const detail: EmpDetail = {
-          name: emp.employee_name || `Employee #${emp.emp_id}`,
-          emp_id: emp.emp_id,
-          punch_in: day?.punch_in || undefined,
-          punch_out: day?.punch_out || undefined,
-          work_status: day?.work_status || undefined,
-        };
-
-        if (!day) {
-          a++;
-          absentList.push(detail);
-          return;
-        }
-
-        if (day.work_status === "LEAVE") {
-          l++;
-          leaveList.push(detail);
-        } else if (day.work_status === "WFH") {
-          // Count WFH as present
-          p++;
-          presentList.push(detail);
-        } else if (day.punch_in) {
-          p++;
-          presentList.push(detail);
-        } else {
-          a++;
-          absentList.push(detail);
-        }
-      });
-
-      setStats({ present: p, leave: l, absent: a });
-      setEmpsByCategory({ present: presentList, leave: leaveList, absent: absentList });
-    } catch (error) {
-      console.error("Failed to fetch daily overview", error);
-    } finally {
-      setLoading(false);
+  const { data, isLoading } = useSWR(
+    `${apiUrl}/api/admin/emp-total-details/?start_date=${dateStr}&end_date=${dateStr}`,
+    fetcher,
+    {
+      refreshInterval: 3000,
+      keepPreviousData: true,
+      revalidateOnFocus: true
     }
-  }, []);
+  );
 
-  useEffect(() => {
-    fetchStats(selectedDate);
-  }, [selectedDate, fetchStats]);
+  let p = 0, l = 0, a = 0;
+  const presentList: EmpDetail[] = [];
+  const leaveList: EmpDetail[] = [];
+  const absentList: EmpDetail[] = [];
+
+  if (data?.emps) {
+    const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
+
+    data.emps.forEach((emp: any) => {
+      if (EXCLUDED_EMP_IDS.has(emp.emp_id)) return;
+
+      const day = emp.attendance?.find((d: any) => d.date === dateStr);
+      const detail: EmpDetail = {
+        name: emp.employee_name || `Employee #${emp.emp_id}`,
+        emp_id: emp.emp_id,
+        punch_in: day?.punch_in || undefined,
+        punch_out: day?.punch_out || undefined,
+        work_status: day?.work_status || undefined,
+      };
+
+      if (!day) {
+        a++;
+        absentList.push(detail);
+        return;
+      }
+
+      if (day.work_status === "LEAVE") {
+        l++;
+        leaveList.push(detail);
+      } else if (day.work_status === "WFH") {
+        p++;
+        presentList.push(detail);
+      } else if (day.punch_in) {
+        p++;
+        presentList.push(detail);
+      } else {
+        a++;
+        absentList.push(detail);
+      }
+    });
+  }
+
+  const stats = { present: p, leave: l, absent: a };
+  const empsByCategory = { present: presentList, leave: leaveList, absent: absentList };
 
   const goBack = () => setSelectedDate(prev => subDays(prev, 1));
   const goForward = () => {
@@ -144,7 +140,7 @@ export default function DailyOverview() {
           </div>
         </div>
 
-        {loading ? (
+        {isLoading && !data ? (
           <div className="h-16 flex items-center justify-center bg-gray-50 rounded-lg animate-pulse">
             <span className="text-sm text-gray-400">Syncing data...</span>
           </div>

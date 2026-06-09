@@ -1,12 +1,13 @@
 "use client";
 
 import { PieChart, Pie, ResponsiveContainer, Tooltip } from 'recharts';
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { apiUrl } from '@/lib/data';
 import { format, subDays, addDays, isToday } from 'date-fns';
+import useSWR from 'swr';
 
 const getFirstName = (fullName: string) => {
     return fullName ? fullName.split(' ')[0] : 'Unknown';
@@ -44,49 +45,36 @@ interface CVCountData {
     users: CVUserData[];
 }
 
+const fetcher = async (url: string) => {
+    const token = Cookies.get('access');
+    const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+};
+
 const CVCount = () => {
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [data, setData] = useState<CVUserData[]>([]);
-    const [loading, setLoading] = useState(true);
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
 
-    const fetchCVCounts = useCallback(async (date: Date, isBackground = false) => {
-        if (!isBackground) setLoading(true);
-        try {
-            const token = Cookies.get('access');
-            const dateStr = format(date, 'yyyy-MM-dd');
-
-            const response = await axios.get<CVCountData[]>(
-                `${apiUrl}/api/cv-count/`,
-                {
-                    params: { start_date: dateStr },
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-            );
-
-            if (response.data.length > 0) {
-                setData(response.data[0].users);
-            } else {
-                setData([]);
-            }
-        } catch (error) {
-            console.error("Error fetching CV counts:", error);
-            if (!isBackground) setData([]);
-        } finally {
-            if (!isBackground) setLoading(false);
+    // SWR handles aggressive caching and background polling
+    const { data: rawData, isLoading } = useSWR<CVCountData[]>(
+        `${apiUrl}/api/cv-count/?start_date=${dateStr}`,
+        fetcher,
+        { 
+            refreshInterval: 3000, // Background polling every 3 seconds
+            revalidateOnFocus: true, // Re-fetch when clicking back to tab
+            keepPreviousData: true // Solves the "Loading..." spinner text issue on date change
         }
-    }, []);
+    );
 
-    useEffect(() => {
-        // Initial fetch
-        fetchCVCounts(selectedDate);
-
-        // Set up live polling (every 3 seconds) to feel like websockets
-        const intervalId = setInterval(() => {
-            fetchCVCounts(selectedDate, true);
-        }, 3000);
-
-        return () => clearInterval(intervalId);
-    }, [selectedDate, fetchCVCounts]);
+    const rawUsers = rawData && rawData.length > 0 ? rawData[0].users : [];
+    
+    // Filter out 'harsh' and 'vansh'
+    const data = rawUsers.filter(user => {
+        const lowerName = user.name.toLowerCase();
+        return !lowerName.includes("harsh") && !lowerName.includes("vansh");
+    });
 
     const goBack = () => setSelectedDate(prev => subDays(prev, 1));
     const goForward = () => {
@@ -105,7 +93,7 @@ const CVCount = () => {
 
     const totalCvs = data.reduce((acc, entry) => acc + entry.cv_count, 0);
 
-    if (loading) return <div className="p-8 text-center bg-white rounded-2xl shadow-lg">Loading...</div>;
+    if (isLoading && data.length === 0) return <div className="p-8 text-center bg-white rounded-2xl shadow-lg">Loading...</div>;
 
     return (
         <div className="w-full mx-auto">
