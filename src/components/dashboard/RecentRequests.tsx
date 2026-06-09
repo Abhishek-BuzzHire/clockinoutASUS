@@ -100,7 +100,7 @@ export default function RecentRequests() {
   const { data: requests, isLoading, mutate } = useSWR<RequestData[]>(
     'dashboard_recent_requests',
     fetcher,
-    { refreshInterval: 3000, keepPreviousData: true, revalidateOnFocus: true }
+    { refreshInterval: 30000, keepPreviousData: true, revalidateOnFocus: true }
   );
 
   const safeRequests = requests || [];

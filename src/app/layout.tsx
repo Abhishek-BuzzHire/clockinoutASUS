@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   description: "",
 };
 
+import { SwrProvider } from "@/components/providers/SwrProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,8 +36,10 @@ export default function RootLayout({
           clientId="848116300203-bsq9l9i5gu9tcqc13h2i0jlns8encv9i.apps.googleusercontent.com"
         >
           <AuthProvider>
-        {children}
-        </AuthProvider>
+            <SwrProvider>
+              {children}
+            </SwrProvider>
+          </AuthProvider>
         </GoogleOAuthProvider>
       </body>
     </html>
