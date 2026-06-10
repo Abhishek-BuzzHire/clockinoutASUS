@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import ActionStatusBadge from "./ActionStatusBadge";
 import { formatWFHDate } from "./EmployeeWFHHistoryTable";
+import { apiUrl } from "@/lib/data";
 
 export default function CorrectionDetailModal({
   data,
@@ -54,8 +55,16 @@ export default function CorrectionDetailModal({
           {/* USER & DATE HEADER */}
           <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400">
-                <User className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 overflow-hidden">
+                {data.profile_photo ? (
+                  <img 
+                    src={`${apiUrl}${data.profile_photo}`} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <User className="w-5 h-5" />
+                )}
               </div>
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Employee</p>

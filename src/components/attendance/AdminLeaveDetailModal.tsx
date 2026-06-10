@@ -10,6 +10,7 @@ import {
   AlertCircle 
 } from "lucide-react";
 import { formatWFHDate } from "./EmployeeWFHHistoryTable";
+import { apiUrl } from "@/lib/data";
 
 export default function AdminLeaveDetailModal({
   leave,
@@ -54,8 +55,16 @@ export default function AdminLeaveDetailModal({
           {/* SECTION 1: EMPLOYEE INFO */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 bg-slate-50 rounded-2xl border border-slate-100">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 shadow-sm">
-                <User className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 shadow-sm overflow-hidden">
+                {leave.profile_photo ? (
+                  <img 
+                    src={`${apiUrl}${leave.profile_photo}`} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <User className="w-6 h-6" />
+                )}
               </div>
               <div>
                 <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest">Employee</p>

@@ -10,6 +10,7 @@ import {
   History
 } from "lucide-react";
 import { formatFullDateTime, formatWFHDate } from "./EmployeeWFHHistoryTable";
+import { apiUrl } from "@/lib/data";
 
 export default function AdminWFHDetailModal({
   wfh,
@@ -50,8 +51,16 @@ export default function AdminWFHDetailModal({
           
           {/* PROFILE CARD */}
           <div className="flex flex-col items-center text-center p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <div className="w-16 h-16 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center text-slate-400 mb-3 shadow-sm">
-              <User className="w-8 h-8" />
+            <div className="w-16 h-16 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center text-slate-400 mb-3 shadow-sm overflow-hidden">
+              {wfh.profile_photo ? (
+                <img 
+                  src={`${apiUrl}${wfh.profile_photo}`} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover" 
+                />
+              ) : (
+                <User className="w-8 h-8" />
+              )}
             </div>
             <h3 className="font-black text-slate-800 text-lg leading-tight">{wfh.user_name}</h3>
             <p className="text-sm text-slate-500 font-medium mb-4">{wfh.user_email}</p>
