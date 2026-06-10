@@ -5,6 +5,7 @@ import React, { useState, useEffect, ChangeEvent, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
 import Cookies from "js-cookie";
 import { apiUrl } from '@/lib/data';
+import { X, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface ProfileData {
     id?: number;
@@ -345,35 +346,69 @@ export default function ProfilePage() {
             
             {/* Cropper Modal */}
             {cropImageSrc && (
-                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/85 p-4">
-                    <div className="relative w-full max-w-md h-96 bg-slate-900 rounded-lg overflow-hidden">
-                        <Cropper
-                            image={cropImageSrc}
-                            crop={crop}
-                            zoom={zoom}
-                            aspect={1}
-                            cropShape="round"
-                            showGrid={false}
-                            onCropChange={setCrop}
-                            onCropComplete={onCropComplete}
-                            onZoomChange={setZoom}
-                        />
-                    </div>
-                    <div className="mt-4 flex space-x-3">
-                        <button
-                            type="button"
-                            onClick={() => setCropImageSrc(null)}
-                            className="px-4 py-2 bg-slate-600 text-white rounded hover:bg-slate-700 text-sm font-semibold"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleCropSave}
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-semibold"
-                        >
-                            Crop & Select
-                        </button>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100 flex flex-col transform scale-100 transition-all duration-300">
+                        {/* Modal Header */}
+                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
+                            <h3 className="text-base font-semibold text-slate-800">Edit photo</h3>
+                            <button
+                                type="button"
+                                onClick={() => setCropImageSrc(null)}
+                                className="p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        {/* Modal Body (Cropper Area) */}
+                        <div className="relative w-full h-[280px] bg-slate-900">
+                            <Cropper
+                                image={cropImageSrc}
+                                crop={crop}
+                                zoom={zoom}
+                                aspect={1}
+                                cropShape="round"
+                                showGrid={false}
+                                onCropChange={setCrop}
+                                onCropComplete={onCropComplete}
+                                onZoomChange={setZoom}
+                            />
+                        </div>
+
+                        {/* Controls (Zoom Slider) */}
+                        <div className="px-6 py-4 bg-slate-50/50 flex flex-col items-center border-b border-slate-100">
+                            <div className="flex items-center space-x-3 w-full max-w-xs">
+                                <ZoomOut size={16} className="text-slate-400" />
+                                <input
+                                    type="range"
+                                    min={1}
+                                    max={3}
+                                    step={0.1}
+                                    value={zoom}
+                                    onChange={(e) => setZoom(parseFloat(e.target.value))}
+                                    className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none"
+                                />
+                                <ZoomIn size={16} className="text-slate-400" />
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="px-6 py-4 bg-white flex justify-end space-x-2">
+                            <button
+                                type="button"
+                                onClick={() => setCropImageSrc(null)}
+                                className="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-full text-xs font-semibold transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleCropSave}
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-semibold shadow-sm transition-colors"
+                            >
+                                Save Photo
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
