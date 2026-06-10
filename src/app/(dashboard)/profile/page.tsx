@@ -137,14 +137,14 @@ export default function ProfilePage() {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             if (e.target.name === 'profile_photo_file') {
-                const reader = new FileReader();
-                reader.addEventListener('load', () => {
-                    setCropImageSrc(reader.result as string);
-                }, false);
-                reader.readAsDataURL(file);
+                // Instantly load the image using object URL
+                const objectUrl = URL.createObjectURL(file);
+                setCropImageSrc(objectUrl);
             } else {
                 setFiles({ ...files, [e.target.name]: file });
             }
+            // Reset the value so that selecting the same image again still triggers onChange
+            e.target.value = '';
         }
     };
 
