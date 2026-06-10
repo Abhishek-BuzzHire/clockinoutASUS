@@ -1,7 +1,8 @@
 "use client";
 
 import axios from 'axios';
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, useEffect, ChangeEvent, useCallback } from 'react';
+import Cropper from 'react-easy-crop';
 import Cookies from "js-cookie";
 import { apiUrl } from '@/lib/data';
 
@@ -22,6 +23,56 @@ interface ProfileData {
     profile_photo?: string; // Base64 string from backend
 }
 
+interface Area {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const createImage = (url: string): Promise<HTMLImageElement> =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener('load', () => resolve(image));
+    image.addEventListener('error', (error) => reject(error));
+    image.src = url;
+  });
+
+async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  if (!ctx) {
+    throw new Error('No 2d context');
+  }
+
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((file) => {
+      if (file) {
+        resolve(file);
+      } else {
+        reject(new Error('Canvas toBlob failed'));
+      }
+    }, 'image/jpeg');
+  });
+}
+
 const token = Cookies.get("access");
 
 const api = axios.create({
@@ -34,6 +85,30 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [files, setFiles] = useState<{ [key: string]: File }>({});
+    const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: Area) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    }, []);
+
+    const handleCropSave = async () => {
+        if (!cropImageSrc || !croppedAreaPixels) return;
+        try {
+            const croppedBlob = await getCroppedImg(cropImageSrc, croppedAreaPixels);
+            const croppedFile = new File([croppedBlob], 'profile.jpg', { type: 'image/jpeg' });
+            setFiles(prev => ({ ...prev, profile_photo_file: croppedFile }));
+            
+            const localUrl = URL.createObjectURL(croppedBlob);
+            setPreviewUrl(localUrl);
+            setCropImageSrc(null);
+        } catch (e) {
+            console.error("Error cropping image", e);
+        }
+    };
 
     useEffect(() => {
         fetchProfile();
@@ -59,7 +134,16 @@ export default function ProfilePage() {
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            setFiles({ ...files, [e.target.name]: e.target.files[0] });
+            const file = e.target.files[0];
+            if (e.target.name === 'profile_photo_file') {
+                const reader = new FileReader();
+                reader.addEventListener('load', () => {
+                    setCropImageSrc(reader.result as string);
+                }, false);
+                reader.readAsDataURL(file);
+            } else {
+                setFiles({ ...files, [e.target.name]: file });
+            }
         }
     };
 
@@ -86,6 +170,7 @@ export default function ProfilePage() {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             alert("Profile updated successfully");
+            setPreviewUrl(null);
             fetchProfile(); // Refresh data
         } catch (error) {
             console.error("Update failed", error);
@@ -125,7 +210,9 @@ export default function ProfilePage() {
                             {/* Profile Photo Display & Upload */}
                             <div className="flex flex-col items-center space-y-3 p-4 bg-slate-50 rounded-lg">
                                 <div className="w-24 h-24 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">
-                                    {profile?.profile_photo ? (
+                                    {previewUrl ? (
+                                        <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                                    ) : profile?.profile_photo ? (
                                         <img src={
                                             profile.profile_photo.startsWith('/api/') 
                                                 ? `${apiUrl}${profile.profile_photo}` 
@@ -255,6 +342,41 @@ export default function ProfilePage() {
 
                 </div>
             </div>
+            
+            {/* Cropper Modal */}
+            {cropImageSrc && (
+                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/85 p-4">
+                    <div className="relative w-full max-w-md h-96 bg-slate-900 rounded-lg overflow-hidden">
+                        <Cropper
+                            image={cropImageSrc}
+                            crop={crop}
+                            zoom={zoom}
+                            aspect={1}
+                            cropShape="round"
+                            showGrid={false}
+                            onCropChange={setCrop}
+                            onCropComplete={onCropComplete}
+                            onZoomChange={setZoom}
+                        />
+                    </div>
+                    <div className="mt-4 flex space-x-3">
+                        <button
+                            type="button"
+                            onClick={() => setCropImageSrc(null)}
+                            className="px-4 py-2 bg-slate-600 text-white rounded hover:bg-slate-700 text-sm font-semibold"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleCropSave}
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-semibold"
+                        >
+                            Crop & Select
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
