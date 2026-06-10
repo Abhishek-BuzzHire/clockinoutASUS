@@ -291,7 +291,7 @@ export default function ProfilePage() {
                                     onChange={handleInputChange}
                                     className="w-full p-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 >
-                                    <option value="">Select Department</option>
+                                    <option value="" disabled hidden>Select Department</option>
                                     <option value="Technology">Technology</option>
                                     <option value="Human Resource">Human Resource</option>
                                 </select>
