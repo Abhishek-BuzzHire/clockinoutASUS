@@ -285,7 +285,16 @@ export default function ProfilePage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-xs font-semibold text-slate-500 mb-1">Department</label>
-                                <input type="text" name="department" value={profile?.department || ''} onChange={handleInputChange} className="w-full p-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                                <select
+                                    name="department"
+                                    value={profile?.department || ''}
+                                    onChange={handleInputChange}
+                                    className="w-full p-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                >
+                                    <option value="">Select Department</option>
+                                    <option value="Technology">Technology</option>
+                                    <option value="Human Resource">Human Resource</option>
+                                </select>
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-slate-500 mb-1">Designation</label>
