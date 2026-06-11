@@ -167,10 +167,18 @@ const EmployeeAttendancePage = () => {
 
     const { employee } = useCurrentEmployee();
 
+    const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
+
+    useEffect(() => {
+        if (employee?.profile_photo) {
+            setPhotoTimestamp(Date.now());
+        }
+    }, [employee?.profile_photo]);
+
     const getProfilePhoto = (profilePhoto?: string) => {
         if (!profilePhoto) return "/avatar.png";
         if (typeof profilePhoto === 'string') {
-            if (profilePhoto.startsWith('/api/')) return `${apiUrl}${profilePhoto}?t=${Date.now()}`;
+            if (profilePhoto.startsWith('/api/')) return `${apiUrl}${profilePhoto}?t=${photoTimestamp}`;
             if (profilePhoto.startsWith("data:")) return profilePhoto;
             return `data:image/jpeg;base64,${profilePhoto}`;
         }

@@ -1,6 +1,6 @@
 import { Employee } from "@/lib/types";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Table from "./Table";
 import EmployeeDetails from "./EmployeeDetails";
 import { apiUrl } from "@/lib/data";
@@ -43,13 +43,13 @@ const columns = [
     }
 ]
 
-const renderRow = ({ item, onRowClick }: { item: any, onRowClick?: (employee: Employee) => void; }) => {
+const renderRow = ({ item, photoTimestamp, onRowClick }: { item: any, photoTimestamp: number, onRowClick?: (employee: Employee) => void; }) => {
 
     const getProfilePhoto = () => {
         if (item.profile_photo) {
             if (typeof item.profile_photo === 'string') {
                 if (item.profile_photo.startsWith('/api/')) {
-                    return `${apiUrl}${item.profile_photo}?t=${Date.now()}`;
+                    return `${apiUrl}${item.profile_photo}?t=${photoTimestamp}`;
                 }
                 return `data:image/jpeg;base64,${item.profile_photo}`;
             }
@@ -105,6 +105,12 @@ const renderRow = ({ item, onRowClick }: { item: any, onRowClick?: (employee: Em
 
 const EmployeeTable: React.FC<EmployeeTableProps> = ({ data }) => {
 
+    const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
+
+    useEffect(() => {
+        setPhotoTimestamp(Date.now());
+    }, [data]);
+
     // Instead of storing employee object → store index
     const [profileIndex, setProfileIndex] = useState<number | null>(null);
 
@@ -143,6 +149,7 @@ const EmployeeTable: React.FC<EmployeeTableProps> = ({ data }) => {
                 renderRow={(item) =>
                     renderRow({
                         item,
+                        photoTimestamp,
                         onRowClick: handleRowClick
                     })
                 }

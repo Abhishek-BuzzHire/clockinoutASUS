@@ -14,7 +14,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCurrentEmployee } from "@/hooks/useCurrentEmployee";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ChangePassword from "./ChangePassword";
 import { apiUrl } from "@/lib/data";
 
@@ -28,13 +28,21 @@ export function UserDetailsCard() {
   const [changePassPopUp, setChangePassPopUp] = useState(false);
 
 
+  const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
+
+  useEffect(() => {
+    if (employee?.profile_photo) {
+      setPhotoTimestamp(Date.now());
+    }
+  }, [employee?.profile_photo]);
+
   const displayName = employee?.name ?? user?.username ?? "User";
   const role = user?.role ?? "employee";
   const getAvatarSrc = () => {
     if (!employee?.profile_photo) return "/avatar.png";
     if (typeof employee.profile_photo === 'string') {
       if (employee.profile_photo.startsWith('/api/')) {
-        return `${apiUrl}${employee.profile_photo}`;
+        return `${apiUrl}${employee.profile_photo}?t=${photoTimestamp}`;
       }
       return employee.profile_photo.startsWith("data:")
         ? employee.profile_photo

@@ -5,7 +5,7 @@ import { Employee } from "@/lib/types";
 import { Linkedin } from "lucide-react";
 import Image from "next/image"
 import { apiUrl } from "@/lib/data";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 
 const EmployeeDetails = ({
@@ -18,12 +18,19 @@ const EmployeeDetails = ({
   onNext: () => void;
 }) => {
 
+  const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
+
+  useEffect(() => {
+    if (data.profile_photo) {
+      setPhotoTimestamp(Date.now());
+    }
+  }, [data.profile_photo]);
 
   const getProfilePhoto = () => {
     if (data.profile_photo) {
       if (typeof data.profile_photo === 'string') {
         if (data.profile_photo.startsWith('/api/')) {
-          return `${apiUrl}${data.profile_photo}?t=${Date.now()}`;
+          return `${apiUrl}${data.profile_photo}?t=${photoTimestamp}`;
         }
         return `data:image/jpeg;base64,${data.profile_photo}`;
       }

@@ -26,6 +26,7 @@ export default function CorrectionDetailModal({
   onAction: (a: "APPROVE" | "REJECT", c: string) => void;
 }) {
   const [comment, setComment] = useState("");
+  const [photoTimestamp] = useState(Date.now());
 
   if (!data) return null;
 
@@ -58,7 +59,7 @@ export default function CorrectionDetailModal({
               <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 overflow-hidden">
                 {data.profile_photo ? (
                   <img 
-                    src={`${apiUrl}${data.profile_photo}?t=${Date.now()}`} 
+                    src={`${apiUrl}${data.profile_photo}?t=${photoTimestamp}`} 
                     alt="Profile" 
                     className="w-full h-full object-cover" 
                   />

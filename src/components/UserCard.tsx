@@ -1,14 +1,23 @@
 import { employeeData, apiUrl } from "@/lib/data"
 import { Employee } from "@/lib/types"
 import Image from "next/image"
+import { useState, useEffect } from "react"
 
 const UserCard = ({ data }: { data: any }) => {
+
+  const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
+
+  useEffect(() => {
+    if (data.profile_photo) {
+      setPhotoTimestamp(Date.now());
+    }
+  }, [data.profile_photo]);
 
   const getProfilePhoto = () => {
     if (data.profile_photo) {
       if (typeof data.profile_photo === 'string') {
         if (data.profile_photo.startsWith('/api/')) {
-          return `${apiUrl}${data.profile_photo}?t=${Date.now()}`;
+          return `${apiUrl}${data.profile_photo}?t=${photoTimestamp}`;
         }
         return `data:image/jpeg;base64,${data.profile_photo}`;
       }

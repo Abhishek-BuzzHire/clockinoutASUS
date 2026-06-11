@@ -6,6 +6,7 @@ import Cropper from 'react-easy-crop';
 import Cookies from "js-cookie";
 import { apiUrl } from '@/lib/data';
 import { X, ZoomIn, ZoomOut } from 'lucide-react';
+import { useCurrentEmployee } from '@/hooks/useCurrentEmployee';
 
 interface ProfileData {
     id?: number;
@@ -93,6 +94,21 @@ export default function ProfilePage() {
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+    const [cropperActive, setCropperActive] = useState(false);
+    const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
+    const { mutate: mutateCurrentEmployee } = useCurrentEmployee();
+
+    useEffect(() => {
+        if (cropImageSrc) {
+            const timer = setTimeout(() => {
+                setCropperActive(true);
+            }, 350);
+            return () => clearTimeout(timer);
+        } else {
+            setCropperActive(false);
+        }
+    }, [cropImageSrc]);
+
     const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: Area) => {
         setCroppedAreaPixels(croppedAreaPixels);
     }, []);
@@ -177,6 +193,8 @@ export default function ProfilePage() {
             });
             alert("Profile updated successfully");
             setPreviewUrl(null);
+            setPhotoTimestamp(Date.now());
+            mutateCurrentEmployee();
             fetchProfile(); // Refresh data
         } catch (error) {
             console.error("Update failed", error);
@@ -221,7 +239,7 @@ export default function ProfilePage() {
                                     ) : profile?.profile_photo ? (
                                         <img src={
                                             profile.profile_photo.startsWith('/api/') 
-                                                ? `${apiUrl}${profile.profile_photo}?t=${Date.now()}` 
+                                                ? `${apiUrl}${profile.profile_photo}?t=${photoTimestamp}` 
                                                 : profile.profile_photo.startsWith('data:') 
                                                     ? profile.profile_photo 
                                                     : `data:image/jpeg;base64,${profile.profile_photo}`
@@ -376,17 +394,19 @@ export default function ProfilePage() {
 
                         {/* Modal Body (Cropper Area) */}
                         <div className="relative w-full h-[280px] bg-slate-900">
-                            <Cropper
-                                image={cropImageSrc}
-                                crop={crop}
-                                zoom={zoom}
-                                aspect={1}
-                                cropShape="round"
-                                showGrid={false}
-                                onCropChange={setCrop}
-                                onCropComplete={onCropComplete}
-                                onZoomChange={setZoom}
-                            />
+                            {cropperActive && (
+                                <Cropper
+                                    image={cropImageSrc}
+                                    crop={crop}
+                                    zoom={zoom}
+                                    aspect={1}
+                                    cropShape="round"
+                                    showGrid={false}
+                                    onCropChange={setCrop}
+                                    onCropComplete={onCropComplete}
+                                    onZoomChange={setZoom}
+                                />
+                            )}
                         </div>
 
                         {/* Controls (Zoom Slider) */}
