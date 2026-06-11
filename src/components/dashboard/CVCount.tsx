@@ -71,7 +71,8 @@ const CVCount = () => {
     
     // Filter out 'harsh' and 'vansh'
     const data = rawUsers.filter(user => {
-        const lowerName = user.name.toLowerCase();
+        const nameVal = user.name || '';
+        const lowerName = nameVal.toLowerCase();
         return !lowerName.includes("harsh") && !lowerName.includes("vansh");
     });
 
