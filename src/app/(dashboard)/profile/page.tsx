@@ -239,7 +239,9 @@ export default function ProfilePage() {
                                     ) : profile?.profile_photo ? (
                                         <img src={
                                             profile.profile_photo.startsWith('/api/') 
-                                                ? `${apiUrl}${profile.profile_photo}?t=${photoTimestamp}` 
+                                                ? (profile.profile_photo.includes('?') 
+                                                    ? `${apiUrl}${profile.profile_photo}` 
+                                                    : `${apiUrl}${profile.profile_photo}?t=${photoTimestamp}`)
                                                 : profile.profile_photo.startsWith('data:') 
                                                     ? profile.profile_photo 
                                                     : `data:image/jpeg;base64,${profile.profile_photo}`

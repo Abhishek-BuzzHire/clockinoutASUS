@@ -61,7 +61,11 @@ export default function AdminLeaveDetailModal({
               <div className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 shadow-sm overflow-hidden">
                 {leave.profile_photo ? (
                   <img 
-                    src={`${apiUrl}${leave.profile_photo}?t=${photoTimestamp}`} 
+                    src={
+                      leave.profile_photo.includes('?')
+                        ? `${apiUrl}${leave.profile_photo}`
+                        : `${apiUrl}${leave.profile_photo}?t=${photoTimestamp}`
+                    } 
                     alt="Profile" 
                     className="w-full h-full object-cover" 
                   />

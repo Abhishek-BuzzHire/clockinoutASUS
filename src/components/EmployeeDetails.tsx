@@ -30,7 +30,9 @@ const EmployeeDetails = ({
     if (data.profile_photo) {
       if (typeof data.profile_photo === 'string') {
         if (data.profile_photo.startsWith('/api/')) {
-          return `${apiUrl}${data.profile_photo}?t=${photoTimestamp}`;
+          return data.profile_photo.includes('?')
+            ? `${apiUrl}${data.profile_photo}`
+            : `${apiUrl}${data.profile_photo}?t=${photoTimestamp}`;
         }
         return `data:image/jpeg;base64,${data.profile_photo}`;
       }

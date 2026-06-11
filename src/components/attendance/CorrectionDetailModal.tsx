@@ -59,7 +59,11 @@ export default function CorrectionDetailModal({
               <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 overflow-hidden">
                 {data.profile_photo ? (
                   <img 
-                    src={`${apiUrl}${data.profile_photo}?t=${photoTimestamp}`} 
+                    src={
+                      data.profile_photo.includes('?')
+                        ? `${apiUrl}${data.profile_photo}`
+                        : `${apiUrl}${data.profile_photo}?t=${photoTimestamp}`
+                    } 
                     alt="Profile" 
                     className="w-full h-full object-cover" 
                   />

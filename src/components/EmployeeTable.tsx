@@ -49,7 +49,9 @@ const renderRow = ({ item, photoTimestamp, onRowClick }: { item: any, photoTimes
         if (item.profile_photo) {
             if (typeof item.profile_photo === 'string') {
                 if (item.profile_photo.startsWith('/api/')) {
-                    return `${apiUrl}${item.profile_photo}?t=${photoTimestamp}`;
+                    return item.profile_photo.includes('?')
+                        ? `${apiUrl}${item.profile_photo}`
+                        : `${apiUrl}${item.profile_photo}?t=${photoTimestamp}`;
                 }
                 return `data:image/jpeg;base64,${item.profile_photo}`;
             }

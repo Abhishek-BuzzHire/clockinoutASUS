@@ -178,7 +178,11 @@ const EmployeeAttendancePage = () => {
     const getProfilePhoto = (profilePhoto?: string) => {
         if (!profilePhoto) return "/avatar.png";
         if (typeof profilePhoto === 'string') {
-            if (profilePhoto.startsWith('/api/')) return `${apiUrl}${profilePhoto}?t=${photoTimestamp}`;
+            if (profilePhoto.startsWith('/api/')) {
+                return profilePhoto.includes('?') 
+                    ? `${apiUrl}${profilePhoto}` 
+                    : `${apiUrl}${profilePhoto}?t=${photoTimestamp}`;
+            }
             if (profilePhoto.startsWith("data:")) return profilePhoto;
             return `data:image/jpeg;base64,${profilePhoto}`;
         }

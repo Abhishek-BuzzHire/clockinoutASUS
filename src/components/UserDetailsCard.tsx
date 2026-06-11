@@ -42,7 +42,9 @@ export function UserDetailsCard() {
     if (!employee?.profile_photo) return "/avatar.png";
     if (typeof employee.profile_photo === 'string') {
       if (employee.profile_photo.startsWith('/api/')) {
-        return `${apiUrl}${employee.profile_photo}?t=${photoTimestamp}`;
+        return employee.profile_photo.includes('?') 
+          ? `${apiUrl}${employee.profile_photo}`
+          : `${apiUrl}${employee.profile_photo}?t=${photoTimestamp}`;
       }
       return employee.profile_photo.startsWith("data:")
         ? employee.profile_photo
