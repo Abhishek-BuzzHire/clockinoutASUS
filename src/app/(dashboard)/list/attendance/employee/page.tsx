@@ -115,12 +115,10 @@ const PunchCard: React.FC<{
     return (
         <div className="relative w-full max-w-sm mx-auto bg-white rounded-xl shadow-lg border border-gray-200">
             <div className="flex justify-center -mt-12 mb-4">
-                <Image
+                <img
                     src={imgurl || '/image.jpg'}
                     alt={profileName || "employee"}
-                    className="rounded-full object-cover border-2 border-white shadow-md relative"
-                    width={112}
-                    height={112}
+                    className="rounded-full object-cover border-2 border-white shadow-md relative w-[112px] h-[112px]"
                 />
             </div>
 
@@ -172,7 +170,7 @@ const EmployeeAttendancePage = () => {
     const getProfilePhoto = (profilePhoto?: string) => {
         if (!profilePhoto) return "/avatar.png";
         if (typeof profilePhoto === 'string') {
-            if (profilePhoto.startsWith('/api/')) return `${apiUrl}${profilePhoto}`;
+            if (profilePhoto.startsWith('/api/')) return `${apiUrl}${profilePhoto}?t=${Date.now()}`;
             if (profilePhoto.startsWith("data:")) return profilePhoto;
             return `data:image/jpeg;base64,${profilePhoto}`;
         }

@@ -49,7 +49,7 @@ const renderRow = ({ item, onRowClick }: { item: any, onRowClick?: (employee: Em
         if (item.profile_photo) {
             if (typeof item.profile_photo === 'string') {
                 if (item.profile_photo.startsWith('/api/')) {
-                    return `${apiUrl}${item.profile_photo}`;
+                    return `${apiUrl}${item.profile_photo}?t=${Date.now()}`;
                 }
                 return `data:image/jpeg;base64,${item.profile_photo}`;
             }

@@ -36,6 +36,7 @@ const createImage = (url: string): Promise<HTMLImageElement> =>
     const image = new Image();
     image.addEventListener('load', () => resolve(image));
     image.addEventListener('error', (error) => reject(error));
+    image.setAttribute('crossOrigin', 'anonymous');
     image.src = url;
   });
 
@@ -137,9 +138,13 @@ export default function ProfilePage() {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             if (e.target.name === 'profile_photo_file') {
-                // Instantly load the image using object URL
-                const objectUrl = URL.createObjectURL(file);
-                setCropImageSrc(objectUrl);
+                // Use FileReader data URL instead of createObjectURL
+                // for better compatibility with react-easy-crop on mobile
+                const reader = new FileReader();
+                reader.onload = () => {
+                    setCropImageSrc(reader.result as string);
+                };
+                reader.readAsDataURL(file);
             } else {
                 setFiles({ ...files, [e.target.name]: file });
             }
@@ -216,7 +221,7 @@ export default function ProfilePage() {
                                     ) : profile?.profile_photo ? (
                                         <img src={
                                             profile.profile_photo.startsWith('/api/') 
-                                                ? `${apiUrl}${profile.profile_photo}` 
+                                                ? `${apiUrl}${profile.profile_photo}?t=${Date.now()}` 
                                                 : profile.profile_photo.startsWith('data:') 
                                                     ? profile.profile_photo 
                                                     : `data:image/jpeg;base64,${profile.profile_photo}`

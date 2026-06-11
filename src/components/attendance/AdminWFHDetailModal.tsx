@@ -54,7 +54,7 @@ export default function AdminWFHDetailModal({
             <div className="w-16 h-16 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center text-slate-400 mb-3 shadow-sm overflow-hidden">
               {wfh.profile_photo ? (
                 <img 
-                  src={`${apiUrl}${wfh.profile_photo}`} 
+                  src={`${apiUrl}${wfh.profile_photo}?t=${Date.now()}`} 
                   alt="Profile" 
                   className="w-full h-full object-cover" 
                 />

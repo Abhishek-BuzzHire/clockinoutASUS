@@ -8,7 +8,7 @@ const UserCard = ({ data }: { data: any }) => {
     if (data.profile_photo) {
       if (typeof data.profile_photo === 'string') {
         if (data.profile_photo.startsWith('/api/')) {
-          return `${apiUrl}${data.profile_photo}`;
+          return `${apiUrl}${data.profile_photo}?t=${Date.now()}`;
         }
         return `data:image/jpeg;base64,${data.profile_photo}`;
       }
