@@ -539,52 +539,13 @@ const AdminAttendancePage = () => {
     setAttendanceRecords(mapped);
   }, [effectiveData, currentDate]);
 
-  // ⚡ Live Today Polling: Fetch and merge only today's data every 30 seconds
-  useEffect(() => {
-    const today = new Date();
-    const viewedMonth = format(currentDate, "yyyy-MM");
-    const currentMonth = format(today, "yyyy-MM");
-    if (viewedMonth !== currentMonth) return;
-
-    const todayStr = format(today, "yyyy-MM-dd");
-
-    const fetchTodayLive = async () => {
-      try {
-        const token = Cookies.get("access");
-        const res = await axios.get(
-          `${apiUrl}/api/admin/emp-total-details/`,
-          {
-            headers: { Authorization: token ? `Bearer ${token}` : "" },
-            params: {
-              start_date: todayStr,
-              end_date: todayStr,
-            },
-          }
-        );
-
-        mutate((currentData: any) => {
-          const merged = mergeDateData(currentData, res.data, todayStr);
-          return merged;
-        }, { revalidate: false });
-
-      } catch (err) {
-        console.error("Failed to fetch today's live attendance:", err);
-      }
-    };
-
-    // Fetch immediately on mount / month change
-    fetchTodayLive();
-
-    const interval = setInterval(fetchTodayLive, 30000);
-    return () => clearInterval(interval);
-  }, [currentDate, swrAttendanceKey, mutate]);
-
-  // ⚡ Event-driven Updates: Listen for Pusher attendance_update event and fetch only the updated date
+  // ⚡ Event-driven Updates: Listen for Pusher attendance_update event and fetch only the modified date & employee record
   useEffect(() => {
     const handleAttendanceUpdate = async (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (!detail || !detail.date) return;
       const targetDate = detail.date;
+      const userId = detail.user_id;
 
       const targetMonth = format(new Date(targetDate), "yyyy-MM");
       const viewedMonth = format(currentDate, "yyyy-MM");
@@ -592,17 +553,22 @@ const AdminAttendancePage = () => {
         return;
       }
 
-      console.log(`Smart Fetching attendance update for date: ${targetDate}`);
+      console.log(`Smart Fetching attendance update for date: ${targetDate}, user_id: ${userId}`);
       try {
         const token = Cookies.get("access");
+        const params: any = {
+          start_date: targetDate,
+          end_date: targetDate,
+        };
+        if (userId) {
+          params.ids = String(userId);
+        }
+
         const res = await axios.get(
           `${apiUrl}/api/admin/emp-total-details/`,
           {
             headers: { Authorization: token ? `Bearer ${token}` : "" },
-            params: {
-              start_date: targetDate,
-              end_date: targetDate,
-            },
+            params
           }
         );
 
