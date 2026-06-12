@@ -75,6 +75,8 @@ export type AttendanceRecord = {
   checkInTime?: string; // HH:mm
   checkOutTime?: string; // HH:mm
   hoursWorked?: number;
+  canGrantPastPermission?: boolean;
+  pastPermissionGranted?: boolean;
 };
 
 export type employeeAttendance={

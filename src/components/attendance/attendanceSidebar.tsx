@@ -1,7 +1,10 @@
 'use client';
 
+import { useState } from 'react';
+import axios from 'axios';
+import Cookies from 'js-cookie';
 import { format } from 'date-fns';
-import { User, Clock, AlertTriangle, UserX, FileEdit } from 'lucide-react';
+import { User, Clock, AlertTriangle, UserX, FileEdit, Lock, Unlock } from 'lucide-react';
 import type { AttendanceRecord, NewEmployee } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,10 +15,48 @@ type AttendanceSidebarProps = {
   selectedDate: Date;
   dailyRecords: AttendanceRecord[];
   employees: NewEmployee[];
+  onRefresh?: () => void;
 };
 
-const EmployeeListItem = ({ record, employee }: { record: AttendanceRecord; employee?: NewEmployee }) => {
+
+const EmployeeListItem = ({
+  record,
+  employee,
+  onRefresh,
+}: {
+  record: AttendanceRecord;
+  employee?: NewEmployee;
+  onRefresh?: () => void;
+}) => {
   if (!employee) return null;
+  const [loading, setLoading] = useState(false);
+
+  const handleToggle = async () => {
+    try {
+      setLoading(true);
+      const token = Cookies.get("access");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      await axios.post(
+        `${apiUrl}/api/admin/past-date-permission/`,
+        {
+          user_id: record.employeeId,
+          date: record.date,
+        },
+        {
+          headers: { Authorization: token ? `Bearer ${token}` : "" },
+        }
+      );
+      if (onRefresh) {
+        onRefresh();
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to toggle permission");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
       <div className="flex items-center gap-3">
@@ -40,12 +81,39 @@ const EmployeeListItem = ({ record, employee }: { record: AttendanceRecord; empl
           </div>
         </div>
       </div>
-      {record.lateBy && (
-        <div className="flex items-center gap-1 text-orange-500 text-sm">
-          <AlertTriangle className="h-4 w-4" />
-          <span>Late by {record.lateBy}</span>
-        </div>
-      )}
+      
+      <div className="flex items-center gap-3">
+        {record.canGrantPastPermission && (
+          <div>
+            {record.pastPermissionGranted ? (
+              <button
+                onClick={handleToggle}
+                disabled={loading}
+                className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-green-700 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 transition-colors shadow-sm"
+                title="Click to revoke permission"
+              >
+                {loading ? "..." : <><Unlock className="h-3.5 w-3.5" /> Allowed</>}
+              </button>
+            ) : (
+              <button
+                onClick={handleToggle}
+                disabled={loading}
+                className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-slate-600 bg-slate-50 border border-slate-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors shadow-sm"
+                title="Allow employee to apply for leave/WFH/regularization on this past date"
+              >
+                {loading ? "..." : <><Lock className="h-3.5 w-3.5" /> Allow Request</>}
+              </button>
+            )}
+          </div>
+        )}
+
+        {record.lateBy && (
+          <div className="flex items-center gap-1 text-orange-500 text-sm">
+            <AlertTriangle className="h-4 w-4" />
+            <span>Late by {record.lateBy}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -54,6 +122,7 @@ export default function AttendanceSidebar({
   selectedDate,
   dailyRecords,
   employees,
+  onRefresh,
 }: AttendanceSidebarProps) {
 
   const employeeMap = new Map(employees.map(e => [e.id, e]));
@@ -94,21 +163,21 @@ export default function AttendanceSidebar({
                 <TabsContent value="present">
                   <div className="space-y-1">
                     {presentEmployees.map(record => (
-                      <EmployeeListItem key={record.employeeId} record={record} employee={getEmployee(record.employeeId)} />
+                      <EmployeeListItem key={record.employeeId} record={record} employee={getEmployee(record.employeeId)} onRefresh={onRefresh} />
                     ))}
                   </div>
                 </TabsContent>
                 <TabsContent value="absent">
                   <div className="space-y-1">
                     {absentEmployees.map(record => (
-                      <EmployeeListItem key={record.employeeId} record={record} employee={getEmployee(record.employeeId)} />
+                      <EmployeeListItem key={record.employeeId} record={record} employee={getEmployee(record.employeeId)} onRefresh={onRefresh} />
                     ))}
                   </div>
                 </TabsContent>
                 <TabsContent value="leave">
                   <div className="space-y-1">
                     {leaveEmployees.map(record => (
-                      <EmployeeListItem key={record.employeeId} record={record} employee={getEmployee(record.employeeId)} />
+                      <EmployeeListItem key={record.employeeId} record={record} employee={getEmployee(record.employeeId)} onRefresh={onRefresh} />
                     ))}
                   </div>
                 </TabsContent>

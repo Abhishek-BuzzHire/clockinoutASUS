@@ -314,6 +314,8 @@ const AdminAttendancePage = () => {
             checkInTime: day.punch_in || undefined,
             checkOutTime: day.punch_out || undefined,
             hoursWorked: day.total_time || undefined,
+            canGrantPastPermission: day.can_grant_past_permission,
+            pastPermissionGranted: day.past_permission_granted,
           };
 
           mapped[dateKey].records.push(record);
@@ -353,7 +355,7 @@ const AdminAttendancePage = () => {
     return { calendar: calRes.data, attendance: attRes.data };
   };
 
-  const { data: swrData } = useSWR(swrAttendanceKey, swrFetcher, {
+  const { data: swrData, mutate } = useSWR(swrAttendanceKey, swrFetcher, {
     revalidateOnFocus: true,
     keepPreviousData: true,
     refreshInterval: 30000, // silently refresh every 30 seconds
@@ -457,6 +459,8 @@ const AdminAttendancePage = () => {
           lateBy: lateBy,
           hoursWorked: day.total_time || undefined,
           workStatus: day.work_status || null,
+          canGrantPastPermission: day.can_grant_past_permission,
+          pastPermissionGranted: day.past_permission_granted,
         } as AttendanceRecord);
       });
     });
@@ -677,6 +681,7 @@ const AdminAttendancePage = () => {
                     selectedDate={selectedDate}
                     dailyRecords={recordsForSelectedDate}
                     employees={employees}
+                    onRefresh={() => mutate()}
                   />
 
                   <CompanyHolidays />
