@@ -86,7 +86,7 @@ const fetcher = async () => {
     return b.createdAt - a.createdAt;
   });
 
-  return combined.slice(0, 10);
+  return combined;
 };
 
 export default function RecentRequests() {
@@ -106,9 +106,28 @@ export default function RecentRequests() {
   const safeRequests = requests || [];
 
   const filteredRequests = useMemo(() => {
-    if (filter === "pending") return safeRequests.filter(r => r.status === "PENDING");
-    if (filter === "approved") return safeRequests.filter(r => r.status === "APPROVED");
-    return safeRequests;
+    // Sort so PENDING requests always appear first, sorted by createdAt descending.
+    // Processed requests (APPROVED/REJECTED) appear below, sorted by createdAt descending.
+    const sorted = [...safeRequests].sort((a, b) => {
+      const aPending = a.status.toUpperCase() === "PENDING";
+      const bPending = b.status.toUpperCase() === "PENDING";
+      if (aPending && !bPending) return -1;
+      if (!aPending && bPending) return 1;
+      return b.createdAt - a.createdAt;
+    });
+
+    let result = sorted;
+    if (filter === "pending") {
+      result = sorted.filter(r => r.status.toUpperCase() === "PENDING");
+    } else if (filter === "approved") {
+      result = sorted.filter(
+        r => r.status.toUpperCase() === "APPROVED" || r.status.toUpperCase() === "REJECTED"
+      );
+    }
+
+    // Keep exactly 10 requests visible. When one is approved/rejected,
+    // it leaves the pending state, and the next pending request automatically slides in from the bottom.
+    return result.slice(0, 10);
   }, [safeRequests, filter]);
 
   const handleRowClick = async (req: RequestData) => {
