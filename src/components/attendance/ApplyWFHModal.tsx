@@ -27,8 +27,8 @@ export default function ApplyWFHModal({
             </div>
           </div>
 
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
           >
             <X className="w-5 h-5" />
@@ -37,7 +37,7 @@ export default function ApplyWFHModal({
 
         {/* BODY */}
         <div className="p-6 space-y-6">
-          
+
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 px-1">
               <Calendar className="w-3.5 h-3.5" /> Proposed Date
@@ -67,8 +67,8 @@ export default function ApplyWFHModal({
 
         {/* FOOTER */}
         <div className="flex items-center gap-3 border-t border-slate-100 p-6 bg-slate-50/30">
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="flex-1 px-5 py-2.5 border border-slate-200 text-slate-600 font-bold text-sm rounded-xl hover:bg-slate-100 transition-all active:scale-[0.98]"
           >
             Cancel

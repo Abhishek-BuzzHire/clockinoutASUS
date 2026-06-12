@@ -130,9 +130,8 @@ export default function DailyOverview() {
             <button
               onClick={goForward}
               disabled={isToday(selectedDate)}
-              className={`w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center transition-colors ${
-                isToday(selectedDate) ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"
-              }`}
+              className={`w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center transition-colors ${isToday(selectedDate) ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"
+                }`}
             >
               <ChevronRight size={18} />
             </button>

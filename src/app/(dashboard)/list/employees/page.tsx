@@ -40,13 +40,67 @@ const fetcher = (url: string) => {
 };
 
 const EmployeesListPage = () => {
-  const { data: rawEmployees, isLoading: employeesLoading, mutate: mutateEmployees } = useSWR(`${apiUrl}/api/profile/`, fetcher);
-  const { data: users = [], isLoading: loading, mutate: mutateUsers } = useSWR(`${apiUrl}/api/users/`, fetcher);
+  // ⚡ Load initial values from localStorage synchronously
+  const [localEmployees, setLocalEmployees] = useState<any[] | undefined>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("employees_profiles_cache");
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse cached profiles data", e);
+        }
+      }
+    }
+    return undefined;
+  });
+
+  const [localUsers, setLocalUsers] = useState<any[] | undefined>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("employees_users_cache");
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse cached users data", e);
+        }
+      }
+    }
+    return undefined;
+  });
+
+  const { data: rawEmployees, mutate: mutateEmployees } = useSWR(
+    `${apiUrl}/api/profile/`,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const { data: usersData, mutate: mutateUsers } = useSWR(
+    `${apiUrl}/api/users/`,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  // Save fresh SWR data to localStorage
+  useEffect(() => {
+    if (rawEmployees && typeof window !== "undefined") {
+      localStorage.setItem("employees_profiles_cache", JSON.stringify(rawEmployees));
+    }
+  }, [rawEmployees]);
+
+  useEffect(() => {
+    if (usersData && typeof window !== "undefined") {
+      localStorage.setItem("employees_users_cache", JSON.stringify(usersData));
+    }
+  }, [usersData]);
+
+  const effectiveEmployees = rawEmployees || localEmployees;
+  const users = usersData || localUsers || [];
   const managers = users;
 
   const employees = React.useMemo(() => {
-    if (!rawEmployees) return [];
-    return rawEmployees.map((profile: any) => ({
+    if (!effectiveEmployees) return [];
+    return effectiveEmployees.map((profile: any) => ({
       id: profile.id,
       user_id: profile.user.id,
       username: profile.user.username,
@@ -77,7 +131,7 @@ const EmployeesListPage = () => {
       is_active: profile.user.is_active,
       manager: profile.user.manager
     }));
-  }, [rawEmployees]);
+  }, [effectiveEmployees]);
 
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [search, setSearch] = useState("")
@@ -241,13 +295,13 @@ const EmployeesListPage = () => {
               </div>
 
               {/* LOADING STATE */}
-              {employeesLoading && (
+              {!effectiveEmployees && (
                 <div className="flex items-center justify-center h-96">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                 </div>
               )}
 
-              {!employeesLoading && (
+              {effectiveEmployees && (
                 <div>
                   {view === 'userCard' && (
                     <>

@@ -50,54 +50,6 @@ export const toMinutes = (time: string) => {
   return h * 60 + m;
 };
 
-const mergeDateData = (currentCache: any, freshDateData: any, targetDate: string) => {
-  if (!currentCache || !currentCache.attendance || !currentCache.attendance.emps) {
-    return currentCache;
-  }
-  const empsMap = new Map();
-  if (freshDateData && freshDateData.emps) {
-    freshDateData.emps.forEach((emp: any) => {
-      const dayRecord = emp.attendance?.find((day: any) => day.date === targetDate);
-      if (dayRecord) {
-        empsMap.set(emp.emp_id, dayRecord);
-      }
-    });
-  }
-
-  const updatedEmps = currentCache.attendance.emps.map((emp: any) => {
-    const freshDayRecord = empsMap.get(emp.emp_id);
-    if (!freshDayRecord) {
-      return emp;
-    }
-    
-    let dayFound = false;
-    const updatedAttendance = emp.attendance.map((day: any) => {
-      if (day.date === targetDate) {
-        dayFound = true;
-        return { ...day, ...freshDayRecord };
-      }
-      return day;
-    });
-
-    if (!dayFound) {
-      updatedAttendance.push(freshDayRecord);
-    }
-
-    return {
-      ...emp,
-      attendance: updatedAttendance,
-    };
-  });
-
-  return {
-    ...currentCache,
-    attendance: {
-      ...currentCache.attendance,
-      emps: updatedEmps
-    }
-  };
-};
-
 const AdminAttendancePage = () => {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
@@ -386,26 +338,9 @@ const AdminAttendancePage = () => {
     }
   };
 
-  // ⚡ Load initial value from localStorage on client side to prevent hydration mismatches
-  const [localCache, setLocalCache] = useState<any>(undefined);
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(`attendance_local_cache_${format(currentDate, "yyyy-MM")}`);
-      if (stored) {
-        try {
-          setLocalCache(JSON.parse(stored));
-        } catch (e) {
-          console.error("Failed to parse cached attendance data", e);
-        }
-      } else {
-        setLocalCache(undefined);
-      }
-    }
-  }, [currentDate]);
-
   // ⚡ SWR: Cache attendance data in browser RAM for nano-second loading
   const swrAttendanceKey = `attendance_${format(currentDate, "yyyy-MM")}`;
-  
+
   const swrFetcher = async () => {
     const token = Cookies.get("access");
     const start = format(startOfMonth(currentDate), "yyyy-MM-dd");
@@ -421,33 +356,25 @@ const AdminAttendancePage = () => {
   };
 
   const { data: swrData, mutate } = useSWR(swrAttendanceKey, swrFetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    revalidateIfStale: false,
+    revalidateOnFocus: true,
     keepPreviousData: true,
+    refreshInterval: 30000, // silently refresh every 30 seconds
   });
 
-  const effectiveData = swrData || localCache;
-
-  // Process attendance and calendar data into component state
+  // Process SWR data into component state when it arrives
   useEffect(() => {
-    if (!effectiveData) return;
-
-    // Save to localStorage
-    if (typeof window !== "undefined") {
-      localStorage.setItem(`attendance_local_cache_${format(currentDate, "yyyy-MM")}`, JSON.stringify(effectiveData));
-    }
+    if (!swrData) return;
 
     // Process calendar
     const calMap: Record<string, CalendarDay> = {};
-    effectiveData.calendar?.calendar?.forEach((day: CalendarDay) => {
+    swrData.calendar.calendar?.forEach((day: CalendarDay) => {
       calMap[day.date] = day;
     });
     setCalendarMap(calMap);
 
-    // Process attendance
+    // Process attendance (same logic as fetchAdminAttendance)
     const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
-    const apiData = effectiveData.attendance?.emps || [];
+    const apiData = swrData.attendance.emps;
 
     setEmployees(
       apiData.map((e: any) => ({
@@ -461,7 +388,7 @@ const AdminAttendancePage = () => {
     apiData.forEach((emp: any) => {
       if (EXCLUDED_EMP_IDS.has(emp.emp_id)) return;
 
-      emp.attendance?.forEach((day: any) => {
+      emp.attendance.forEach((day: any) => {
         const dateKey = day.date;
         const thisDate = new Date(dateKey);
         const today = new Date();
@@ -539,56 +466,7 @@ const AdminAttendancePage = () => {
     });
 
     setAttendanceRecords(mapped);
-  }, [effectiveData, currentDate]);
-
-  // ⚡ Event-driven Updates: Listen for Pusher attendance_update event and fetch only the modified date & employee record
-  useEffect(() => {
-    const handleAttendanceUpdate = async (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (!detail || !detail.date) return;
-      const targetDate = detail.date;
-      const userId = detail.user_id;
-
-      const targetMonth = format(new Date(targetDate), "yyyy-MM");
-      const viewedMonth = format(currentDate, "yyyy-MM");
-      if (targetMonth !== viewedMonth) {
-        return;
-      }
-
-      console.log(`Smart Fetching attendance update for date: ${targetDate}, user_id: ${userId}`);
-      try {
-        const token = Cookies.get("access");
-        const params: any = {
-          start_date: targetDate,
-          end_date: targetDate,
-        };
-        if (userId) {
-          params.ids = String(userId);
-        }
-
-        const res = await axios.get(
-          `${apiUrl}/api/admin/emp-total-details/`,
-          {
-            headers: { Authorization: token ? `Bearer ${token}` : "" },
-            params
-          }
-        );
-
-        mutate((currentData: any) => {
-          const merged = mergeDateData(currentData, res.data, targetDate);
-          return merged;
-        }, { revalidate: false });
-
-      } catch (err) {
-        console.error("Failed to fetch smart update for date:", targetDate, err);
-      }
-    };
-
-    window.addEventListener("attendance_update", handleAttendanceUpdate);
-    return () => {
-      window.removeEventListener("attendance_update", handleAttendanceUpdate);
-    };
-  }, [currentDate, swrAttendanceKey, mutate]);
+  }, [swrData]);
 
   const loadList = async () => {
     try {

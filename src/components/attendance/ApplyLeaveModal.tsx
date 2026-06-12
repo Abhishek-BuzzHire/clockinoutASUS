@@ -64,7 +64,6 @@ export default function ApplyLeaveModal({
                   type="date"
                   className="w-full border border-slate-200 bg-slate-50/30 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
                   value={start}
-                  min={today}
                   onChange={e => setStart(e.target.value)}
                 />
               </div>
@@ -79,7 +78,7 @@ export default function ApplyLeaveModal({
                   type="date"
                   className="w-full border border-slate-200 bg-slate-50/30 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
                   value={end}
-                  min={start || today}
+                  min={start}
                   onChange={e => setEnd(e.target.value)}
                 />
               </div>
