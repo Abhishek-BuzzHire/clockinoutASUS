@@ -36,6 +36,17 @@ export function UserDetailsCard() {
     }
   }, [employee?.profile_photo]);
 
+  useEffect(() => {
+    if (employee && employee.user && user) {
+      const dbRole = (employee.user as any).role;
+      const tokenRole = user.role;
+      if (dbRole && dbRole !== tokenRole) {
+        console.log(`Role mismatch detected! DB: ${dbRole}, Token: ${tokenRole}. Auto-logging out to refresh session.`);
+        handleLogout();
+      }
+    }
+  }, [employee, user]);
+
   const displayName = employee?.name ?? user?.username ?? "User";
   const role = user?.role ?? "employee";
   const getAvatarSrc = () => {
