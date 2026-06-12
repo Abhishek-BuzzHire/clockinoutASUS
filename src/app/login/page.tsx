@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import Cookies from "js-cookie";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -37,24 +38,54 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && user && !returnUrl) {
-      const home =
-        user.role === "admin"
-          ? "/list/attendance/admin"
-          : "/list/attendance/employee";
-      router.replace(home);
+      const checkProfileRedirect = async () => {
+        const token = Cookies.get("access");
+        if (user.role === "admin" && token) {
+          try {
+            const res = await axios.get(`${apiUrl}/api/profile/me`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            const profile = Array.isArray(res.data) ? res.data[0] : res.data;
+            if (!profile || !profile.phone || !profile.designation) {
+              router.replace("/profile");
+              return;
+            }
+          } catch (e) {
+            console.error("Failed to fetch profile during auto-redirection check:", e);
+          }
+        }
+        const home =
+          user.role === "admin"
+            ? "/list/attendance/admin"
+            : "/list/attendance/employee";
+        router.replace(home);
+      };
+      checkProfileRedirect();
     }
   }, [user, loading, router]);
 
-  const handleLoginSuccess = (access: string, refresh: string) => {
+  const handleLoginSuccess = async (access: string, refresh: string) => {
     login(access, refresh);
     if (returnUrl) {
       router.push(returnUrl);
     } else {
       const decoded = jwtDecode<TokenPayload>(access);
-      const home =
-        decoded.role === "admin"
-          ? "/list/attendance/admin"
-          : "/attendance";
+      let home = "/list/attendance/admin";
+      if (decoded.role === "admin") {
+        try {
+          const res = await axios.get(`${apiUrl}/api/profile/me`, {
+            headers: { Authorization: `Bearer ${access}` }
+          });
+          const profile = Array.isArray(res.data) ? res.data[0] : res.data;
+          if (!profile || !profile.phone || !profile.designation) {
+            home = "/profile";
+          }
+        } catch (e) {
+          console.error("Failed to fetch profile during login redirection:", e);
+        }
+      } else {
+        home = "/attendance";
+      }
       router.push(home);
     }
   };

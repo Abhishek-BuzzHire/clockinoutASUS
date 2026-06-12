@@ -7,6 +7,7 @@ import Cookies from "js-cookie";
 import { apiUrl } from '@/lib/data';
 import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import { useCurrentEmployee } from '@/hooks/useCurrentEmployee';
+import { format, startOfMonth, endOfMonth } from "date-fns";
 
 interface ProfileData {
     id?: number;
@@ -127,6 +128,40 @@ export default function ProfilePage() {
             console.error("Error cropping image", e);
         }
     };
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const currentDate = new Date();
+        const cacheKey = `attendance_local_cache_${format(currentDate, "yyyy-MM")}`;
+        const stored = localStorage.getItem(cacheKey);
+
+        if (!stored) {
+            const prewarmCache = async () => {
+                try {
+                    const token = Cookies.get("access");
+                    if (!token) return;
+                    
+                    const start = format(startOfMonth(currentDate), "yyyy-MM-dd");
+                    const end = format(endOfMonth(currentDate), "yyyy-MM-dd");
+                    const headers = { Authorization: `Bearer ${token}` };
+
+                    console.log("⚡ [Profile] Pre-warming attendance cache in background...");
+                    const [calRes, attRes] = await Promise.all([
+                        axios.get(`${apiUrl}/api/company-calendar`, { headers, params: { start_date: start, end_date: end } }),
+                        axios.get(`${apiUrl}/api/admin/emp-total-details/`, { headers, params: { start_date: start, end_date: end } })
+                    ]);
+
+                    const payload = { calendar: calRes.data, attendance: attRes.data };
+                    localStorage.setItem(cacheKey, JSON.stringify(payload));
+                    console.log("⚡ [Profile] Attendance cache pre-warmed successfully!");
+                } catch (e) {
+                    console.error("Failed to pre-warm attendance cache in Profile:", e);
+                }
+            };
+            prewarmCache();
+        }
+    }, []);
 
     useEffect(() => {
         fetchProfile();
