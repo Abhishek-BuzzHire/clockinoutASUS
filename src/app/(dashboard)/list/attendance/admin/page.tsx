@@ -421,7 +421,9 @@ const AdminAttendancePage = () => {
   };
 
   const { data: swrData, mutate } = useSWR(swrAttendanceKey, swrFetcher, {
-    revalidateOnFocus: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
     keepPreviousData: true,
   });
 
