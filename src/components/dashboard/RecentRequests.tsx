@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/lib/data";
@@ -97,19 +97,44 @@ export default function RecentRequests() {
   const [correctionDetail, setCorrectionDetail] = useState<any | null>(null);
   const [correctionToken, setCorrectionToken] = useState<string | null>(null);
 
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const [localRequests, setLocalRequests] = useState<RequestData[] | undefined>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("dashboard_recent_requests_cache");
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse cached requests", e);
+        }
+      }
+    }
+    return undefined;
+  });
+
   const { data: requests, isLoading, mutate } = useSWR<RequestData[]>(
     'dashboard_recent_requests',
     fetcher,
-    { keepPreviousData: true, revalidateOnFocus: true }
+    { keepPreviousData: true, revalidateOnFocus: false }
   );
 
-  const safeRequests = requests || [];
+  useEffect(() => {
+    if (requests && typeof window !== "undefined") {
+      localStorage.setItem("dashboard_recent_requests_cache", JSON.stringify(requests));
+    }
+  }, [requests]);
+
+  const effectiveRequests = isMounted ? (requests || localRequests || []) : [];
 
   const filteredRequests = useMemo(() => {
-    if (filter === "pending") return safeRequests.filter(r => r.status === "PENDING");
-    if (filter === "approved") return safeRequests.filter(r => r.status === "APPROVED");
-    return safeRequests;
-  }, [safeRequests, filter]);
+    if (filter === "pending") return effectiveRequests.filter(r => r.status === "PENDING");
+    if (filter === "approved") return effectiveRequests.filter(r => r.status === "APPROVED");
+    return effectiveRequests;
+  }, [effectiveRequests, filter]);
 
   const handleRowClick = async (req: RequestData) => {
     if (req.typeKey === "leave") {
@@ -223,7 +248,7 @@ export default function RecentRequests() {
             </tr>
           </thead>
           <tbody>
-            {isLoading && !requests ? (
+            {!isMounted || (isLoading && !requests && !localRequests) ? (
               <tr><td colSpan={4} className="text-center py-8 text-gray-400">Loading live data...</td></tr>
             ) : filteredRequests.length === 0 ? (
               <tr><td colSpan={4} className="text-center py-8 text-gray-500">No requests found.</td></tr>

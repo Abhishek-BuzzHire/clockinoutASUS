@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/lib/data";
@@ -30,26 +30,71 @@ export default function DailyOverview() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [activeModal, setActiveModal] = useState<StatCategory | null>(null);
 
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const dateStr = format(selectedDate, "yyyy-MM-dd");
+
+  const [effectiveData, setEffectiveData] = useState<any | undefined>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(`daily_overview_cache_${dateStr}`);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse cached daily overview data", e);
+        }
+      }
+    }
+    return undefined;
+  });
 
   const { data, isLoading } = useSWR(
     `${apiUrl}/api/admin/emp-total-details/?start_date=${dateStr}&end_date=${dateStr}`,
     fetcher,
     {
       keepPreviousData: true,
-      revalidateOnFocus: true
+      revalidateOnFocus: false
     }
   );
+
+  useEffect(() => {
+    if (data) {
+      setEffectiveData(data);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`daily_overview_cache_${dateStr}`, JSON.stringify(data));
+      }
+    }
+  }, [data, dateStr]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(`daily_overview_cache_${dateStr}`);
+      if (stored) {
+        try {
+          setEffectiveData(JSON.parse(stored));
+          return;
+        } catch (e) {
+          console.error("Error parsing cache for date", dateStr, e);
+        }
+      }
+    }
+    setEffectiveData(undefined);
+  }, [dateStr]);
+
+  const finalData = isMounted ? effectiveData : undefined;
 
   let p = 0, l = 0, a = 0;
   const presentList: EmpDetail[] = [];
   const leaveList: EmpDetail[] = [];
   const absentList: EmpDetail[] = [];
 
-  if (data?.emps) {
+  if (finalData?.emps) {
     const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
 
-    data.emps.forEach((emp: any) => {
+    finalData.emps.forEach((emp: any) => {
       if (EXCLUDED_EMP_IDS.has(emp.emp_id)) return;
 
       const day = emp.attendance?.find((d: any) => d.date === dateStr);
@@ -138,7 +183,7 @@ export default function DailyOverview() {
           </div>
         </div>
 
-        {isLoading && !data ? (
+        {!isMounted || (isLoading && !effectiveData) ? (
           <div className="h-16 flex items-center justify-center bg-gray-50 rounded-lg animate-pulse">
             <span className="text-sm text-gray-400">Syncing data...</span>
           </div>

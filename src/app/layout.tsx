@@ -22,6 +22,8 @@ export const metadata: Metadata = {
 
 import { SwrProvider } from "@/components/providers/SwrProvider";
 import { PusherProvider } from "@/components/providers/PusherProvider";
+import VersionWatcher from "@/components/providers/VersionWatcher";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -38,6 +40,7 @@ export default function RootLayout({
           <AuthProvider>
             <SwrProvider>
               <PusherProvider>
+                <VersionWatcher />
                 {children}
               </PusherProvider>
             </SwrProvider>
