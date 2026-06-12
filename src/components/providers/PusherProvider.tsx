@@ -27,6 +27,14 @@ export function PusherProvider({ children }: { children: React.ReactNode }) {
       );
     });
 
+    // Bind to the 'attendance_update' event sent from Django
+    channel.bind("attendance_update", (data: any) => {
+      console.log("🔥 Pusher attendance_update event received:", data);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("attendance_update", { detail: data }));
+      }
+    });
+
     return () => {
       channel.unbind_all();
       channel.unsubscribe();
