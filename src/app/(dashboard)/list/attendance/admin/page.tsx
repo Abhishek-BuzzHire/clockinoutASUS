@@ -67,15 +67,12 @@ const AdminAttendancePage = () => {
     }
   }, [user, loading, router]);
 
-  const [calendarMap, setCalendarMap] = useState<Record<string, CalendarDay>>({});
-
   const tabs = ["Attendance", "Leave", "Regularization", "Company Holidays & Rules"];
   const [activeTab, setActiveTab] = useState("Attendance");
   const [loadingPage, setLoadingPage] = useState(false);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [employees, setEmployees] = useState<NewEmployee[]>([]);
   const [openPopupDate, setOpenPopupDate] = useState(false);
   const [openPopupName, setOpenPopupName] = useState(false);
   const [openPopupTotal, setOpenPopupTotal] = useState(false);
@@ -95,11 +92,6 @@ const AdminAttendancePage = () => {
   const [wfhList, setWfhList] = useState<any[]>([]);
   const [statusFilterWfh, setStatusFilterWfh] = useState("PENDING");
   const [selectedWFH, setSelectedWFH] = useState<any | null>(null);
-
-  // 🔥 This now stores REAL backend attendance
-  const [attendanceRecords, setAttendanceRecords] = useState<
-    Record<string, AttendanceDay>
-  >({});
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -157,186 +149,41 @@ const AdminAttendancePage = () => {
 
   }, [searchParams, wfhList, list, leaves]);
 
-  const fetchCompanyCalendar = async (date: Date) => {
-    try {
-      const token = Cookies.get("access");
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
-      const start = format(startOfMonth(date), "yyyy-MM-dd");
-      const end = format(endOfMonth(date), "yyyy-MM-dd");
-
-      const res = await axios.get(
-        `${apiUrl}/api/company-calendar`,
-        {
-          headers: { Authorization: token ? `Bearer ${token}` : "" },
-          params: {
-            start_date: start,
-            end_date: end,
-          },
+  const [localCache, setLocalCache] = useState<any | undefined>(() => {
+    if (typeof window !== "undefined") {
+      const cacheKey = `attendance_local_cache_${format(new Date(), "yyyy-MM")}`;
+      const stored = localStorage.getItem(cacheKey);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse local attendance cache on mount", e);
         }
-      );
-
-      const map: Record<string, CalendarDay> = {};
-      res.data.calendar.forEach((day: CalendarDay) => {
-        map[day.date] = day;
-      });
-
-      setCalendarMap(map);
-    } catch (err) {
-      console.error("Calendar Fetch Failed", err);
+      }
     }
-  };
+    return undefined;
+  });
 
-  // ✅ Fetch Admin Attendance API
-  const fetchAdminAttendance = async (date: Date) => {
-    try {
-      // EMP IDs to exclude
-      const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
-
-      const token = Cookies.get("access");
-
-      const start = format(startOfMonth(date), "yyyy-MM-dd");
-      const end = format(endOfMonth(date), "yyyy-MM-dd");
-
-      const res = await axios.get(
-        `${apiUrl}/api/admin/emp-total-details/`,
-        {
-          headers: { Authorization: token ? `Bearer ${token}` : "" },
-          params: {
-            start_date: start,
-            end_date: end,
-          },
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const cacheKey = `attendance_local_cache_${format(currentDate, "yyyy-MM")}`;
+      const stored = localStorage.getItem(cacheKey);
+      if (stored) {
+        try {
+          setLocalCache(JSON.parse(stored));
+          return;
+        } catch (e) {
+          console.error("Error parsing local cache on date change", e);
         }
-      );
-
-      const apiData = res.data.emps;
-
-      // Build employee list
-      setEmployees(
-        apiData.map((e: any) => ({
-          id: String(e.emp_id),
-          name: e.employee_name,
-        }))
-      );
-
-      const mapped: Record<string, AttendanceDay> = {};
-
-      apiData.forEach((emp: any) => {
-        if (EXCLUDED_EMP_IDS.has(emp.emp_id)) return;
-
-        emp.attendance.forEach((day: any) => {
-          const dateKey = day.date;
-          const thisDate = new Date(dateKey);
-          const today = new Date();
-
-          const calendarDay = calendarMap[dateKey];
-
-          const isWorkingDay = calendarDay?.is_working_day ?? true;
-          const isLeave = day.work_status === "LEAVE";
-          const isWFH = day.work_status === "WFH";
-          const isWFO = day.work_status === "WFO";
-          const hasPunch = !!day.punch_in;
-          const isPastDay = isBefore(startOfDay(thisDate), startOfDay(today));
-          const isFutureDay = isAfter(startOfDay(thisDate), startOfDay(today));
-
-          let status: "present" | "absent" | "leave" | null = null;
-          let lateBy: string | null = null;
-
-          if (isLeave) {
-            status = "leave";
-          }
-
-          // Future days → only leave allowed
-          else if (isFutureDay) {
-            status = null;
-          }
-
-          // Past days (excluding today)
-          else if (isPastDay) {
-            if (!hasPunch) {
-              // No punch-in at all
-              status = "absent";
-            }
-            else if (hasPunch && !day.punch_out) {
-              // Punch-in but no punch-out
-              status = "absent";
-            }
-            else {
-              // Both punch-in and punch-out
-              status = "present";
-
-              // Late calculation (optional)
-              const shiftStart = toMinutes(SHIFT_CONFIG.startTime);
-              const punchMinutes = toMinutes(day.punch_in);
-
-              if (punchMinutes > shiftStart + 30) {
-                const diff = punchMinutes - shiftStart;
-                const hrs = Math.floor(diff / 60);
-                const mins = diff % 60;
-                lateBy = `${hrs > 0 ? `${hrs}h ` : ""}${mins}m`;
-              }
-            }
-          }
-
-          // Today
-          else {
-            if (hasPunch) {
-              // Punch-in today → present even if not punched out yet
-              status = "present";
-
-              const shiftStart = toMinutes(SHIFT_CONFIG.startTime);
-              const punchMinutes = toMinutes(day.punch_in);
-
-              if (punchMinutes > shiftStart + 30) {
-                const diff = punchMinutes - shiftStart;
-                const hrs = Math.floor(diff / 60);
-                const mins = diff % 60;
-                lateBy = `${hrs > 0 ? `${hrs}h ` : ""}${mins}m`;
-              }
-            } else {
-              // No punch yet today → don't mark absent yet
-              status = "absent";
-            }
-          }
-
-          if (!mapped[dateKey]) {
-            mapped[dateKey] = {
-              records: [],
-              summary: { present: 0, absent: 0, leave: 0 }
-            };
-          }
-
-          const record = {
-            employeeId: String(emp.emp_id),
-            date: dateKey,
-            status,
-            lateBy,
-            workStatus: day.work_status || null,
-            checkInTime: day.punch_in || undefined,
-            checkOutTime: day.punch_out || undefined,
-            hoursWorked: day.total_time || undefined,
-            canGrantPastPermission: day.can_grant_past_permission,
-            pastPermissionGranted: day.past_permission_granted,
-          };
-
-          mapped[dateKey].records.push(record);
-
-          if (isFutureDay) {
-            if (status === "leave") {
-              mapped[dateKey].summary.leave++;
-            }
-          } else {
-            if (status === "present") mapped[dateKey].summary.present++;
-            if (status === "absent") mapped[dateKey].summary.absent++;
-            if (status === "leave") mapped[dateKey].summary.leave++;
-          }
-        });
-      });
-      setAttendanceRecords(mapped);
-      //   console.log("Admin Attendance Fetched", mapped);
-    } catch (err) {
-      console.error("Admin Attendance Fetch Failed", err);
+      }
     }
-  };
+    setLocalCache(undefined);
+  }, [currentDate]);
 
   // ⚡ SWR: Cache attendance data in browser RAM for nano-second loading
   const swrAttendanceKey = `attendance_${format(currentDate, "yyyy-MM")}`;
@@ -356,39 +203,50 @@ const AdminAttendancePage = () => {
   };
 
   const { data: swrData, mutate } = useSWR(swrAttendanceKey, swrFetcher, {
-    revalidateOnFocus: true,
+    revalidateOnFocus: false, // Prevents excessive refetches on focus
     keepPreviousData: true,
     refreshInterval: 30000, // silently refresh every 30 seconds
   });
 
-  // Process SWR data into component state when it arrives
   useEffect(() => {
-    if (!swrData) return;
+    if (swrData && typeof window !== "undefined") {
+      const cacheKey = `attendance_local_cache_${format(currentDate, "yyyy-MM")}`;
+      localStorage.setItem(cacheKey, JSON.stringify(swrData));
+    }
+  }, [swrData, currentDate]);
+
+  const effectiveData = isMounted ? (swrData || localCache) : undefined;
+
+  const { calendarMap, employees, attendanceRecords } = useMemo(() => {
+    if (!effectiveData) {
+      return {
+        calendarMap: {} as Record<string, CalendarDay>,
+        employees: [] as NewEmployee[],
+        attendanceRecords: {} as Record<string, AttendanceDay>
+      };
+    }
 
     // Process calendar
     const calMap: Record<string, CalendarDay> = {};
-    swrData.calendar.calendar?.forEach((day: CalendarDay) => {
+    effectiveData.calendar.calendar?.forEach((day: CalendarDay) => {
       calMap[day.date] = day;
     });
-    setCalendarMap(calMap);
 
-    // Process attendance (same logic as fetchAdminAttendance)
+    // Process attendance
     const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
-    const apiData = swrData.attendance.emps;
+    const apiData = effectiveData.attendance.emps || [];
 
-    setEmployees(
-      apiData.map((e: any) => ({
-        id: String(e.emp_id),
-        name: e.employee_name,
-      }))
-    );
+    const empList: NewEmployee[] = apiData.map((e: any) => ({
+      id: String(e.emp_id),
+      name: e.employee_name,
+    }));
 
     const mapped: Record<string, AttendanceDay> = {};
 
     apiData.forEach((emp: any) => {
       if (EXCLUDED_EMP_IDS.has(emp.emp_id)) return;
 
-      emp.attendance.forEach((day: any) => {
+      emp.attendance?.forEach((day: any) => {
         const dateKey = day.date;
         const thisDate = new Date(dateKey);
         const today = new Date();
@@ -465,8 +323,8 @@ const AdminAttendancePage = () => {
       });
     });
 
-    setAttendanceRecords(mapped);
-  }, [swrData]);
+    return { calendarMap: calMap, employees: empList, attendanceRecords: mapped };
+  }, [effectiveData]);
 
   const loadList = async () => {
     try {
