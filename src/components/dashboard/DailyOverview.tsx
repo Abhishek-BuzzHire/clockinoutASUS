@@ -97,6 +97,9 @@ export default function DailyOverview() {
     finalData.emps.forEach((emp: any) => {
       if (EXCLUDED_EMP_IDS.has(emp.emp_id)) return;
 
+      // Skip employees who joined AFTER this date
+      if (emp.joining_date && dateStr < emp.joining_date) return;
+
       const day = emp.attendance?.find((d: any) => d.date === dateStr);
       const detail: EmpDetail = {
         name: emp.employee_name || `Employee #${emp.emp_id}`,
