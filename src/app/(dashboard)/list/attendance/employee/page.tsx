@@ -792,9 +792,25 @@ const EmployeeAttendancePage = () => {
     };
 
 
+    const getNormalizedDate = (d: Date) => {
+        const copy = new Date(d);
+        copy.setHours(0, 0, 0, 0);
+        return copy;
+    };
+
+    const joiningDate = employee?.joining_date ? getNormalizedDate(new Date(employee.joining_date as string)) : null;
+
     const navigateWeek = (direction: "prev" | "next") => {
         const newStart = new Date(currentWeekStart);
         newStart.setDate(currentWeekStart.getDate() + (direction === "next" ? 7 : -7));
+        
+        if (direction === "prev" && joiningDate) {
+            const newEnd = new Date(newStart);
+            newEnd.setDate(newStart.getDate() + 6);
+            if (getNormalizedDate(newEnd) < joiningDate) {
+                return; // Block going before joining week
+            }
+        }
         setCurrentWeekStart(newStart);
     };
 
@@ -802,6 +818,13 @@ const EmployeeAttendancePage = () => {
         setCurrentMonthStart(prev => {
             const newDate = new Date(prev);
             newDate.setMonth(prev.getMonth() + (direction === "next" ? 1 : -1));
+            
+            if (direction === "prev" && joiningDate) {
+                const lastDayOfNewMonth = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0);
+                if (getNormalizedDate(lastDayOfNewMonth) < joiningDate) {
+                    return prev; // Block going before joining month
+                }
+            }
             return newDate;
         });
     };
@@ -865,9 +888,13 @@ const EmployeeAttendancePage = () => {
             }
         }
 
+        const isBeforeJoining = joiningDate && getNormalizedDate(date) < joiningDate;
         let status: DayStatus = "absent";
 
-        if (isFuture(date)) {
+        if (isBeforeJoining) {
+            status = "future";
+        }
+        else if (isFuture(date)) {
             status = "future";
         }
         else if (calendarDay?.calendar_type === "HOLIDAY") {
@@ -943,9 +970,13 @@ const EmployeeAttendancePage = () => {
                 earlyBy = `${Math.floor(diff / 60)}h ${diff % 60}m`;
             }
         }
+        const isBeforeJoining = joiningDate && getNormalizedDate(date) < joiningDate;
         let status: DayStatus = "absent";
 
-        if (isFuture(date)) {
+        if (isBeforeJoining) {
+            status = "future";
+        }
+        else if (isFuture(date)) {
             status = "future";
         }
         else if (calendarDay?.calendar_type === "HOLIDAY") {
@@ -1093,6 +1124,19 @@ const EmployeeAttendancePage = () => {
         return <div className="p-8 text-center">Loading authentication...</div>;
     }
 
+    const getIsPrevDisabled = () => {
+        if (!joiningDate) return false;
+        if (viewMode === "weekly") {
+            const prevWeekEnd = new Date(currentWeekStart);
+            prevWeekEnd.setDate(currentWeekStart.getDate() - 1);
+            return getNormalizedDate(prevWeekEnd) < joiningDate;
+        } else {
+            const prevMonthEnd = new Date(currentMonthStart.getFullYear(), currentMonthStart.getMonth(), 0);
+            return getNormalizedDate(prevMonthEnd) < joiningDate;
+        }
+    };
+    const disablePrev = getIsPrevDisabled();
+
     const timeLabels = ["09:30AM", "10AM", "11AM", "12PM", "01PM", "02PM", "03PM", "04PM", "05PM", "06PM", "07PM"];
 
     const renderContent = () => {
@@ -1130,7 +1174,9 @@ const EmployeeAttendancePage = () => {
                                         onApplyLeave={() => setOpenApplyLeaves(true)}
                                         onApplyWFH={() => setOpenApplyWfh(true)}
                                         monthStart={currentMonthStart}
-                                        onEmployeeAttendanceSheet={handleOpenEmployeeAttendanceSheet} />
+                                        onEmployeeAttendanceSheet={handleOpenEmployeeAttendanceSheet}
+                                        disablePrev={disablePrev}
+                                    />
 
 
                                     {/* 🔥 CALENDAR SWITCH GOES HERE */}

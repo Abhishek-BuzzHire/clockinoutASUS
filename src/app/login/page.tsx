@@ -35,6 +35,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showCurrent, setShowCurrent] = useState(false);
+  const [loadingText, setLoadingText] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && user && !returnUrl) {
@@ -65,29 +66,68 @@ export default function LoginPage() {
   }, [user, loading, router]);
 
   const handleLoginSuccess = async (access: string, refresh: string) => {
-    login(access, refresh);
     if (returnUrl) {
+      login(access, refresh);
       router.push(returnUrl);
-    } else {
-      const decoded = jwtDecode<TokenPayload>(access);
-      let home = "/list/attendance/admin";
-      if (decoded.role === "admin") {
+      return;
+    }
+
+    const decoded = jwtDecode<TokenPayload>(access);
+    let home = "/list/attendance/admin";
+
+    if (decoded.role === "admin") {
+      setLoadingText("Setting up your administrator workspace...");
+      const headers = { Authorization: `Bearer ${access}` };
+      
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = now.getMonth();
+      const start = new Date(y, m, 1);
+      const end = new Date(y, m + 1, 0);
+      const pad = (n: number) => n.toString().padStart(2, "0");
+      const startStr = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`;
+      const endStr = `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}`;
+      const cacheKeySuffix = `${start.getFullYear()}-${pad(start.getMonth() + 1)}`;
+
+      const prefetchTask = async () => {
+        // 1. Profile prefetch check
         try {
-          const res = await axios.get(`${apiUrl}/api/profile/me`, {
-            headers: { Authorization: `Bearer ${access}` }
-          });
-          const profile = Array.isArray(res.data) ? res.data[0] : res.data;
+          const profileRes = await axios.get(`${apiUrl}/api/profile/me`, { headers });
+          const profile = Array.isArray(profileRes.data) ? profileRes.data[0] : profileRes.data;
           if (!profile || !profile.phone || !profile.designation) {
             home = "/profile";
           }
         } catch (e) {
-          console.error("Failed to fetch profile during login redirection:", e);
+          console.error("Profile prefetch failed:", e);
         }
-      } else {
-        home = "/attendance";
-      }
-      router.push(home);
+
+        // 2. Attendance & Calendar prefetch
+        try {
+          const [calRes, attRes] = await Promise.all([
+            axios.get(`${apiUrl}/api/company-calendar`, { headers, params: { start_date: startStr, end_date: endStr } }),
+            axios.get(`${apiUrl}/api/admin/emp-total-details/`, { headers, params: { start_date: startStr, end_date: endStr } })
+          ]);
+          
+          const cacheKey = `attendance_local_cache_${cacheKeySuffix}`;
+          localStorage.setItem(cacheKey, JSON.stringify({
+            calendar: calRes.data,
+            attendance: attRes.data
+          }));
+          console.log("Admin prefetch completed!");
+        } catch (e) {
+          console.error("Attendance prefetch failed during login:", e);
+        }
+      };
+
+      const delayTask = new Promise((resolve) => setTimeout(resolve, 2500));
+
+      await Promise.all([prefetchTask(), delayTask]);
+    } else {
+      home = "/list/attendance/employee";
     }
+
+    login(access, refresh);
+    router.push(home);
   };
 
   const handleGoogleLoginSuccess = async (cred: CredentialResponse) => {
@@ -124,6 +164,33 @@ export default function LoginPage() {
       setSubmitting(false);
     }
   };
+
+  if (loadingText) {
+    return (
+      <div className="min-h-screen flex flex-col justify-center items-center bg-white font-inter">
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          .animate-spin-slow {
+            animation: spin-slow 8s linear infinite;
+          }
+        `}} />
+        <div className="text-center">
+          <div className="w-[80px] h-[80px] rounded-[24px] bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto mb-6">
+            <Image src="/logo.webp" alt="BuzzHire" height={45} width={45} className="animate-spin-slow" />
+          </div>
+          <h3 className="text-lg font-semibold text-slate-800 mb-2">
+            Please wait
+          </h3>
+          <p className="text-sm text-slate-500 animate-pulse">
+            {loadingText}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-white font-inter">

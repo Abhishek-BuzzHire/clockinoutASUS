@@ -26,6 +26,7 @@ interface TimesheetHeaderProps {
     onApplyWFH: () => void;
 
     onEmployeeAttendanceSheet: () => void;
+    disablePrev?: boolean;
 }
 
 export const TimesheetHeader = ({
@@ -42,7 +43,8 @@ export const TimesheetHeader = ({
     onRegularize,
     onApplyLeave,
     onApplyWFH,
-    onEmployeeAttendanceSheet
+    onEmployeeAttendanceSheet,
+    disablePrev = false
 
 }: TimesheetHeaderProps) => {
 
@@ -63,6 +65,8 @@ export const TimesheetHeader = ({
                         variant="ghost"
                         size="icon"
                         onClick={() => onNavigate("prev")}
+                        disabled={disablePrev}
+                        className={disablePrev ? "opacity-20 cursor-not-allowed pointer-events-none" : ""}
                     >
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
