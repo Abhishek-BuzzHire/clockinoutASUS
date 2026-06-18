@@ -35,7 +35,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showCurrent, setShowCurrent] = useState(false);
-  const [loadingText, setLoadingText] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && user && !returnUrl) {
@@ -66,68 +65,16 @@ export default function LoginPage() {
   }, [user, loading, router]);
 
   const handleLoginSuccess = async (access: string, refresh: string) => {
-    if (returnUrl) {
-      login(access, refresh);
-      router.push(returnUrl);
-      return;
-    }
-
-    const decoded = jwtDecode<TokenPayload>(access);
-    let home = "/list/attendance/admin";
-
-    if (decoded.role === "admin") {
-      setLoadingText("Setting up your administrator workspace...");
-      const headers = { Authorization: `Bearer ${access}` };
-      
-      const now = new Date();
-      const y = now.getFullYear();
-      const m = now.getMonth();
-      const start = new Date(y, m, 1);
-      const end = new Date(y, m + 1, 0);
-      const pad = (n: number) => n.toString().padStart(2, "0");
-      const startStr = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`;
-      const endStr = `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}`;
-      const cacheKeySuffix = `${start.getFullYear()}-${pad(start.getMonth() + 1)}`;
-
-      const prefetchTask = async () => {
-        // 1. Profile prefetch check
-        try {
-          const profileRes = await axios.get(`${apiUrl}/api/profile/me`, { headers });
-          const profile = Array.isArray(profileRes.data) ? profileRes.data[0] : profileRes.data;
-          if (!profile || !profile.phone || !profile.designation) {
-            home = "/profile";
-          }
-        } catch (e) {
-          console.error("Profile prefetch failed:", e);
-        }
-
-        // 2. Attendance & Calendar prefetch
-        try {
-          const [calRes, attRes] = await Promise.all([
-            axios.get(`${apiUrl}/api/company-calendar`, { headers, params: { start_date: startStr, end_date: endStr } }),
-            axios.get(`${apiUrl}/api/admin/emp-total-details/`, { headers, params: { start_date: startStr, end_date: endStr } })
-          ]);
-          
-          const cacheKey = `attendance_local_cache_${cacheKeySuffix}`;
-          localStorage.setItem(cacheKey, JSON.stringify({
-            calendar: calRes.data,
-            attendance: attRes.data
-          }));
-          console.log("Admin prefetch completed!");
-        } catch (e) {
-          console.error("Attendance prefetch failed during login:", e);
-        }
-      };
-
-      const delayTask = new Promise((resolve) => setTimeout(resolve, 2500));
-
-      await Promise.all([prefetchTask(), delayTask]);
-    } else {
-      home = "/list/attendance/employee";
-    }
-
     login(access, refresh);
-    router.push(home);
+    if (returnUrl) {
+      router.push(returnUrl);
+    } else {
+      const decoded = jwtDecode<TokenPayload>(access);
+      const home = decoded.role === "admin"
+        ? "/list/attendance/admin"
+        : "/list/attendance/employee";
+      router.push(home);
+    }
   };
 
   const handleGoogleLoginSuccess = async (cred: CredentialResponse) => {
@@ -135,7 +82,6 @@ export default function LoginPage() {
     if (!idToken) return;
 
     setSubmitting(true);
-    setLoadingText("Authenticating with Google...");
     try {
       const response = await axios.post<AuthResponseData>(
         `${apiUrl}/auth/google/`,
@@ -147,7 +93,6 @@ export default function LoginPage() {
       console.error("Google login failed");
       setError("Google login failed");
       setSubmitting(false);
-      setLoadingText(null);
     }
   };
 
@@ -155,7 +100,6 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    setLoadingText("Verifying credentials...");
 
     try {
       const response = await axios.post<{ access: string; refresh: string }>(
@@ -167,26 +111,11 @@ export default function LoginPage() {
     } catch (err: any) {
       setError(err.response?.data?.error || "Invalid username or password");
       setSubmitting(false);
-      setLoadingText(null);
     }
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-white font-inter relative">
-      {(submitting || loadingText) && (
-        <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="flex flex-col items-center">
-            <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4" />
-            <h3 className="text-sm font-semibold text-slate-800 mb-1">
-              Please wait
-            </h3>
-            <p className="text-xs text-slate-500 animate-pulse">
-              {loadingText || "Signing in..."}
-            </p>
-          </div>
-        </div>
-      )}
-      <div className="w-full max-w-[400px] px-6">
+    <div className="min-h-screen flex justify-center items-center bg-white font-inter">
 
         {/* Header */}
         <div className="text-center mb-7">
