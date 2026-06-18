@@ -134,15 +134,20 @@ export default function LoginPage() {
     const idToken = cred.credential;
     if (!idToken) return;
 
+    setSubmitting(true);
+    setLoadingText("Authenticating with Google...");
     try {
       const response = await axios.post<AuthResponseData>(
         `${apiUrl}/auth/google/`,
         { id_token: idToken }
       );
       const { access, refresh } = response.data;
-      handleLoginSuccess(access, refresh);
+      await handleLoginSuccess(access, refresh);
     } catch (error) {
       console.error("Google login failed");
+      setError("Google login failed");
+      setSubmitting(false);
+      setLoadingText(null);
     }
   };
 
@@ -150,6 +155,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
+    setLoadingText("Verifying credentials...");
 
     try {
       const response = await axios.post<{ access: string; refresh: string }>(
@@ -157,43 +163,29 @@ export default function LoginPage() {
         { username, password }
       );
       const { access, refresh } = response.data;
-      handleLoginSuccess(access, refresh);
+      await handleLoginSuccess(access, refresh);
     } catch (err: any) {
       setError(err.response?.data?.error || "Invalid username or password");
-    } finally {
       setSubmitting(false);
+      setLoadingText(null);
     }
   };
 
-  if (loadingText) {
-    return (
-      <div className="min-h-screen flex flex-col justify-center items-center bg-white font-inter">
-        <style dangerouslySetInnerHTML={{ __html: `
-          @keyframes spin-slow {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          .animate-spin-slow {
-            animation: spin-slow 8s linear infinite;
-          }
-        `}} />
-        <div className="text-center">
-          <div className="w-[80px] h-[80px] rounded-[24px] bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto mb-6">
-            <Image src="/logo.webp" alt="BuzzHire" height={45} width={45} className="animate-spin-slow" />
-          </div>
-          <h3 className="text-lg font-semibold text-slate-800 mb-2">
-            Please wait
-          </h3>
-          <p className="text-sm text-slate-500 animate-pulse">
-            {loadingText}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex justify-center items-center bg-white font-inter">
+    <div className="min-h-screen flex justify-center items-center bg-white font-inter relative">
+      {(submitting || loadingText) && (
+        <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4" />
+            <h3 className="text-sm font-semibold text-slate-800 mb-1">
+              Please wait
+            </h3>
+            <p className="text-xs text-slate-500 animate-pulse">
+              {loadingText || "Signing in..."}
+            </p>
+          </div>
+        </div>
+      )}
       <div className="w-full max-w-[400px] px-6">
 
         {/* Header */}
