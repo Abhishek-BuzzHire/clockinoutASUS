@@ -91,6 +91,10 @@ const EmployeeDetails = ({
                   <span className="text-gray-500">Address</span>
                   <span className=" text-sm">{data.address}</span>
                 </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-gray-500">Emergency Contact</span>
+                  <span className=" text-sm">{data.emergency_contact || "N/A"}</span>
+                </div>
               </div>
             </div>
             <div className="bg-white rounded-lg shadow-md mt-6 border-2">

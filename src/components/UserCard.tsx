@@ -97,7 +97,7 @@ const UserCard = ({ data }: { data: any }) => {
           </div>
 
           {/* Options Menu Icon */}
-          <button className="w-9 h-9 flex items-center justify-center bg-white border border-slate-100 rounded-full shadow-[0_2px_10px_rgba(0,0,0,0.04)] text-slate-500 hover:text-slate-700 transition-colors cursor-pointer flex-shrink-0">
+          <button onClick={(e) => e.stopPropagation()} className="w-9 h-9 flex items-center justify-center bg-white border border-slate-100 rounded-full shadow-[0_2px_10px_rgba(0,0,0,0.04)] text-slate-500 hover:text-slate-700 transition-colors cursor-pointer flex-shrink-0">
             <MoreVertical className="w-4 h-4" />
           </button>
         </div>
@@ -146,6 +146,7 @@ const UserCard = ({ data }: { data: any }) => {
             href={formatLinkedInUrl(data.linkedIn)} 
             target="_blank" 
             rel="noopener noreferrer" 
+            onClick={(e) => e.stopPropagation()}
             className="w-full flex items-center justify-between border border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white py-2.5 px-4 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer shadow-sm hover:shadow group"
           >
             <span className="flex items-center gap-2">
@@ -157,6 +158,7 @@ const UserCard = ({ data }: { data: any }) => {
         ) : (
           <button 
             disabled
+            onClick={(e) => e.stopPropagation()}
             className="w-full flex items-center justify-between border border-slate-200 text-slate-400 bg-slate-50/50 py-2.5 px-4 rounded-xl text-sm font-semibold cursor-not-allowed"
           >
             <span className="flex items-center gap-2">

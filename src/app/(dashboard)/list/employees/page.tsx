@@ -28,6 +28,7 @@ import Cookies from "js-cookie"
 import EmployeeTable from "@/components/EmployeeTable";
 import Pagination from "@/components/Pagination";
 import UserCard from "@/components/UserCard";
+import EmployeeDetails from "@/components/EmployeeDetails";
 import { employeeData } from "@/lib/data";
 import Image from "next/image";
 
@@ -249,10 +250,27 @@ const EmployeesListPage = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "Employees":
-        const EmployeeList = () => {
+      case "Employees":        const EmployeeList = () => {
           type ViewType = 'userCard' | 'table';
           const [view, setView] = useState<ViewType>('table')
+          const [profileIndex, setProfileIndex] = useState<number | null>(null);
+
+          const currentEmployee = profileIndex !== null ? employees[profileIndex] : null;
+
+          const handlePrevEmployee = () => {
+            if (profileIndex === null) return;
+            setProfileIndex(prev =>
+              prev === 0 ? employees.length - 1 : (prev as number) - 1
+            );
+          };
+
+          const handleNextEmployee = () => {
+            if (profileIndex === null) return;
+            setProfileIndex(prev =>
+              prev === employees.length - 1 ? 0 : (prev as number) + 1
+            );
+          };
+
           return (
             <div className="w-full h-screen bg-blueLight-50 p-8">
               <div className="flex items-center w-full mb-4 justify-between">
@@ -270,9 +288,12 @@ const EmployeesListPage = () => {
                 <div className="inline-flex font-semibold rounded-md shadow-sm border border-gray-300 overflow-hidden my-8">
                   {/* Table Button */}
                   <button
-                    onClick={() => setView("table")}
+                    onClick={() => {
+                      setProfileIndex(null);
+                      setView("table");
+                    }}
                     className={`px-4 py-1 text-sm focus:outline-none transition-colors duration-200 ease-in-out
-                                            ${view === "table"
+                                             ${view === "table"
                         ? "bg-white text-gray-900"
                         : "bg-gray-300 text-gray-500 hover:bg-gray-200"
                       }`}
@@ -282,9 +303,12 @@ const EmployeesListPage = () => {
 
                   {/* Pipeline Button */}
                   <button
-                    onClick={() => setView("userCard")}
+                    onClick={() => {
+                      setProfileIndex(null);
+                      setView("userCard");
+                    }}
                     className={`px-4 py-1 text-sm focus:outline-none transition-colors duration-200 ease-in-out
-                                            ${view === "userCard"
+                                             ${view === "userCard"
                         ? "bg-white text-gray-900"
                         : "bg-gray-300 text-gray-500 hover:bg-gray-200"
                       }`}
@@ -306,11 +330,49 @@ const EmployeesListPage = () => {
                   {view === 'userCard' && (
                     <>
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        {employees.map((employee: any) => (
-                          <UserCard key={employee.id} data={employee} />
+                        {employees.map((employee: any, index: number) => (
+                          <div 
+                            key={employee.id} 
+                            onClick={() => setProfileIndex(index)} 
+                            className="cursor-pointer"
+                          >
+                            <UserCard data={employee} />
+                          </div>
                         ))}
                       </div>
                       <Pagination />
+
+                      {/* Side Drawer Panel for Grid View */}
+                      <div
+                        className={`fixed overflow-y-auto top-0 right-0 h-full w-full md:w-1/2 bg-white shadow-lg z-50 transform transition-transform duration-300 ${profileIndex !== null ? "translate-x-0" : "translate-x-full"
+                          }`}
+                      >
+                        <button
+                          className="absolute top-2 right-4 text-gray-500 hover:text-black z-50 font-bold text-lg"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setProfileIndex(null);
+                          }}
+                        >
+                          ✕
+                        </button>
+
+                        {currentEmployee && (
+                          <EmployeeDetails
+                            data={currentEmployee}
+                            onPrev={handlePrevEmployee}
+                            onNext={handleNextEmployee}
+                          />
+                        )}
+                      </div>
+
+                      {/* Backdrop for Grid View */}
+                      {profileIndex !== null && (
+                        <div
+                          className="fixed inset-0 bg-black/40 z-40"
+                          onClick={() => setProfileIndex(null)}
+                        />
+                      )}
                     </>
                   )}
                   {view === 'table' && (
