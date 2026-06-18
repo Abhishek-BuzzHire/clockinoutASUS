@@ -58,7 +58,7 @@ const UserCard = ({ data }: { data: any }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-5 flex flex-col justify-between hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all duration-300 relative h-full">
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] p-6 flex flex-col justify-between hover:shadow-[0_12px_30px_rgba(0,0,0,0.06)] hover:border-blue-100/80 hover:-translate-y-0.5 transition-all duration-300 relative h-full">
       {/* Top Header Section */}
       <div>
         <div className="flex justify-between items-start gap-3">
@@ -68,7 +68,7 @@ const UserCard = ({ data }: { data: any }) => {
               <img 
                 src={getProfilePhoto()} 
                 alt={data.name} 
-                className="w-16 h-16 rounded-full object-cover border border-gray-100" 
+                className="w-16 h-16 rounded-full object-cover border-2 border-slate-100/50 shadow-sm" 
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   if (!target.src.includes("/avatar.png")) target.src = "/avatar.png";
@@ -76,20 +76,24 @@ const UserCard = ({ data }: { data: any }) => {
               />
             </div>
             <div className="min-w-0">
-              <h3 className="text-base font-bold text-gray-900 truncate leading-snug">{data.name}</h3>
-              <p className="text-xs text-gray-400 font-normal mt-0.5 truncate">{data.jobTitle || data.department || "Employee"}</p>
+              <h3 className="text-[17px] font-bold text-slate-800 truncate leading-snug">{data.name}</h3>
+              <div className="mt-1.5">
+                <span className="text-[10px] font-bold tracking-wider uppercase bg-slate-100/80 text-slate-600 px-2.5 py-1 rounded-md inline-block">
+                  {data.jobTitle || data.department || "Employee"}
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Options Menu Icon */}
-          <button className="w-8 h-8 flex items-center justify-center border border-gray-200/80 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer flex-shrink-0">
+          <button className="w-8 h-8 flex items-center justify-center border border-slate-200/80 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex-shrink-0">
             <MoreVertical className="w-4 h-4" />
           </button>
         </div>
 
         {/* Date Joined Badge */}
         <div className="flex justify-start mt-4">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50/70 border border-blue-100/30 text-blue-600 text-xs font-semibold rounded-md">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50/70 border border-blue-100/30 text-blue-600 text-xs font-semibold rounded-lg">
             <Calendar className="w-3.5 h-3.5" />
             <span>Joined {formattedDate}</span>
           </div>
@@ -97,45 +101,49 @@ const UserCard = ({ data }: { data: any }) => {
       </div>
 
       {/* Middle Contact Section */}
-      <div className="mt-5 pt-4 border-t border-gray-100/60 space-y-3 flex-grow">
+      <div className="mt-5 pt-4 border-t border-slate-100/80 space-y-3 flex-grow">
         {/* Email */}
-        <div className="flex items-center gap-2.5 text-sm text-gray-600">
-          <Mail className="w-4 h-4 text-blue-500/80 flex-shrink-0" />
-          <span className="truncate">{data.email || "N/A"}</span>
+        <div className="flex items-center gap-3 text-sm text-slate-600">
+          <div className="w-8 h-8 rounded-lg bg-blue-50/50 flex items-center justify-center text-blue-500/80 flex-shrink-0">
+            <Mail className="w-4 h-4" />
+          </div>
+          <span className="truncate font-medium">{data.email || "N/A"}</span>
         </div>
         
         {/* Phone */}
-        <div className="flex items-center gap-2.5 text-sm text-gray-600">
-          <Phone className="w-4 h-4 text-blue-500/80 flex-shrink-0" />
-          <span className="truncate">{data.phone || "N/A"}</span>
+        <div className="flex items-center gap-3 text-sm text-slate-600">
+          <div className="w-8 h-8 rounded-lg bg-blue-50/50 flex items-center justify-center text-blue-500/80 flex-shrink-0">
+            <Phone className="w-4 h-4" />
+          </div>
+          <span className="truncate font-medium">{data.phone || "N/A"}</span>
         </div>
       </div>
 
       {/* Bottom LinkedIn Button Section */}
-      <div className="mt-4 pt-1">
+      <div className="mt-5 pt-1">
         {hasLinkedIn ? (
           <a 
             href={formatLinkedInUrl(data.linkedIn)} 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="w-full flex items-center justify-between border border-blue-600 text-blue-600 bg-white hover:bg-blue-50/50 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow cursor-pointer"
+            className="w-full flex items-center justify-between border border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer group"
           >
             <span className="flex items-center gap-2">
-              <LinkedInIcon className="w-4 h-4 text-blue-600" />
+              <LinkedInIcon className="w-4 h-4 text-blue-600 group-hover:text-white transition-colors" />
               <span>View on LinkedIn</span>
             </span>
-            <ArrowUpRight className="w-4 h-4 text-blue-600" />
+            <ArrowUpRight className="w-4 h-4 text-blue-600 group-hover:text-white transition-colors" />
           </a>
         ) : (
           <button 
             disabled
-            className="w-full flex items-center justify-between border border-gray-200 text-gray-400 bg-gray-50 py-2.5 px-4 rounded-lg text-sm font-semibold cursor-not-allowed"
+            className="w-full flex items-center justify-between border border-slate-100 text-slate-400 bg-slate-50/50 py-2.5 px-4 rounded-xl text-sm font-semibold cursor-not-allowed"
           >
             <span className="flex items-center gap-2">
-              <LinkedInIcon className="w-4 h-4 text-gray-300" />
+              <LinkedInIcon className="w-4 h-4 text-slate-300" />
               <span>View on LinkedIn</span>
             </span>
-            <ArrowUpRight className="w-4 h-4 text-gray-300" />
+            <ArrowUpRight className="w-4 h-4 text-slate-300" />
           </button>
         )}
       </div>
