@@ -116,6 +116,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-white font-inter">
+      <div className="w-full max-w-[400px] px-6">
 
         {/* Header */}
         <div className="text-center mb-7">
