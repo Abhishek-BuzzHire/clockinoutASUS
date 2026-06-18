@@ -219,9 +219,9 @@ const EmployeeDetails = ({
 
                 <span
                   className="text-gray-400 truncate whitespace-nowrap"
-                  title={data.jobTitle}
+                  title={data.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : data.jobTitle}
                 >
-                  {data.jobTitle}
+                  {data.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : data.jobTitle}
                 </span>
               </div>
             </div>
@@ -240,9 +240,9 @@ const EmployeeDetails = ({
                   <p className="text-gray-400 shrink-0">Department</p>
                   <p
                     className="truncate whitespace-nowrap min-w-0"
-                    title={data.department}
+                    title={data.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : data.department}
                   >
-                    {data.department || "—"}
+                    {data.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : (data.department || "—")}
                   </p>
                 </div>
 
