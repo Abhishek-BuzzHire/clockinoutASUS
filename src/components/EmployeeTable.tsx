@@ -70,7 +70,7 @@ const renderRow = ({ item, photoTimestamp, onRowClick }: { item: any, photoTimes
                     }} />
                 <div className="space-y-1">
                     <h3>{item.name}</h3>
-                    <p className="text-xs text-gray-500">{item.designation}</p>
+                    <p className="text-xs text-gray-500">{item.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : item.designation}</p>
                 </div>
             </td>
             <td className="hidden text-gray-600 md:table-cell space-y-2">
@@ -84,7 +84,7 @@ const renderRow = ({ item, photoTimestamp, onRowClick }: { item: any, photoTimes
                 </div>
             </td>
 
-            <td className="hidden md:table-cell text-gray-600">{item.department}</td>
+            <td className="hidden md:table-cell text-gray-600">{item.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : item.department}</td>
             <td className="hidden md:table-cell text-gray-600">{item.joining_date
                 ? new Date(item.joining_date).toLocaleDateString("en-US", {
                     year: "numeric",
