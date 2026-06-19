@@ -33,6 +33,7 @@ const Navbar = () => {
               <li key={link.name}>
                 <Link
                   href={link.href}
+                  prefetch={false}
                   className={`font-semibold text-md transition-colors rounded-md p-2 ${isActive ? "text-white bg-indigo-600 " : "text-gray-600 hover:text-gray-800"}`}
                 >
                   {link.name}

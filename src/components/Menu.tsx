@@ -57,6 +57,7 @@ const Menu = () => {
               return (
                 <Link
                   href={href}
+                  prefetch={false}
                   key={item.label}
                   className={`flex items-center justify-center lg:justify-start gap-4 text-gray-600 font-semibold py-2 md:px-2 rounded-md ${isActive ? "text-white bg-indigo-600 " : "hover:text-gray-800 hover:bg-sky-100"}`}
                 >
