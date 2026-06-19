@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { X, Calendar, Send, Home, Info, Laptop } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Calendar, Send, Home, Info, Laptop, AlertCircle } from "lucide-react";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 export default function ApplyWFHModal({
   onClose,
@@ -9,7 +11,38 @@ export default function ApplyWFHModal({
   onSubmit: (date: string) => void;
 }) {
   const [date, setDate] = useState("");
+  const [allowedPastDates, setAllowedPastDates] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [dateType, setDateType] = useState<"future" | "past">("future");
+
   const today = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    const fetchAllowedPastDates = async () => {
+      try {
+        setLoading(true);
+        const token = Cookies.get("access");
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        const res = await axios.get(`${apiUrl}/api/employee/allowed-past-dates/`, {
+          headers: { Authorization: token ? `Bearer ${token}` : "" }
+        });
+        if (res.data && res.data.dates) {
+          setAllowedPastDates(res.data.dates);
+        }
+      } catch (err) {
+        console.error("Failed to fetch allowed past dates:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllowedPastDates();
+  }, []);
+
+  const handleDateTypeChange = (type: "future" | "past") => {
+    setDateType(type);
+    setDate(""); // reset date selection on toggle
+  };
 
   return (
     <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -38,18 +71,61 @@ export default function ApplyWFHModal({
         {/* BODY */}
         <div className="p-6 space-y-6">
 
+          {/* DATE TYPE SELECTION TABS */}
+          {allowedPastDates.length > 0 && (
+            <div className="flex bg-slate-100 p-1 rounded-xl gap-1">
+              <button
+                type="button"
+                onClick={() => handleDateTypeChange("future")}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  dateType === "future"
+                    ? "bg-white text-indigo-600 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                Today or Future WFH
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDateTypeChange("past")}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  dateType === "past"
+                    ? "bg-white text-indigo-600 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                Allowed Past WFH
+              </button>
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 px-1">
               <Calendar className="w-3.5 h-3.5" /> Proposed Date
             </label>
             <div className="relative">
-              <input
-                type="date"
-                className="w-full border border-slate-200 bg-slate-50/30 rounded-xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
-                value={date}
-                min={today}
-                onChange={e => setDate(e.target.value)}
-              />
+              {dateType === "future" ? (
+                <input
+                  type="date"
+                  className="w-full border border-slate-200 bg-slate-50/30 rounded-xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                  value={date}
+                  min={today}
+                  onChange={e => setDate(e.target.value)}
+                />
+              ) : (
+                <select
+                  className="w-full border border-slate-200 bg-slate-50/30 rounded-xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none cursor-pointer"
+                  value={date}
+                  onChange={e => setDate(e.target.value)}
+                >
+                  <option value="">Select an allowed past date...</option>
+                  {allowedPastDates.map(d => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
 
@@ -77,10 +153,10 @@ export default function ApplyWFHModal({
           <button
             className="flex-[2] flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:shadow-indigo-200 transition-all active:scale-[0.98] disabled:opacity-50 disabled:scale-100"
             onClick={() => onSubmit(date)}
-            disabled={!date}
+            disabled={!date || loading}
           >
             <Send className="w-4 h-4" />
-            Submit Request
+            {loading ? "Loading..." : "Submit Request"}
           </button>
         </div>
 

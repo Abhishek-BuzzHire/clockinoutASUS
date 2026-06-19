@@ -101,7 +101,7 @@ const EmployeeListItem = ({
                 className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-slate-600 bg-slate-50 border border-slate-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors shadow-sm"
                 title="Allow employee to apply for leave/WFH/regularization on this past date"
               >
-                {loading ? "..." : <><Lock className="h-3.5 w-3.5" /> Allow Request</>}
+                {loading ? "..." : <><Lock className="h-3.5 w-3.5" /> Allow WFH</>}
               </button>
             )}
           </div>
