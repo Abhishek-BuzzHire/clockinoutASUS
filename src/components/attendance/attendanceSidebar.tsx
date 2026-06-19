@@ -4,7 +4,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { format } from 'date-fns';
-import { User, Clock, AlertTriangle, UserX, FileEdit, Lock, Unlock } from 'lucide-react';
+import { User, Clock, AlertTriangle, UserX, FileEdit, Lock, Unlock, CalendarX } from 'lucide-react';
 import type { AttendanceRecord, NewEmployee } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -57,8 +57,41 @@ const EmployeeListItem = ({
     }
   };
 
+  const handleForceMarkLeave = async () => {
+    if (
+      !confirm(
+        `Are you sure you want to force mark leave for ${employee.name} on ${record.date}? This will overwrite their attendance and deduct 1 leave from their bucket.`
+      )
+    ) {
+      return;
+    }
+    try {
+      setLoading(true);
+      const token = Cookies.get("access");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      await axios.post(
+        `${apiUrl}/api/admin/force-mark-leave/`,
+        {
+          emp_id: record.employeeId,
+          date: record.date,
+        },
+        {
+          headers: { Authorization: token ? `Bearer ${token}` : "" },
+        }
+      );
+      if (onRefresh) {
+        onRefresh();
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to mark leave");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
+    <div className="group flex items-center justify-between p-2 rounded-md hover:bg-muted/50 relative">
       <div className="flex items-center gap-3">
         <Avatar className="h-9 w-9">
           <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
@@ -83,6 +116,22 @@ const EmployeeListItem = ({
       </div>
       
       <div className="flex items-center gap-3">
+        {record.workStatus !== "LEAVE" && record.status !== "leave" && (
+          <button
+            onClick={handleForceMarkLeave}
+            disabled={loading}
+            className="hidden group-hover:flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:text-red-800 transition-colors shadow-sm cursor-pointer"
+            title="Force Mark Leave"
+          >
+            {loading ? "..." : (
+              <>
+                <CalendarX className="h-3.5 w-3.5" />
+                Mark Leave
+              </>
+            )}
+          </button>
+        )}
+
         {record.canGrantPastPermission && (
           <div>
             {record.pastPermissionGranted ? (

@@ -38,10 +38,10 @@ const UserCard = ({ data }: { data: any }) => {
 
   const formattedDate = data.joining_date
     ? new Date(data.joining_date).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
     : "N/A";
 
   const hasLinkedIn = data.linkedIn && data.linkedIn.trim() !== "" && data.linkedIn.trim() !== "-";
@@ -73,10 +73,10 @@ const UserCard = ({ data }: { data: any }) => {
           {/* Profile Details (Avatar + Name & Role Badge) */}
           <div className="flex items-center gap-4">
             <div className={`relative p-[3px] rounded-full border-2 ${statusRingColor} flex-shrink-0`}>
-              <img 
-                src={getProfilePhoto()} 
-                alt={data.name} 
-                className="w-16 h-16 rounded-full object-cover border border-slate-100 bg-slate-50" 
+              <img
+                src={getProfilePhoto()}
+                alt={data.name}
+                className="w-16 h-16 rounded-full object-cover border border-slate-100 bg-slate-50"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   if (!target.src.includes("/avatar.png")) target.src = "/avatar.png";
@@ -126,7 +126,7 @@ const UserCard = ({ data }: { data: any }) => {
             <span className="truncate font-semibold text-slate-700 block">{data.email || "N/A"}</span>
           </div>
         </div>
-        
+
         {/* Phone */}
         <div className="flex items-center gap-3.5 text-sm text-slate-600">
           <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600 flex-shrink-0">
@@ -142,10 +142,10 @@ const UserCard = ({ data }: { data: any }) => {
       {/* Bottom LinkedIn Button Section */}
       <div className="mt-6">
         {hasLinkedIn ? (
-          <a 
-            href={formatLinkedInUrl(data.linkedIn)} 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            href={formatLinkedInUrl(data.linkedIn)}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
             className="w-full flex items-center justify-between border border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white py-2.5 px-4 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer shadow-sm hover:shadow group"
           >
@@ -156,7 +156,7 @@ const UserCard = ({ data }: { data: any }) => {
             <ArrowUpRight className="w-4.5 h-4.5 text-blue-600 group-hover:text-white transition-colors" />
           </a>
         ) : (
-          <button 
+          <button
             disabled
             onClick={(e) => e.stopPropagation()}
             className="w-full flex items-center justify-between border border-slate-200 text-slate-400 bg-slate-50/50 py-2.5 px-4 rounded-xl text-sm font-semibold cursor-not-allowed"
