@@ -268,9 +268,7 @@ const EmployeeAttendancePage = () => {
         }
     };
 
-    useEffect(() => {
-        loadWFHRequests();
-    }, []);
+
 
     const applyWFH = async (date: string) => {
         try {
@@ -313,9 +311,7 @@ const EmployeeAttendancePage = () => {
         }
     };
 
-    useEffect(() => {
-        loadSummary();
-    }, []);
+
 
     const applyLeave = async (payload: {
         start_date: string;
@@ -367,8 +363,12 @@ const EmployeeAttendancePage = () => {
     };
 
     useEffect(() => {
-        loadRegulizeRequests();
-    }, []);
+        if (activeTab === "Leaves & WFH") {
+            loadWFHRequests();
+            loadSummary();
+            loadRegulizeRequests();
+        }
+    }, [activeTab]);
 
     const handleSubmitRegulize = async (payload: {
         date: string;
