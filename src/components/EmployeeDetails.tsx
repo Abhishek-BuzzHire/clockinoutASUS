@@ -114,7 +114,7 @@ const EmployeeDetails = ({
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-gray-500">Job Title</span>
-                  <span className=" text-sm">{data.designation}</span>
+                  <span className=" text-sm">{data.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : data.designation}</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-gray-500">Employement Type</span>
@@ -122,7 +122,7 @@ const EmployeeDetails = ({
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-gray-500">Department</span>
-                  <span className=" text-sm">{data.department}</span>
+                  <span className=" text-sm">{data.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : data.department}</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-gray-500">Joining Date</span>
