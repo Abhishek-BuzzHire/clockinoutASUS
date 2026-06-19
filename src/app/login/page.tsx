@@ -209,7 +209,7 @@ export default function LoginPage() {
         {/* Forgot */}
         <div className="text-center mt-1 mb-5">
           <span className="text-[13px] font-medium text-blue-600 hover:text-blue-700 cursor-pointer transition">
-            <Link href="/forget-password">Forgot Password?</Link>
+            <Link href="/forget-password" prefetch={false}>Forgot Password?</Link>
           </span>
         </div>
 

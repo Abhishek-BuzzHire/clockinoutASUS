@@ -5,6 +5,7 @@ import { Cake, Award } from "lucide-react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/lib/data";
+import useSWR from "swr";
 
 interface EventData {
   emp_id: number;
@@ -17,27 +18,53 @@ interface EventData {
   years?: number;
 }
 
+const fetcher = async (url: string) => {
+  const token = Cookies.get("access");
+  const res = await axios.get(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return Array.isArray(res.data) ? res.data : [];
+};
+
 export default function UpcomingEvents() {
-  const [events, setEvents] = useState<EventData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const token = Cookies.get("access");
-        const res = await axios.get(`${apiUrl}/api/upcoming-events/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data: EventData[] = Array.isArray(res.data) ? res.data : [];
-        setEvents(data.slice(0, 10));
-      } catch (err) {
-        console.log("Upcoming events API not available yet", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEvents();
+    setIsMounted(true);
   }, []);
+
+  const [localEvents, setLocalEvents] = useState<EventData[] | undefined>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("dashboard_upcoming_events_cache");
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse cached upcoming events", e);
+        }
+      }
+    }
+    return undefined;
+  });
+
+  const { data: fetchedEvents, isLoading } = useSWR<EventData[]>(
+    `${apiUrl}/api/upcoming-events/`,
+    fetcher,
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+    }
+  );
+
+  useEffect(() => {
+    if (fetchedEvents && typeof window !== "undefined") {
+      localStorage.setItem("dashboard_upcoming_events_cache", JSON.stringify(fetchedEvents));
+    }
+  }, [fetchedEvents]);
+
+  const events = isMounted ? (fetchedEvents || localEvents || []) : [];
+  const displayEvents = events.slice(0, 10);
+  const showLoading = !isMounted || (isLoading && !fetchedEvents && !localEvents);
 
   const getDaysLabel = (days: number) => {
     if (days === 0) return "Today! 🎉";
@@ -59,17 +86,17 @@ export default function UpcomingEvents() {
         </span>
       </div>
 
-      {loading ? (
+      {showLoading ? (
         <div className="py-6 flex items-center justify-center">
           <div className="h-5 w-5 border-2 border-gray-200 border-t-indigo-500 rounded-full animate-spin" />
         </div>
-      ) : events.length === 0 ? (
+      ) : displayEvents.length === 0 ? (
         <p className="text-sm text-gray-400 leading-relaxed py-4 text-center">
           No upcoming events in the next 30 days.
         </p>
       ) : (
         <div className="flex flex-col gap-0.5">
-          {events.map((event) => (
+          {displayEvents.map((event) => (
             <div
               key={`${event.type}-${event.emp_id}`}
               className="grid gap-2 p-2.5 rounded-lg hover:bg-[#F8F9FB] transition-colors duration-150"
