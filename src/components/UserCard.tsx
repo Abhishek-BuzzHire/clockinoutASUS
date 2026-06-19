@@ -90,7 +90,7 @@ const UserCard = ({ data }: { data: any }) => {
               <div className="mt-1">
                 <span className="text-[10px] font-bold tracking-wider uppercase bg-sky-50 text-sky-700 px-2.5 py-1 rounded-md inline-flex items-center gap-1.5 border border-sky-100/50">
                   <User className="w-3.5 h-3.5 text-sky-600" />
-                  {data.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : (data.jobTitle || data.department || "Employee")}
+                  {data.jobTitle || data.designation || data.department || "Employee"}
                 </span>
               </div>
             </div>

@@ -114,7 +114,7 @@ const EmployeeDetails = ({
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-gray-500">Job Title</span>
-                  <span className=" text-sm">{data.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : data.designation}</span>
+                  <span className=" text-sm">{data.designation || "Employee"}</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-gray-500">Employement Type</span>
@@ -122,7 +122,7 @@ const EmployeeDetails = ({
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-gray-500">Department</span>
-                  <span className=" text-sm">{data.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : data.department}</span>
+                  <span className=" text-sm">{data.department || "—"}</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-gray-500">Joining Date</span>
@@ -219,9 +219,9 @@ const EmployeeDetails = ({
 
                 <span
                   className="text-gray-400 truncate whitespace-nowrap"
-                  title={data.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : data.jobTitle}
+                  title={data.designation || data.jobTitle || "Employee"}
                 >
-                  {data.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : data.jobTitle}
+                  {data.designation || data.jobTitle || "Employee"}
                 </span>
               </div>
             </div>
@@ -240,9 +240,9 @@ const EmployeeDetails = ({
                   <p className="text-gray-400 shrink-0">Department</p>
                   <p
                     className="truncate whitespace-nowrap min-w-0"
-                    title={data.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : data.department}
+                    title={data.department || "—"}
                   >
-                    {data.name?.trim().toLowerCase() === "rohit kumar" ? "Office Manager" : (data.department || "—")}
+                    {data.department || "—"}
                   </p>
                 </div>
 
