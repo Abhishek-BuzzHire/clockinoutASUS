@@ -30,7 +30,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl");
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -96,7 +96,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleUsernameLogin = async (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
@@ -104,12 +104,12 @@ export default function LoginPage() {
     try {
       const response = await axios.post<{ access: string; refresh: string }>(
         `${apiUrl}/login/`,
-        { username, password }
+        { username: email, password }
       );
       const { access, refresh } = response.data;
       await handleLoginSuccess(access, refresh);
     } catch (err: any) {
-      setError(err.response?.data?.error || "Invalid username or password");
+      setError(err.response?.data?.error || "Invalid email or password");
       setSubmitting(false);
     }
   };
@@ -132,10 +132,10 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Username */}
+        {/* Email */}
         <div className="mb-4">
           <label className="block text-[13px] font-medium text-gray-700 mb-1.5">
-            Username
+            Email
           </label>
 
           <div className="relative group">
@@ -154,9 +154,9 @@ export default function LoginPage() {
 
             <input
               type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full pl-10 pr-4 py-[11px] bg-gray-50 border border-gray-200 rounded-[10px] text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-100 transition"
             />
@@ -224,7 +224,7 @@ export default function LoginPage() {
         <button
           type="button"
           disabled={submitting}
-          onClick={handleUsernameLogin as any}
+          onClick={handleEmailLogin as any}
           className="w-full py-3 text-[15px] font-semibold rounded-[10px] bg-blue-600 text-white transition shadow-[0_1px_3px_rgba(37,99,235,0.25),0_4px_12px_rgba(37,99,235,0.15)] hover:bg-blue-700 hover:-translate-y-[1px] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {submitting ? "Signing in..." : "Sign In"}

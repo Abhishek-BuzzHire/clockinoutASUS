@@ -14,9 +14,9 @@ const fetchForgotPasswordSendOtp = async (payload: ForgotPasswordOtpPayload) => 
     return res.data;
 };
 
-export default function ForgotPasswordUsernamePage() {
+export default function ForgotPasswordEmailPage() {
     const router = useRouter();
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [message, setMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -26,12 +26,12 @@ export default function ForgotPasswordUsernamePage() {
         setLoading(true);
 
         try {
-            const payload: ForgotPasswordOtpPayload = { username: username.trim() };
+            const payload: ForgotPasswordOtpPayload = { username: email.trim() };
             await fetchForgotPasswordSendOtp(payload);
 
             setMessage("✅ OTP sent successfully!");
             setTimeout(() => {
-                router.push(`/forget-password/enter-otp?username=${encodeURIComponent(username)}`);
+                router.push(`/forget-password/enter-otp?email=${encodeURIComponent(email)}`);
             }, 1500);
 
         } catch (error: any) {
@@ -45,7 +45,7 @@ export default function ForgotPasswordUsernamePage() {
         <div className="min-h-screen flex justify-center items-center bg-white font-inter">
             <div className="w-full max-w-[420px] px-6 py-8">
                 <h1 className="text-2xl font-bold text-center text-slate-900 mb-6">
-                    Enter User Name
+                    Enter Email
                 </h1>
 
                 {message && (
@@ -60,22 +60,22 @@ export default function ForgotPasswordUsernamePage() {
                 <form onSubmit={handleSendOtp} className="space-y-3">
                     <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">
-                            Enter Username
+                            Enter Email
                         </label>
                         <input
                             type="text"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                             disabled={loading}
                             className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50"
-                            placeholder="Enter your username"
+                            placeholder="Enter your email"
                         />
                     </div>
 
                     <button
                         type="submit"
-                        disabled={loading || !username.trim()}
+                        disabled={loading || !email.trim()}
                         className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition disabled:bg-blue-400 disabled:cursor-not-allowed"
                     >
                         {loading ? "Sending..." : "Send OTP"}

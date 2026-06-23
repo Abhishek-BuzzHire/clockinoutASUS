@@ -18,7 +18,7 @@ const fetchVerifyOtp = async (payload: VerifyOtpPayload) => {
 export default function EnterOtpPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const username = searchParams.get("username") || "";
+    const email = searchParams.get("email") || "";
 
     const [otp, setOtp] = useState("");
     const [message, setMessage] = useState<string | null>(null);
@@ -53,9 +53,9 @@ export default function EnterOtpPage() {
 
         try {
             setLoading(true);
-            const payload: VerifyOtpPayload = { username, otp };
+            const payload: VerifyOtpPayload = { username: email, otp };
             await fetchVerifyOtp(payload);
-            router.push(`/forget-password/set-password?username=${encodeURIComponent(username)}`);
+            router.push(`/forget-password/set-password?email=${encodeURIComponent(email)}`);
         } catch (error: any) {
             setMessage(error?.response?.data?.message || error?.response?.data?.error || "Failed to verify OTP.");
         } finally {

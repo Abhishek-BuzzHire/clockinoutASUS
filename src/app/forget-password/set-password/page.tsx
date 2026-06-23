@@ -19,8 +19,8 @@ function SetPasswordForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    // Get username (email) from the URL query parameter
-    const username = searchParams.get("username") || "";
+    // Get email from the URL query parameter
+    const email = searchParams.get("email") || "";
 
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -38,7 +38,7 @@ function SetPasswordForm() {
 
         try {
             setLoading(true);
-            const payload: SetPassPayload = { username, new_password: newPassword };
+            const payload: SetPassPayload = { username: email, new_password: newPassword };
             await fetchSetPass(payload);
             setTimeout(() => router.push("/login"), 2000);
         } catch (error: any) {
@@ -64,8 +64,8 @@ function SetPasswordForm() {
             )}
 
             <form onSubmit={handleChangePassword} className="space-y-5">
-                {/* Username Target (Hidden but present for logic) */}
-                <input type="hidden" value={username} name="username" />
+                {/* Email Target (Hidden but present for logic) */}
+                <input type="hidden" value={email} name="email" />
 
                 <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">

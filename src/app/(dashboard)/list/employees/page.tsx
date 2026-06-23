@@ -143,7 +143,7 @@ const EmployeesListPage = () => {
   const [activeTab, setActiveTab] = useState("Employees");
 
   const [formData, setFormData] = useState({
-    username: "",
+    email: "",
     password: "",
     role: "employee",
     manager_id: ""
@@ -151,7 +151,7 @@ const EmployeesListPage = () => {
 
   // Edit Form State
   const [editData, setEditData] = useState({
-    username: "",
+    email: "",
     // password: "",
     role: "employee",
     manager_id: "",
@@ -166,7 +166,8 @@ const EmployeesListPage = () => {
     setIsSubmitting(true)
     setMessage(null)
 
-    const payload: any = { ...formData }
+    const payload: any = { ...formData, username: formData.email }
+    delete payload.email;
     if (formData.role === 'admin') delete payload.manager_id
     if (!formData.manager_id) delete payload.manager_id
 
@@ -180,7 +181,7 @@ const EmployeesListPage = () => {
       setMessage({ type: "success", text: "User registered successfully!" })
 
       setFormData({
-        username: "",
+        email: "",
         password: "",
         role: "employee",
         manager_id: "",
@@ -203,7 +204,7 @@ const EmployeesListPage = () => {
   const handleEditClick = (user: any) => {
     setSelectedUser(user)
     setEditData({
-      username: user.username,
+      email: user.username,
       //   password: user.password,
       role: user.role,
       manager_id: user.manager?.id || "",
@@ -218,7 +219,7 @@ const EmployeesListPage = () => {
     const token = Cookies.get("access")
 
     const payload: any = {
-      username: editData.username,
+      username: editData.email,
       role: editData.role,
       manager: editData.manager_id || null,
       is_active: editData.is_active,
@@ -417,14 +418,14 @@ const EmployeesListPage = () => {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-500">Username</label>
+                    <label className="text-xs font-semibold text-slate-500">Email</label>
                     <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <input
                         type="text"
                         required
-                        value={formData.username}
-                        onChange={e => setFormData({ ...formData, username: e.target.value })}
+                        value={formData.email}
+                        onChange={e => setFormData({ ...formData, email: e.target.value })}
                         className="w-full pl-11 pr-4 py-3 border rounded-xl font-semibold text-slate-700"
                       />
                     </div>
@@ -567,10 +568,10 @@ const EmployeesListPage = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold text-slate-500">Username</label>
+                      <label className="text-xs font-semibold text-slate-500">Email</label>
                       <input
-                        value={editData.username}
-                        onChange={e => setEditData({ ...editData, username: e.target.value })}
+                        value={editData.email}
+                        onChange={e => setEditData({ ...editData, email: e.target.value })}
                         className="w-full px-4 py-3 border rounded-xl font-semibold"
                       />
                     </div>
