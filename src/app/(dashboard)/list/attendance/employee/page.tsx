@@ -113,7 +113,7 @@ const PunchCard: React.FC<{
     }, [isPunchedIn, elapsedTime]);
 
     return (
-        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-12 mb-6">
+        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-4 mb-6">
             
             <div className="flex justify-center -mt-12 relative z-10">
                 <div className="relative">
@@ -1252,26 +1252,7 @@ const EmployeeAttendancePage = () => {
                                         imgurl={avatarSrc}
                                     />
 
-                                    {/* QUICK ACTIONS FOR ATTENDANCE TAB */}
-                                    <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 mb-4">
-                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-4">Quick Actions</h3>
-                                        <div className="grid grid-cols-3 gap-3">
-                                            <button onClick={() => setOpenApplyLeaves(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
-                                                <CalendarPlus className="w-5 h-5" />
-                                                <span className="text-[10px] font-bold">Leave</span>
-                                            </button>
-                                            <button onClick={() => setOpenApplyWfh(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
-                                                <Laptop className="w-5 h-5" />
-                                                <span className="text-[10px] font-bold">WFH</span>
-                                            </button>
-                                            <button onClick={() => setOpenRegulize(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors">
-                                                <ClockArrowUp className="w-5 h-5" />
-                                                <span className="text-[10px] font-bold">Regularize</span>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Location display & refresh */}
+                                    {/* Location display & refresh (Moved Above Quick Actions) */}
                                     <div className={`p-4 rounded-3xl text-sm ${locationError ? "bg-red-50 text-red-700 border border-red-100" : "bg-green-50 text-green-700 border border-green-100"} mb-4`}>
                                         <h3 className="font-semibold">Current Location Status:</h3>
                                         {isProcessing && location === null ? (
@@ -1289,6 +1270,25 @@ const EmployeeAttendancePage = () => {
                                                 className="w-full py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition duration-200"
                                             >
                                                 {isProcessing ? "Updating..." : "Refresh Location"}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* QUICK ACTIONS FOR ATTENDANCE TAB */}
+                                    <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 mb-4">
+                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-4">Quick Actions</h3>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            <button onClick={() => setOpenApplyLeaves(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
+                                                <CalendarPlus className="w-5 h-5" />
+                                                <span className="text-[10px] font-bold">Leave</span>
+                                            </button>
+                                            <button onClick={() => setOpenApplyWfh(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
+                                                <Laptop className="w-5 h-5" />
+                                                <span className="text-[10px] font-bold">WFH</span>
+                                            </button>
+                                            <button onClick={() => setOpenRegulize(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors">
+                                                <ClockArrowUp className="w-5 h-5" />
+                                                <span className="text-[10px] font-bold">Regularize</span>
                                             </button>
                                         </div>
                                     </div>
