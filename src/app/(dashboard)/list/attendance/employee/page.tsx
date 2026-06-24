@@ -120,34 +120,32 @@ const PunchCard: React.FC<{
     }, [isPunchedIn, elapsedTime]);
 
     return (
-        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden mt-8 mb-6">
+        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-8 mb-6">
             
-            {/* Top Half: Dark Blue Header */}
-            <div className="bg-[#1e293b] pt-8 pb-6 px-4 relative flex flex-col items-center">
-                {/* Background circles effect */}
-                <div className="absolute top-6 w-32 h-32 bg-white/5 rounded-full z-0"></div>
-                <div className="absolute top-10 w-24 h-24 bg-white/10 rounded-full z-0"></div>
-
-                <div className="relative z-10 mb-3">
+            <div className="flex justify-center -mt-10 relative z-10">
+                <div className="relative">
                     <img
                         src={imgurl || '/avatar.png'}
                         alt={profileName || "employee"}
-                        className="rounded-full object-cover shadow-sm w-20 h-20 bg-[#1e293b] border-2 border-white/20"
+                        className="rounded-full object-cover border-[5px] border-white shadow-sm w-20 h-20 bg-slate-50"
                         onError={(e) => {
                             e.currentTarget.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(profileName || "Employee") + "&background=0D8ABC&color=fff";
                         }}
                     />
+                    <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white bg-green-500"></div>
                 </div>
-                
-                <h3 className="text-xl font-bold text-white relative z-10">{profileName ?? "Employee"}</h3>
-                <div className="flex items-center gap-1.5 mt-1 relative z-10">
-                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                    <span className="text-[10px] text-slate-300 font-medium uppercase tracking-wider">BuzzHire User</span>
+            </div>
+
+            <div className="text-center px-6 pb-2 pt-2 border-b border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800">{profileName ?? "Employee"}</h3>
+                <div className="flex items-center justify-center gap-1.5 mt-1 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">BuzzHire User</span>
                 </div>
             </div>
 
             {/* Bottom Half: Details & Controls */}
-            <div className="px-5 pb-6 pt-5">
+            <div className="px-5 pb-6 pt-4">
                 {/* Status & Punched At Row */}
                 <div className="flex justify-between items-center mb-5">
                     <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isPunchedIn ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
