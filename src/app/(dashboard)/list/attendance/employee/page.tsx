@@ -19,7 +19,7 @@ import EmployeeLeaveHistoryTable from "@/components/attendance/EmployeeLeaveHist
 import ApplyLeaveModal from "@/components/attendance/ApplyLeaveModal";
 import EmployeeWFHHistoryTable from "@/components/attendance/EmployeeWFHHistoryTable";
 import ApplyWFHModal from "@/components/attendance/ApplyWFHModal";
-import { CalendarDays, CalendarPlus, ClockArrowUp, Home, Laptop, LayoutDashboard, LogOut, Plus } from "lucide-react";
+import { CalendarDays, CalendarPlus, ClockArrowUp, Home, Laptop, LayoutDashboard, LogOut, LogIn, Plus } from "lucide-react";
 import EmployeeRegulizeRequests from "@/components/attendance/EmployeeRegulizeRequests";
 import { toMinutes } from "../admin/page";
 import { useCurrentEmployee } from "@/hooks/useCurrentEmployee";
@@ -113,32 +113,40 @@ const PunchCard: React.FC<{
     }, [isPunchedIn, elapsedTime]);
 
     return (
-        <div className="relative w-full max-w-sm mx-auto bg-white rounded-xl shadow-lg border border-gray-200">
-            <div className="flex justify-center -mt-12 mb-4">
-                <img
-                    src={imgurl || '/image.jpg'}
-                    alt={profileName || "employee"}
-                    className="rounded-full object-cover border-2 border-white shadow-md relative w-[112px] h-[112px]"
-                />
+        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-12 mb-6">
+            
+            <div className="flex justify-center -mt-12 relative z-10">
+                <div className="relative">
+                    <img
+                        src={imgurl || '/avatar.png'}
+                        alt={profileName || "employee"}
+                        className="rounded-full object-cover border-[5px] border-white shadow-sm w-24 h-24 bg-slate-50"
+                        onError={(e) => {
+                            e.currentTarget.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(profileName || "Employee") + "&background=0D8ABC&color=fff";
+                        }}
+                    />
+                    <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white bg-green-500"></div>
+                </div>
             </div>
 
-            <div className="text-center px-4 pb-8">
-                <h3 className="text-xl font-semibold text-gray-800">{profileName ?? "Employee"}</h3>
-                <p className="text-sm text-gray-500 mb-2">BuzzHire User</p>
+            <div className="text-center px-6 pb-6 pt-2">
+                <h3 className="text-lg font-bold text-slate-800">{profileName ?? "Employee"}</h3>
+                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-5">BuzzHire User</p>
 
-                <p className={`font-bold text-lg mb-2 ${isPunchedIn ? "text-green-600" : "text-red-600"}`}>
+                <p className={`font-bold text-sm tracking-wide mb-3 ${isPunchedIn ? "text-green-500" : "text-slate-400"}`}>
                     {isPunchedIn ? "IN" : "OUT"}
                 </p>
+                
                 <button
                     onClick={handlePunchAction}
-                    className={`w-2/3 py-3 rounded-lg font-normal text-white text-md shadow-lg transform transition-all duration-300
-            ${isPunchedIn ? "bg-red-500 shadow-red-300/50" : "bg-green-500 shadow-green-300/50"}
-            hover:scale-[1.02] active:scale-[0.98]`}
+                    className={`w-3/4 mx-auto py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-white text-base shadow-lg transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]
+            ${isPunchedIn ? "bg-[#EF4444] shadow-red-200" : "bg-[#22C55E] shadow-green-200"}`}
                 >
                     {isPunchedIn ? "Clock Out" : "Clock In"}
                 </button>
-                <p className="mt-4 text-xs text-gray-500">
-                    {isPunchedIn ? `Punched In at: ${punchTime}` : punchTime ? `Punched Out at: ${punchTime}` : "Ready to start your shift."}
+                
+                <p className="mt-4 text-xs font-medium text-slate-500">
+                    {isPunchedIn ? `Punched In at: ${punchTime}` : punchTime ? `Last punched out: ${punchTime}` : "Ready to start shift"}
                 </p>
             </div>
         </div>
@@ -1244,8 +1252,27 @@ const EmployeeAttendancePage = () => {
                                         imgurl={avatarSrc}
                                     />
 
+                                    {/* QUICK ACTIONS FOR ATTENDANCE TAB */}
+                                    <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 mb-4">
+                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-4">Quick Actions</h3>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            <button onClick={() => setOpenApplyLeaves(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
+                                                <CalendarPlus className="w-5 h-5" />
+                                                <span className="text-[10px] font-bold">Leave</span>
+                                            </button>
+                                            <button onClick={() => setOpenApplyWfh(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
+                                                <Laptop className="w-5 h-5" />
+                                                <span className="text-[10px] font-bold">WFH</span>
+                                            </button>
+                                            <button onClick={() => setOpenRegulize(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors">
+                                                <ClockArrowUp className="w-5 h-5" />
+                                                <span className="text-[10px] font-bold">Regularize</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     {/* Location display & refresh */}
-                                    <div className={`p-4 rounded-md ${locationError ? "bg-red-100 text-red-700" : "bg-green-50 text-green-700"} mb-4`}>
+                                    <div className={`p-4 rounded-3xl text-sm ${locationError ? "bg-red-50 text-red-700 border border-red-100" : "bg-green-50 text-green-700 border border-green-100"} mb-4`}>
                                         <h3 className="font-semibold">Current Location Status:</h3>
                                         {isProcessing && location === null ? (
                                             <p>Fetching location...</p>
