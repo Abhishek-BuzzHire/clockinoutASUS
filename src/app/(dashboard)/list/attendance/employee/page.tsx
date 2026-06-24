@@ -1283,13 +1283,8 @@ const EmployeeAttendancePage = () => {
                                         imgurl={avatarSrc}
                                     />
 
-                                    {/* Location display & refresh (Moved Above Quick Actions) */}
+                                    {/* Location display & refresh */}
                                     <div className="mb-4">
-                                        {locationError && (
-                                            <div className="mb-3 p-3 rounded-2xl text-[11px] bg-red-50 text-red-600 border border-red-100 flex flex-col gap-1 text-center font-medium">
-                                                <span>Location Error: Please turn on location from your device settings or notification bar.</span>
-                                            </div>
-                                        )}
                                         <button
                                             onClick={fetchGeolocation}
                                             disabled={isProcessing}
@@ -1563,6 +1558,25 @@ const EmployeeAttendancePage = () => {
 
                 {renderContent()}
             </div>
+
+            {/* FULLSCREEN LOCATION POPUP - tap anywhere to dismiss */}
+            {locationError && (
+                <div
+                    className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50"
+                    onClick={() => setLocationError(null)}
+                >
+                    <div className="bg-white rounded-3xl p-8 mx-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center">
+                        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        </div>
+                        <h2 className="text-xl font-bold text-slate-800 mb-2">Turn On Location</h2>
+                        <p className="text-sm text-slate-500 leading-relaxed">
+                            Please turn on location on your device to continue. Enable GPS from your notification bar or device settings.
+                        </p>
+                        <p className="text-xs text-slate-400 mt-4">Tap anywhere to dismiss</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 
