@@ -122,12 +122,12 @@ const PunchCard: React.FC<{
     return (
         <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-0 mb-6">
             
-            <div className="flex justify-center pt-6 relative z-10">
+            <div className="flex justify-center pt-5 relative z-10">
                 <div className="relative">
                     <img
                         src={imgurl || '/avatar.png'}
                         alt={profileName || "employee"}
-                        className="rounded-full object-cover border-[5px] border-white shadow-sm w-28 h-28 bg-slate-50"
+                        className="rounded-full object-cover border-[5px] border-white shadow-sm w-24 h-24 bg-slate-50"
                         onError={(e) => {
                             e.currentTarget.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(profileName || "Employee") + "&background=0D8ABC&color=fff";
                         }}
@@ -136,12 +136,12 @@ const PunchCard: React.FC<{
                 </div>
             </div>
 
-            <div className="text-center px-6 pb-4 pt-2 border-b border-slate-100">
+            <div className="text-center px-4 pb-3 pt-2 border-b border-slate-100">
                 <h3 className="text-lg font-bold text-slate-800">{profileName ?? "Employee"}</h3>
             </div>
 
             {/* Bottom Half: Details & Controls */}
-            <div className="px-5 pb-6 pt-4">
+            <div className="px-5 pb-5 pt-4">
                 {/* Status & Punched At Row */}
                 <div className="flex justify-between items-center mb-5">
                     <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isPunchedIn ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
@@ -155,9 +155,9 @@ const PunchCard: React.FC<{
                 </div>
 
                 {/* Time Elapsed Box */}
-                <div className="bg-[#F5F5F0] rounded-xl p-4 mb-5 border border-[#E8E8E3] relative flex justify-between items-center">
+                <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] relative flex justify-between items-center">
                     <div>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Time Elapsed</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Time Elapsed</p>
                         <p className="text-2xl font-light tracking-tight text-slate-800" style={{ fontFamily: "monospace" }}>
                             {formatTime(elapsedTime)}
                         </p>
@@ -1547,7 +1547,7 @@ const EmployeeAttendancePage = () => {
     return (
         <div className="w-full bg-sky-50 p-4 relative">
             <div className="text-lg">
-                <div className="flex space-x-8 text-xs font-bold border-b border-gray-300 mb-12">
+                <div className="flex space-x-8 text-xs font-bold border-b border-gray-300 mb-4">
                     {tabs.map((tab) => (
                         <button
                             key={tab}
