@@ -113,7 +113,7 @@ const PunchCard: React.FC<{
     }, [isPunchedIn, elapsedTime]);
 
     return (
-        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-4 mb-6">
+        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-10 mb-6">
             
             <div className="flex justify-center -mt-12 relative z-10">
                 <div className="relative">
@@ -1242,7 +1242,7 @@ const EmployeeAttendancePage = () => {
                                 </div>
 
                                 {/* --- RIGHT SIDE: PUNCH & LOCATION --- */}
-                                <div className="w-full lg:w-[20%] mt-6 lg:mt-12 relative space-y-4">
+                                <div className="w-full lg:w-[20%] mt-2 lg:mt-6 relative space-y-4">
                                     <PunchCard
                                         isPunchedIn={isPunchedInUI}
                                         handlePunchAction={handlePunchAction}
@@ -1253,25 +1253,20 @@ const EmployeeAttendancePage = () => {
                                     />
 
                                     {/* Location display & refresh (Moved Above Quick Actions) */}
-                                    <div className={`p-4 rounded-3xl text-sm ${locationError ? "bg-red-50 text-red-700 border border-red-100" : "bg-green-50 text-green-700 border border-green-100"} mb-4`}>
-                                        <h3 className="font-semibold">Current Location Status:</h3>
-                                        {isProcessing && location === null ? (
-                                            <p>Fetching location...</p>
-                                        ) : locationError ? (
-                                            <p>{locationError}</p>
-                                        ) : (
-                                            <p>Lat: {location?.lat?.toFixed(6)}, Lon: {location?.lon?.toFixed(6)}</p>
+                                    <div className="mb-4">
+                                        {locationError && (
+                                            <div className="mb-3 p-3 rounded-2xl text-xs bg-red-50 text-red-600 border border-red-100 flex flex-col gap-1 text-center">
+                                                <span className="font-bold">Location Error</span>
+                                                <p>{locationError}</p>
+                                            </div>
                                         )}
-
-                                        <div className="mt-3">
-                                            <button
-                                                onClick={fetchGeolocation}
-                                                disabled={isProcessing}
-                                                className="w-full py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition duration-200"
-                                            >
-                                                {isProcessing ? "Updating..." : "Refresh Location"}
-                                            </button>
-                                        </div>
+                                        <button
+                                            onClick={fetchGeolocation}
+                                            disabled={isProcessing}
+                                            className={`w-full py-3 px-4 rounded-2xl text-sm font-semibold flex items-center justify-center transition duration-200 shadow-sm ${locationError ? "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50" : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100"}`}
+                                        >
+                                            {isProcessing ? "Updating Location..." : "Refresh Location"}
+                                        </button>
                                     </div>
 
                                     {/* QUICK ACTIONS FOR ATTENDANCE TAB */}
