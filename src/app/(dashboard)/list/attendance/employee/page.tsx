@@ -113,14 +113,14 @@ const PunchCard: React.FC<{
     }, [isPunchedIn, elapsedTime]);
 
     return (
-        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-10 mb-6">
+        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-6 mb-6">
             
-            <div className="flex justify-center -mt-12 relative z-10">
+            <div className="flex justify-center -mt-10 relative z-10">
                 <div className="relative">
                     <img
                         src={imgurl || '/avatar.png'}
                         alt={profileName || "employee"}
-                        className="rounded-full object-cover border-[5px] border-white shadow-sm w-24 h-24 bg-slate-50"
+                        className="rounded-full object-cover border-[5px] border-white shadow-sm w-20 h-20 bg-slate-50"
                         onError={(e) => {
                             e.currentTarget.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(profileName || "Employee") + "&background=0D8ABC&color=fff";
                         }}
@@ -1242,7 +1242,7 @@ const EmployeeAttendancePage = () => {
                                 </div>
 
                                 {/* --- RIGHT SIDE: PUNCH & LOCATION --- */}
-                                <div className="w-full lg:w-[20%] mt-2 lg:mt-6 relative space-y-4">
+                                <div className="w-full lg:w-[20%] mt-0 lg:mt-4 relative space-y-4">
                                     <PunchCard
                                         isPunchedIn={isPunchedInUI}
                                         handlePunchAction={handlePunchAction}

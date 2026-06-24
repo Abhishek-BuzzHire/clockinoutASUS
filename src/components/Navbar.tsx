@@ -44,18 +44,21 @@ const Navbar = () => {
         </ul>
       </div>
       <div className="flex items-center gap-4 justify-end w-full">
-        <ActionButton />
-        <div className="flex items-center space-x-2 transition-all duration-300 ease-in-out">
-          <input
-            type="text"
-            placeholder="Search..."
-            className={`p-2 rounded-full border border-gray-300 focus:outline-none focus:border-blue-500 transition-all duration-300 ease-in-out ${isSearchOpen ? "w-48 opacity-100 px-4" : "w-0 opacity-0 px-0"}`}
-          />
-          <div
-            className="bg-white rounded-full w-7 h-7 flex items-center justify-center cursor-pointer relative shadow-md hover:bg-gray-100 transition-colors"
-            onClick={() => setIsSearchOpen(!isSearchOpen)}
-          >
-            <Image src="/search.png" alt="Search" width={20} height={20} />
+        {/* Hide ActionButton and Search on mobile */}
+        <div className="hidden md:flex items-center gap-4">
+          <ActionButton />
+          <div className="flex items-center space-x-2 transition-all duration-300 ease-in-out">
+            <input
+              type="text"
+              placeholder="Search..."
+              className={`p-2 rounded-full border border-gray-300 focus:outline-none focus:border-blue-500 transition-all duration-300 ease-in-out ${isSearchOpen ? "w-48 opacity-100 px-4" : "w-0 opacity-0 px-0"}`}
+            />
+            <div
+              className="bg-white rounded-full w-7 h-7 flex items-center justify-center cursor-pointer relative shadow-md hover:bg-gray-100 transition-colors"
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+            >
+              <Image src="/search.png" alt="Search" width={20} height={20} />
+            </div>
           </div>
         </div>
         <UserDetailsCard />
