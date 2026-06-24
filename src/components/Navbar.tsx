@@ -20,7 +20,7 @@ const Navbar = () => {
   ];
 
   return (
-    <div className="flex items-center justify-between p-4">
+    <div className="hidden md:flex items-center justify-between p-4">
       <div className="hidden md:flex items-center gap-2 text-2xl font-bold px-2 text-gray-700">
         <span className="capitalize">{role}</span>
       </div>
