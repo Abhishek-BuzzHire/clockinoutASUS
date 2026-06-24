@@ -1281,14 +1281,6 @@ const EmployeeAttendancePage = () => {
 
                                     {/* Location display & refresh (Moved Above Quick Actions) */}
                                     <div className="mb-4">
-                                        {locationError && (
-                                            <div className="mb-3 p-3 rounded-2xl text-[11px] bg-red-50 text-red-600 border border-red-100 flex flex-col gap-1 text-center font-medium">
-                                                <span>{locationError}</span>
-                                                {locationError.includes("denied") && (
-                                                    <span className="text-red-500 font-bold mt-1">Please go to your browser site settings to allow location access.</span>
-                                                )}
-                                            </div>
-                                        )}
                                         <button
                                             onClick={fetchGeolocation}
                                             disabled={isProcessing}
@@ -1317,12 +1309,7 @@ const EmployeeAttendancePage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Message */}
-                                    {message && (
-                                        <div className={`p-4 rounded-md ${message.startsWith("Error") || message.includes("failed") ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}>
-                                            {message}
-                                        </div>
-                                    )}
+                                    {/* Message removed per user request */}
 
                                     <div className="flex flex-col gap-4 justify-between h-[32%]">
                                         <div className="space-y-2">
