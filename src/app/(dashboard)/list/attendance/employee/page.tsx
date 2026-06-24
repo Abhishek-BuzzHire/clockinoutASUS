@@ -120,9 +120,9 @@ const PunchCard: React.FC<{
     }, [isPunchedIn, elapsedTime]);
 
     return (
-        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-2 mb-6">
+        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-0 mb-6">
             
-            <div className="flex justify-center pt-8 relative z-10">
+            <div className="flex justify-center pt-6 relative z-10">
                 <div className="relative">
                     <img
                         src={imgurl || '/avatar.png'}
@@ -136,12 +136,8 @@ const PunchCard: React.FC<{
                 </div>
             </div>
 
-            <div className="text-center px-6 pb-2 pt-2 border-b border-slate-100">
+            <div className="text-center px-6 pb-4 pt-2 border-b border-slate-100">
                 <h3 className="text-lg font-bold text-slate-800">{profileName ?? "Employee"}</h3>
-                <div className="flex items-center justify-center gap-1.5 mt-1 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">BuzzHire User</span>
-                </div>
             </div>
 
             {/* Bottom Half: Details & Controls */}
@@ -162,7 +158,7 @@ const PunchCard: React.FC<{
                 <div className="bg-[#F5F5F0] rounded-xl p-4 mb-5 border border-[#E8E8E3] relative flex justify-between items-center">
                     <div>
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Time Elapsed</p>
-                        <p className="text-3xl font-light tracking-tight text-slate-800" style={{ fontFamily: "monospace" }}>
+                        <p className="text-2xl font-light tracking-tight text-slate-800" style={{ fontFamily: "monospace" }}>
                             {formatTime(elapsedTime)}
                         </p>
                     </div>
@@ -1190,7 +1186,7 @@ const EmployeeAttendancePage = () => {
                             onCancel={cancelClockOut}
                         />
 
-                        <div className="text-lg w-full p-4">
+                        <div className="text-lg w-full px-4 pb-4 pt-1">
                             {/* MAIN CONTENT WRAPPER: Column on mobile, Row on Large Screens */}
                             <div className="flex flex-col-reverse lg:flex-row gap-4 pt-0">
 
@@ -1273,7 +1269,7 @@ const EmployeeAttendancePage = () => {
                                 </div>
 
                                 {/* --- RIGHT SIDE: PUNCH & LOCATION --- */}
-                                <div className="w-full lg:w-[20%] mt-0 lg:mt-4 relative space-y-4">
+                                <div className="w-full lg:w-[20%] mt-0 relative space-y-4">
                                     <PunchCard
                                         isPunchedIn={isPunchedInUI}
                                         handlePunchAction={handlePunchAction}
