@@ -77,6 +77,13 @@ const PunchCard: React.FC<{
     const [elapsedTime, setElapsedTime] = useState<number>(elapsedSeconds ?? 0);
     const intervalRef = useRef<number | null>(null);
 
+    const formatTime = (seconds: number) => {
+        const h = Math.floor(seconds / 3600).toString().padStart(2, "0");
+        const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, "0");
+        const s = (seconds % 60).toString().padStart(2, "0");
+        return `${h}:${m}:${s}`;
+    };
+
     // Sync elapsedSeconds when it is provided/changes (e.g., on load)
     useEffect(() => {
         setElapsedTime(elapsedSeconds ?? 0);
@@ -113,41 +120,67 @@ const PunchCard: React.FC<{
     }, [isPunchedIn, elapsedTime]);
 
     return (
-        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-8 mb-6">
+        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden mt-8 mb-6">
             
-            <div className="flex justify-center -mt-10 relative z-10">
-                <div className="relative">
+            {/* Top Half: Dark Blue Header */}
+            <div className="bg-[#1e293b] pt-8 pb-6 px-4 relative flex flex-col items-center">
+                {/* Background circles effect */}
+                <div className="absolute top-6 w-32 h-32 bg-white/5 rounded-full z-0"></div>
+                <div className="absolute top-10 w-24 h-24 bg-white/10 rounded-full z-0"></div>
+
+                <div className="relative z-10 mb-3">
                     <img
                         src={imgurl || '/avatar.png'}
                         alt={profileName || "employee"}
-                        className="rounded-full object-cover border-[5px] border-white shadow-sm w-20 h-20 bg-slate-50"
+                        className="rounded-full object-cover shadow-sm w-20 h-20 bg-[#1e293b] border-2 border-white/20"
                         onError={(e) => {
                             e.currentTarget.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(profileName || "Employee") + "&background=0D8ABC&color=fff";
                         }}
                     />
-                    <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white bg-green-500"></div>
+                </div>
+                
+                <h3 className="text-xl font-bold text-white relative z-10">{profileName ?? "Employee"}</h3>
+                <div className="flex items-center gap-1.5 mt-1 relative z-10">
+                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                    <span className="text-[10px] text-slate-300 font-medium uppercase tracking-wider">BuzzHire User</span>
                 </div>
             </div>
 
-            <div className="text-center px-6 pb-6 pt-2">
-                <h3 className="text-lg font-bold text-slate-800">{profileName ?? "Employee"}</h3>
-                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-5">BuzzHire User</p>
+            {/* Bottom Half: Details & Controls */}
+            <div className="px-5 pb-6 pt-5">
+                {/* Status & Punched At Row */}
+                <div className="flex justify-between items-center mb-5">
+                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isPunchedIn ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${isPunchedIn ? "bg-green-500" : "bg-slate-400"}`}></div>
+                        {isPunchedIn ? "Clocked in" : "Clocked out"}
+                    </div>
+                    <div className="text-right">
+                        <p className="text-[10px] text-slate-400 font-medium">{isPunchedIn ? "Punched at" : "Last Punched out"}</p>
+                        <p className="text-xs font-semibold text-slate-700">{punchTime || "--:--"}</p>
+                    </div>
+                </div>
 
-                <p className={`font-bold text-sm tracking-wide mb-3 ${isPunchedIn ? "text-green-500" : "text-slate-400"}`}>
-                    {isPunchedIn ? "IN" : "OUT"}
-                </p>
-                
+                {/* Time Elapsed Box */}
+                <div className="bg-[#F5F5F0] rounded-xl p-4 mb-5 border border-[#E8E8E3] relative flex justify-between items-center">
+                    <div>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Time Elapsed</p>
+                        <p className="text-3xl font-light tracking-tight text-slate-800" style={{ fontFamily: "monospace" }}>
+                            {formatTime(elapsedTime)}
+                        </p>
+                    </div>
+                    <div className="text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                </div>
+
+                {/* Clock Action Button */}
                 <button
                     onClick={handlePunchAction}
-                    className={`w-3/4 mx-auto py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-white text-base shadow-lg transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]
+                    className={`w-full py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-white text-base shadow-md transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]
             ${isPunchedIn ? "bg-[#EF4444] shadow-red-200" : "bg-[#22C55E] shadow-green-200"}`}
                 >
                     {isPunchedIn ? "Clock Out" : "Clock In"}
                 </button>
-                
-                <p className="mt-4 text-xs font-medium text-slate-500">
-                    {isPunchedIn ? `Punched In at: ${punchTime}` : punchTime ? `Last punched out: ${punchTime}` : "Ready to start shift"}
-                </p>
             </div>
         </div>
     );
