@@ -25,7 +25,8 @@ const Navbar = () => {
       <div className="hidden md:flex items-center gap-2 text-2xl font-bold px-2 text-gray-700">
         <span className="capitalize">{role}</span>
       </div>
-      <div className="flex items-center gap-4 justify-end w-full">
+      {/* Navigation Links - Hidden on Mobile */}
+      <div className="hidden md:flex items-center gap-4 justify-end w-full">
         <ul className="flex space-x-4 md:space-x-6">
           {navLinks.map((link) => {
             const isActive = pathname.startsWith(link.href);
@@ -56,10 +57,6 @@ const Navbar = () => {
           >
             <Image src="/search.png" alt="Search" width={20} height={20} />
           </div>
-        </div>
-        <div className="bg-white rounded-full w-7 h-7 flex items-center justify-center cursor-pointer relative">
-          <Image src="/bell.png" alt="" width={20} height={20} />
-          <div className="absolute -top-0 -right-0 w-2 h-2 flex items-center justify-center bg-indigo-600 text-white rounded-full text-xs"></div>
         </div>
         <UserDetailsCard />
       </div>
