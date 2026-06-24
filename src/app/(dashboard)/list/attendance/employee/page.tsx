@@ -19,7 +19,7 @@ import EmployeeLeaveHistoryTable from "@/components/attendance/EmployeeLeaveHist
 import ApplyLeaveModal from "@/components/attendance/ApplyLeaveModal";
 import EmployeeWFHHistoryTable from "@/components/attendance/EmployeeWFHHistoryTable";
 import ApplyWFHModal from "@/components/attendance/ApplyWFHModal";
-import { CalendarDays, CalendarPlus, ClockArrowUp, Home, Laptop, LayoutDashboard, LogOut, LogIn, Plus } from "lucide-react";
+import { CalendarDays, CalendarPlus, ClockArrowUp, Home, Laptop, LayoutDashboard, LogOut, LogIn, Plus, MapPin } from "lucide-react";
 import EmployeeRegulizeRequests from "@/components/attendance/EmployeeRegulizeRequests";
 import { toMinutes } from "../admin/page";
 import { useCurrentEmployee } from "@/hooks/useCurrentEmployee";
@@ -1281,11 +1281,6 @@ const EmployeeAttendancePage = () => {
 
                                     {/* Location display & refresh (Moved Above Quick Actions) */}
                                     <div className="mb-4">
-                                        {locationError && (
-                                            <div className="mb-3 p-3 rounded-2xl text-[11px] bg-red-50 text-red-600 border border-red-100 flex flex-col gap-1 text-center font-medium">
-                                                <span>Location Error: Please turn on location from your device settings or notification bar.</span>
-                                            </div>
-                                        )}
                                         <button
                                             onClick={fetchGeolocation}
                                             disabled={isProcessing}
@@ -1531,6 +1526,39 @@ const EmployeeAttendancePage = () => {
                             <LogOut className="w-4 h-4" />
                             Logout System
                         </button>
+
+                        {/* Location Error Modal */}
+                        {locationError && (
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                                <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
+                                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-500">
+                                        <MapPin className="w-8 h-8" />
+                                    </div>
+                                    <h2 className="text-xl font-bold text-slate-800 mb-2">Turn On Location</h2>
+                                    <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                                        We couldn't access your location. Please ensure your device's GPS is turned on and you have allowed location permissions for this site.
+                                    </p>
+                                    
+                                    <div className="flex gap-3 w-full">
+                                        <button
+                                            onClick={() => setLocationError(null)}
+                                            className="flex-1 py-3 px-4 rounded-xl text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setLocationError(null);
+                                                fetchGeolocation();
+                                            }}
+                                            className="flex-1 py-3 px-4 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-200 transition-colors"
+                                        >
+                                            Try Again
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </>
                 )
 
