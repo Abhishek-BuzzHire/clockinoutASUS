@@ -1255,9 +1255,8 @@ const EmployeeAttendancePage = () => {
                                     {/* Location display & refresh (Moved Above Quick Actions) */}
                                     <div className="mb-4">
                                         {locationError && (
-                                            <div className="mb-3 p-3 rounded-2xl text-xs bg-red-50 text-red-600 border border-red-100 flex flex-col gap-1 text-center">
-                                                <span className="font-bold">Location Error</span>
-                                                <p>{locationError}</p>
+                                            <div className="mb-3 p-3 rounded-2xl text-[11px] bg-red-50 text-red-600 border border-red-100 flex flex-col gap-1 text-center font-medium">
+                                                <span>Location Error: Please turn on location from your device settings or notification bar.</span>
                                             </div>
                                         )}
                                         <button
