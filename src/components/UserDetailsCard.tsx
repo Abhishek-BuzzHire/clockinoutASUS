@@ -96,7 +96,8 @@ export function UserDetailsCard() {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        sideOffset={8}
+        side="top"
+        sideOffset={12}
         className={cn(
           "w-[280px] p-0 rounded-xl border border-slate-200 shadow-lg",
           "bg-card text-card-foreground"
