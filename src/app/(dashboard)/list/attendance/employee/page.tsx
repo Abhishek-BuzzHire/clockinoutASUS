@@ -113,9 +113,9 @@ const PunchCard: React.FC<{
     }, [isPunchedIn, elapsedTime]);
 
     return (
-        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-6 mb-6">
+        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-0 mb-6">
             
-            <div className="flex justify-center -mt-10 relative z-10">
+            <div className="flex justify-center pt-6 relative z-10">
                 <div className="relative">
                     <img
                         src={imgurl || '/avatar.png'}

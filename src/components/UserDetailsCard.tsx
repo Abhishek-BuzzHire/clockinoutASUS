@@ -76,9 +76,13 @@ export function UserDetailsCard() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="flex items-center gap-2 rounded-lg py-2 w-full justify-center lg:justify-start transition-colors hover:bg-slate-100 focus:outline-none"
+          className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:ring-offset-1"
           aria-label="Open user menu"
         >
+          <div className="flex flex-col items-end">
+            <span className="text-xs leading-3 font-medium text-gray-700">{displayName}</span>
+            <span className="text-[10px] text-gray-500 capitalize">{role}</span>
+          </div>
           <img
             src={avatarSrc}
             alt="User avatar"
@@ -88,15 +92,10 @@ export function UserDetailsCard() {
               if (!target.src.includes("/avatar.png")) target.src = "/avatar.png";
             }}
           />
-          <div className="hidden lg:flex flex-col items-start overflow-hidden">
-            <span className="text-xs leading-3 font-medium text-gray-700 truncate">{displayName}</span>
-            <span className="text-[10px] text-gray-500 capitalize">{role}</span>
-          </div>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        align="start"
-        side="top"
+        align="end"
         sideOffset={8}
         className={cn(
           "w-[280px] p-0 rounded-xl border border-slate-200 shadow-lg",

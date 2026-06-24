@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ActionButton from "./ActionButton";
 import { useAuth } from "@/context/AuthContext";
+import { UserDetailsCard } from "./UserDetailsCard";
 const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
@@ -59,6 +60,7 @@ const Navbar = () => {
             </div>
           </div>
         </div>
+        <UserDetailsCard />
       </div>
     </div>
   );
