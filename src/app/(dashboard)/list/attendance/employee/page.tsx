@@ -113,9 +113,9 @@ const PunchCard: React.FC<{
     }, [isPunchedIn, elapsedTime]);
 
     return (
-        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-0 mb-6">
+        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-8 mb-6">
             
-            <div className="flex justify-center pt-6 relative z-10">
+            <div className="flex justify-center -mt-10 relative z-10">
                 <div className="relative">
                     <img
                         src={imgurl || '/avatar.png'}
@@ -1161,7 +1161,7 @@ const EmployeeAttendancePage = () => {
 
                         <div className="text-lg w-full p-4">
                             {/* MAIN CONTENT WRAPPER: Column on mobile, Row on Large Screens */}
-                            <div className="flex flex-col-reverse lg:flex-row gap-4 pt-8 lg:pt-0">
+                            <div className="flex flex-col-reverse lg:flex-row gap-4 pt-0">
 
                                 {/* --- LEFT SIDE: TIMESHEET --- */}
                                 <div className="w-full lg:w-[80%] min-h-screen space-y-6 pt-4 lg:pt-0">

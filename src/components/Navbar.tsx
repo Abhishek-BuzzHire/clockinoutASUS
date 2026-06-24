@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ActionButton from "./ActionButton";
 import { useAuth } from "@/context/AuthContext";
+
 const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
