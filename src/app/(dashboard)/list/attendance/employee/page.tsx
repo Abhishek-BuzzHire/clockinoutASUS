@@ -237,6 +237,7 @@ const EmployeeAttendancePage = () => {
     // Geolocation
     const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
+    const [showLocationPopup, setShowLocationPopup] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
     // Attendance state (backend-driven)
@@ -456,14 +457,16 @@ const EmployeeAttendancePage = () => {
     const { toast } = useToast();
 
     // --- Geolocation logic (same behavior as your first file) ---
-    const fetchGeolocation = useCallback(() => {
+    const fetchGeolocation = useCallback((showPopup = false) => {
         if (!("geolocation" in navigator)) {
             setLocationError("Geolocation is not supported by your browser.");
+            if (showPopup) setShowLocationPopup(true);
             return;
         }
 
         setIsProcessing(true);
         setLocationError(null);
+        setShowLocationPopup(false);
 
         const options = {
             enableHighAccuracy: true,
@@ -497,6 +500,7 @@ const EmployeeAttendancePage = () => {
                         break;
                 }
                 setLocationError(errorMessage);
+                if (showPopup) setShowLocationPopup(true);
                 setIsProcessing(false);
             },
             options
@@ -714,6 +718,7 @@ const EmployeeAttendancePage = () => {
         if (!location || !user) {
             if (!location) {
                 setLocationError("Location is required to punch in or out.");
+                setShowLocationPopup(true);
             } else {
                 toast({ title: "Error", description: "Please wait for user data to load.", variant: "destructive" });
             }
@@ -1103,11 +1108,19 @@ const EmployeeAttendancePage = () => {
             return;
         }
         if (user) {
-            fetchGeolocation();
+            fetchGeolocation(false);
             fetchTodayAttendance();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, loading, router]);
+
+    // Auto-dismiss location popup after 3 seconds
+    useEffect(() => {
+        if (showLocationPopup) {
+            const timer = setTimeout(() => setShowLocationPopup(false), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [showLocationPopup]);
 
     // set initial elapsed seconds when attendanceStatus changes
     useEffect(() => {
@@ -1286,7 +1299,7 @@ const EmployeeAttendancePage = () => {
                                     {/* Location display & refresh */}
                                     <div className="mb-4">
                                         <button
-                                            onClick={fetchGeolocation}
+                                            onClick={() => fetchGeolocation(true)}
                                             disabled={isProcessing}
                                             className={`w-full py-3 px-4 rounded-2xl text-sm font-semibold flex items-center justify-center transition duration-200 shadow-sm ${locationError ? "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50" : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100"}`}
                                         >
@@ -1559,13 +1572,20 @@ const EmployeeAttendancePage = () => {
                 {renderContent()}
             </div>
 
-            {/* FULLSCREEN LOCATION POPUP - tap anywhere to dismiss */}
-            {locationError && (
+            {/* FULLSCREEN LOCATION POPUP - tap anywhere to dismiss, auto-dismiss in 3 sec */}
+            {showLocationPopup && (
                 <div
                     className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50"
-                    onClick={() => setLocationError(null)}
+                    onClick={() => setShowLocationPopup(false)}
                 >
-                    <div className="bg-white rounded-3xl p-8 mx-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center">
+                    <div className="bg-white rounded-3xl p-8 mx-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center relative">
+                        {/* Cross button */}
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setShowLocationPopup(false); }}
+                            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
                         <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-5">
                             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                         </div>
@@ -1573,7 +1593,6 @@ const EmployeeAttendancePage = () => {
                         <p className="text-sm text-slate-500 leading-relaxed">
                             Please turn on location on your device to continue. Enable GPS from your notification bar or device settings.
                         </p>
-                        <p className="text-xs text-slate-400 mt-4">Tap anywhere to dismiss</p>
                     </div>
                 </div>
             )}
