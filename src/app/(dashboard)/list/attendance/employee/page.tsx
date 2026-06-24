@@ -1314,12 +1314,7 @@ const EmployeeAttendancePage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Message */}
-                                    {message && (
-                                        <div className={`p-4 rounded-md ${message.startsWith("Error") || message.includes("failed") ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}>
-                                            {message}
-                                        </div>
-                                    )}
+                                    {/* Message removed per user request */}
 
                                     <div className="flex flex-col gap-4 justify-between h-[32%]">
                                         <div className="space-y-2">
