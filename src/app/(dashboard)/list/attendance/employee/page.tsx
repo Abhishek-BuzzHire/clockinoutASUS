@@ -712,7 +712,11 @@ const EmployeeAttendancePage = () => {
     // --- Punch API calls (in/out) ---
     const handlePunch = async (type: "in" | "out") => {
         if (!location || !user) {
-            setMessage("Please wait for location and user data to load.");
+            if (!location) {
+                setLocationError("Location is required to punch in or out.");
+            } else {
+                toast({ title: "Error", description: "Please wait for user data to load.", variant: "destructive" });
+            }
             return;
         }
 
@@ -738,7 +742,7 @@ const EmployeeAttendancePage = () => {
 
             const data = response.data;
             if (data.status === "success") {
-                setMessage(data.message);
+                // We don't show a toast here because handleCheckIn/handleCheckOut already show one!
                 // update attendance state from returned data if provided
                 if (data.data) {
                     setAttendanceStatus(data.data);
@@ -762,12 +766,12 @@ const EmployeeAttendancePage = () => {
                     await fetchTodayAttendance();
                 }
             } else {
-                setMessage(`Punch failed: ${data.message}`);
+                toast({ title: "Punch Failed", description: data.message, variant: "destructive" });
             }
         } catch (error) {
             const axiosError = error as AxiosError<PunchResponse>;
             const errorDetail = axiosError.response?.data?.message ?? axiosError.message;
-            setMessage(`Error: ${errorDetail}`);
+            toast({ title: "Error", description: errorDetail, variant: "destructive" });
             console.error(`${type} API call failed:`, axiosError.response?.data || axiosError.message);
         } finally {
             setIsProcessing(false);
