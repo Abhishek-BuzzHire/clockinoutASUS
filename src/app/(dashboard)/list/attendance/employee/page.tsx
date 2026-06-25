@@ -238,6 +238,8 @@ const EmployeeAttendancePage = () => {
     const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
     const [showLocationPopup, setShowLocationPopup] = useState(false);
+    const [showOutOfRangePopup, setShowOutOfRangePopup] = useState(false);
+    const [outOfRangeMessage, setOutOfRangeMessage] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
 
     // Attendance state (backend-driven)
@@ -771,12 +773,25 @@ const EmployeeAttendancePage = () => {
                     await fetchTodayAttendance();
                 }
             } else {
-                toast({ title: "Punch Failed", description: data.message, variant: "destructive" });
+                const lowerMsg = data.message?.toLowerCase() || "";
+                if (lowerMsg.includes("range") || lowerMsg.includes("distance") || lowerMsg.includes("radius") || lowerMsg.includes("location") || lowerMsg.includes("office")) {
+                    setOutOfRangeMessage(data.message);
+                    setShowOutOfRangePopup(true);
+                } else {
+                    toast({ title: "Punch Failed", description: data.message, variant: "destructive" });
+                }
             }
         } catch (error) {
             const axiosError = error as AxiosError<PunchResponse>;
             const errorDetail = axiosError.response?.data?.message ?? axiosError.message;
-            toast({ title: "Error", description: errorDetail, variant: "destructive" });
+            const lowerError = typeof errorDetail === "string" ? errorDetail.toLowerCase() : "";
+            
+            if (lowerError.includes("range") || lowerError.includes("distance") || lowerError.includes("radius") || lowerError.includes("location") || lowerError.includes("office")) {
+                setOutOfRangeMessage(typeof errorDetail === "string" ? errorDetail : "You are out of range.");
+                setShowOutOfRangePopup(true);
+            } else {
+                toast({ title: "Error", description: typeof errorDetail === "string" ? errorDetail : "An error occurred", variant: "destructive" });
+            }
             console.error(`${type} API call failed:`, axiosError.response?.data || axiosError.message);
         } finally {
             setIsProcessing(false);
@@ -1121,6 +1136,14 @@ const EmployeeAttendancePage = () => {
             return () => clearTimeout(timer);
         }
     }, [showLocationPopup]);
+
+    // Auto-dismiss out of range popup after 2 seconds
+    useEffect(() => {
+        if (showOutOfRangePopup) {
+            const timer = setTimeout(() => setShowOutOfRangePopup(false), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [showOutOfRangePopup]);
 
     // set initial elapsed seconds when attendanceStatus changes
     useEffect(() => {
@@ -1592,6 +1615,31 @@ const EmployeeAttendancePage = () => {
                         <h2 className="text-xl font-bold text-slate-800 mb-2">Turn On Location</h2>
                         <p className="text-sm text-slate-500 leading-relaxed">
                             Please turn on location on your device to continue. Enable GPS from your notification bar or device settings.
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* FULLSCREEN OUT OF RANGE POPUP - tap anywhere to dismiss, auto-dismiss in 2 sec */}
+            {showOutOfRangePopup && (
+                <div
+                    className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50"
+                    onClick={() => setShowOutOfRangePopup(false)}
+                >
+                    <div className="bg-white rounded-3xl p-8 mx-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center relative">
+                        {/* Cross button */}
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setShowOutOfRangePopup(false); }}
+                            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        </div>
+                        <h2 className="text-xl font-bold text-slate-800 mb-2">Out of Range</h2>
+                        <p className="text-sm text-slate-500 leading-relaxed">
+                            {outOfRangeMessage || "You are outside the allowed punch-in range. Please move closer to the office."}
                         </p>
                     </div>
                 </div>
