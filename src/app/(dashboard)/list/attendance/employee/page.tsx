@@ -151,16 +151,11 @@ const PunchCard: React.FC<{
                 {/* Status & Punched At Row removed to reduce card size */}
 
                 {/* Time Elapsed Box */}
-                <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] relative flex justify-between items-center">
-                    <div>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Time Elapsed</p>
-                        <p className="text-2xl font-light tracking-tight text-slate-800" style={{ fontFamily: "monospace" }}>
-                            {formatTime(elapsedTime)}
-                        </p>
-                    </div>
-                    <div className="text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    </div>
+                <div className="bg-[#F5F5F0] rounded-xl p-4 mb-4 border border-[#E8E8E3] flex flex-col items-center justify-center text-center">
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Time Elapsed</p>
+                    <p className="text-3xl font-light tracking-widest text-slate-800" style={{ fontFamily: "monospace" }}>
+                        {formatTime(elapsedTime)}
+                    </p>
                 </div>
 
                 {/* Clock Action Button */}
