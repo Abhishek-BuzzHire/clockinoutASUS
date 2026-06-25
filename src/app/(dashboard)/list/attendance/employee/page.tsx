@@ -1137,10 +1137,10 @@ const EmployeeAttendancePage = () => {
         }
     }, [showLocationPopup]);
 
-    // Auto-dismiss out of range popup after 800ms
+    // Auto-dismiss out of range popup after 400ms
     useEffect(() => {
         if (showOutOfRangePopup) {
-            const timer = setTimeout(() => setShowOutOfRangePopup(false), 800);
+            const timer = setTimeout(() => setShowOutOfRangePopup(false), 400);
             return () => clearTimeout(timer);
         }
     }, [showOutOfRangePopup]);
@@ -1620,7 +1620,7 @@ const EmployeeAttendancePage = () => {
                 </div>
             )}
 
-            {/* FULLSCREEN OUT OF RANGE POPUP - tap anywhere to dismiss, auto-dismiss in 800ms */}
+            {/* FULLSCREEN OUT OF RANGE POPUP - tap anywhere to dismiss, auto-dismiss in 400ms */}
             {showOutOfRangePopup && (
                 <div
                     className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50"
