@@ -119,6 +119,12 @@ const PunchCard: React.FC<{
         }
     }, [isPunchedIn, elapsedTime]);
 
+    // Progress circle calculations
+    const radius = 16;
+    const circumference = 2 * Math.PI * radius;
+    const maxTime = 9 * 3600; // 9 hours for a full circle
+    const strokeDashoffset = circumference - (Math.min(elapsedTime / maxTime, 1) * circumference);
+
     return (
         <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-0 mb-6">
             
@@ -162,8 +168,29 @@ const PunchCard: React.FC<{
                             {formatTime(elapsedTime)}
                         </p>
                     </div>
-                    <div className="text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <div className="relative w-12 h-12 flex items-center justify-center">
+                        <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 40 40">
+                            {/* Background Circle */}
+                            <circle cx="20" cy="20" r={radius} fill="none" stroke="#E2E8F0" strokeWidth="3" />
+                            {/* Progress Circle (Light Blue matching the theme) */}
+                            <circle
+                                cx="20"
+                                cy="20"
+                                r={radius}
+                                fill="none"
+                                stroke="#60A5FA"
+                                strokeWidth="3"
+                                strokeDasharray={circumference}
+                                strokeDashoffset={strokeDashoffset}
+                                strokeLinecap="round"
+                                className="transition-all duration-1000 ease-linear"
+                            />
+                        </svg>
+                        {/* Small Clock inside */}
+                        <svg className="w-4 h-4 text-[#60A5FA] relative z-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
                     </div>
                 </div>
 
