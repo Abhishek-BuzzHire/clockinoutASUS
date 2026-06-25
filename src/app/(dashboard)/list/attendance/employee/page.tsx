@@ -148,14 +148,29 @@ const PunchCard: React.FC<{
 
             {/* Bottom Half: Details & Controls */}
             <div className="px-5 pb-5 pt-4">
-                {/* Status & Punched At Row removed to reduce card size */}
+                {/* Status & Punched At Row */}
+                <div className="flex justify-between items-center mb-5">
+                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isPunchedIn ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${isPunchedIn ? "bg-green-500" : "bg-slate-400"}`}></div>
+                        {isPunchedIn ? "Clocked in" : "Clocked out"}
+                    </div>
+                    <div className="text-right">
+                        <p className="text-[10px] text-slate-400 font-medium">{isPunchedIn ? "Punched at" : "Last Punched out"}</p>
+                        <p className="text-xs font-semibold text-slate-700">{punchTime || "--:--"}</p>
+                    </div>
+                </div>
 
                 {/* Time Elapsed Box */}
-                <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] flex flex-col items-center justify-center text-center">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Time Elapsed</p>
-                    <p className="text-2xl font-light tracking-tight text-slate-800" style={{ fontFamily: "monospace" }}>
-                        {formatTime(elapsedTime)}
-                    </p>
+                <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] relative flex justify-between items-center">
+                    <div>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Time Elapsed</p>
+                        <p className="text-2xl font-light tracking-tight text-slate-800" style={{ fontFamily: "monospace" }}>
+                            {formatTime(elapsedTime)}
+                        </p>
+                    </div>
+                    <div className="text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
                 </div>
 
                 {/* Clock Action Button */}
@@ -1219,10 +1234,10 @@ const EmployeeAttendancePage = () => {
 
                         <div className="text-lg w-full px-4 pb-4 pt-1">
                             {/* MAIN CONTENT WRAPPER: Column on mobile, Row on Large Screens */}
-                            <div className="flex flex-col-reverse lg:flex-row gap-4 pt-0">
+                            <div className="flex flex-col-reverse lg:flex-row gap-1 lg:gap-4 pt-0">
 
                                 {/* --- LEFT SIDE: TIMESHEET --- */}
-                                <div className="w-full lg:w-[80%] min-h-screen space-y-6 pt-4 lg:pt-0">
+                                <div className="w-full lg:w-[80%] min-h-screen space-y-6 pt-0">
                                     {/* <BigCalendar /> */}
                                     <TimesheetHeader
                                         weekStart={currentWeekStart}
@@ -1322,7 +1337,7 @@ const EmployeeAttendancePage = () => {
                                     </div>
 
                                     {/* QUICK ACTIONS FOR ATTENDANCE TAB */}
-                                    <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 mb-4">
+                                    <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 mb-0 lg:mb-4">
                                         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-4">Quick Actions</h3>
                                         <div className="grid grid-cols-3 gap-3">
                                             <button onClick={() => setOpenApplyLeaves(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
