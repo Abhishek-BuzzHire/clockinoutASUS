@@ -1234,7 +1234,7 @@ const EmployeeAttendancePage = () => {
 
                         <div className="text-lg w-full px-4 pb-4 pt-1">
                             {/* MAIN CONTENT WRAPPER: Column on mobile, Row on Large Screens */}
-                            <div className="flex flex-col-reverse lg:flex-row gap-1 lg:gap-4 pt-0">
+                            <div className="flex flex-col-reverse lg:flex-row gap-4 pt-0">
 
                                 {/* --- LEFT SIDE: TIMESHEET --- */}
                                 <div className="w-full lg:w-[80%] min-h-screen space-y-6 pt-0">
