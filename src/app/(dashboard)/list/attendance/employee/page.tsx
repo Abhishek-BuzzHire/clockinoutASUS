@@ -158,8 +158,9 @@ const PunchCard: React.FC<{
                             {formatTime(elapsedTime)}
                         </p>
                     </div>
-                    <div className="text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <div className="text-right flex flex-col justify-center">
+                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">{isPunchedIn ? "Punched at" : "Last Punch"}</p>
+                        <p className="text-sm font-bold text-slate-700">{punchTime || "--:--"}</p>
                     </div>
                 </div>
 
@@ -1347,8 +1348,8 @@ const EmployeeAttendancePage = () => {
 
                                     {/* Message removed per user request */}
 
-                                    <div className="flex flex-col gap-4 justify-between h-[32%]">
-                                        <div className="space-y-2">
+                                    <div>
+                                        <div>
                                             {/* Regularize Attendance */}
                                             {openRegulize && (
                                                 <AttendanceRegularizationPopup
