@@ -151,16 +151,16 @@ const PunchCard: React.FC<{
                 {/* Status & Punched At Row removed to reduce card size */}
 
                 {/* Time Elapsed Box */}
-                <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] relative flex justify-between items-center">
+                <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] relative flex justify-between items-start">
                     <div>
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Time Elapsed</p>
                         <p className="text-2xl font-light tracking-tight text-slate-800" style={{ fontFamily: "monospace" }}>
                             {formatTime(elapsedTime)}
                         </p>
                     </div>
-                    <div className="text-right flex flex-col justify-center">
-                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">{isPunchedIn ? "Punched at" : "Last Punch"}</p>
-                        <p className="text-sm font-bold text-slate-700">{punchTime || "--:--"}</p>
+                    <div className="text-right">
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">{isPunchedIn ? "Punched at" : "Last Punch"}</p>
+                        <p className="text-xl font-medium text-slate-800 mt-1">{punchTime || "--:--"}</p>
                     </div>
                 </div>
 
