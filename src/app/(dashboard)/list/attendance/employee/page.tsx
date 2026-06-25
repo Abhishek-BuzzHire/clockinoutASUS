@@ -148,17 +148,7 @@ const PunchCard: React.FC<{
 
             {/* Bottom Half: Details & Controls */}
             <div className="px-5 pb-5 pt-4">
-                {/* Status & Punched At Row */}
-                <div className="flex justify-between items-center mb-5">
-                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isPunchedIn ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
-                        <div className={`w-1.5 h-1.5 rounded-full ${isPunchedIn ? "bg-green-500" : "bg-slate-400"}`}></div>
-                        {isPunchedIn ? "Clocked in" : "Clocked out"}
-                    </div>
-                    <div className="text-right">
-                        <p className="text-[10px] text-slate-400 font-medium">{isPunchedIn ? "Punched at" : "Last Punched out"}</p>
-                        <p className="text-xs font-semibold text-slate-700">{punchTime || "--:--"}</p>
-                    </div>
-                </div>
+                {/* Status & Punched At Row removed to reduce card size */}
 
                 {/* Time Elapsed Box */}
                 <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] relative flex justify-between items-center">
@@ -168,29 +158,8 @@ const PunchCard: React.FC<{
                             {formatTime(elapsedTime)}
                         </p>
                     </div>
-                    <div className="relative w-12 h-12 flex items-center justify-center">
-                        <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 40 40">
-                            {/* Background Circle */}
-                            <circle cx="20" cy="20" r={radius} fill="none" stroke="#E2E8F0" strokeWidth="3" />
-                            {/* Progress Circle (Light Blue matching the theme) */}
-                            <circle
-                                cx="20"
-                                cy="20"
-                                r={radius}
-                                fill="none"
-                                stroke="#60A5FA"
-                                strokeWidth="3"
-                                strokeDasharray={circumference}
-                                strokeDashoffset={strokeDashoffset}
-                                strokeLinecap="round"
-                                className="transition-all duration-1000 ease-linear"
-                            />
-                        </svg>
-                        {/* Small Clock inside */}
-                        <svg className="w-4 h-4 text-[#60A5FA] relative z-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <polyline points="12 6 12 12 16 14" />
-                        </svg>
+                    <div className="text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     </div>
                 </div>
 
