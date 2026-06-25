@@ -151,9 +151,9 @@ const PunchCard: React.FC<{
                 {/* Status & Punched At Row removed to reduce card size */}
 
                 {/* Time Elapsed Box */}
-                <div className="bg-[#F5F5F0] rounded-xl p-4 mb-4 border border-[#E8E8E3] flex flex-col items-center justify-center text-center">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Time Elapsed</p>
-                    <p className="text-3xl font-light tracking-widest text-slate-800" style={{ fontFamily: "monospace" }}>
+                <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] flex flex-col items-center justify-center text-center">
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Time Elapsed</p>
+                    <p className="text-2xl font-light tracking-tight text-slate-800" style={{ fontFamily: "monospace" }}>
                         {formatTime(elapsedTime)}
                     </p>
                 </div>
