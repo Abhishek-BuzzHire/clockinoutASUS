@@ -46,45 +46,49 @@ const HierarchyNode = ({ node }: { node: any }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const hasChildren = node.team_members && node.team_members.length > 0;
 
+  if (node.is_active === false) return null;
+
   return (
-    <div className="ml-4 md:ml-6 border-l-2 border-slate-200 pl-3 md:pl-4 my-2">
+    <div className="w-full my-2 flex flex-col justify-start col-span-1">
       <div 
         onClick={() => hasChildren && setIsOpen(!isOpen)} 
-        className={`flex items-center justify-between p-3.5 rounded-xl border bg-white shadow-sm transition ${hasChildren ? "cursor-pointer hover:bg-slate-50 border-slate-300" : "border-slate-100"}`}
+        className={`flex items-center justify-between p-4 rounded-2xl border bg-white shadow-sm transition h-full ${hasChildren ? "cursor-pointer hover:shadow-md border-blue-300 ring-1 ring-blue-50 hover:bg-slate-50/60" : "border-slate-200"}`}
       >
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 w-full">
           {hasChildren ? (
-            <span className={`transform transition-transform duration-200 text-blue-600 font-bold mt-1 ${isOpen ? "rotate-90" : ""}`}>
-              <ChevronRight className="w-4 h-4" />
+            <span className={`transform transition-transform duration-200 text-blue-600 font-extrabold mt-1 flex-shrink-0 ${isOpen ? "rotate-90" : ""}`}>
+              <ChevronRight className="w-5 h-5" />
             </span>
           ) : (
-            <span className="w-4 h-4 mt-1 opacity-0">&gt;</span>
+            <span className="w-5 h-5 mt-1 opacity-0 flex-shrink-0">&gt;</span>
           )}
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold text-slate-800">{node.name}</span>
-              <span className="text-[10px] font-extrabold bg-slate-100 text-slate-600 px-2 py-0.5 rounded uppercase tracking-wider">
-                {node.role}
-              </span>
-              {node.manager_id && (
-                <span className="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-200">
-                  Mgr ID: {node.manager_id}
+          <div className="space-y-2 flex-1 min-w-0">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
+                <span className="text-base font-extrabold text-slate-900 truncate">{node.name}</span>
+                <span className="text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded uppercase tracking-wider flex-shrink-0">
+                  {node.role}
+                </span>
+              </div>
+              {hasChildren && (
+                <span className="text-[11px] font-bold text-blue-700 bg-blue-100/60 border border-blue-200 px-2.5 py-0.5 rounded-full flex-shrink-0">
+                  {node.team_members.length} {node.team_members.length === 1 ? 'Report' : 'Reports'}
                 </span>
               )}
             </div>
-            <p className="text-xs font-medium text-slate-500">
-              {node.designation || "No Designation"} • <span className="text-blue-600 font-semibold">{node.department || "No Dept"}</span>
+            <p className="text-xs font-bold text-slate-600 truncate">
+              {node.designation || "No Designation"} • <span className="text-blue-600 font-extrabold">{node.department || "No Dept"}</span>
             </p>
-            <div className="text-xs text-slate-400 pt-1 flex flex-wrap gap-4 font-mono">
-              <span>✉️ {node.email}</span>
-              {node.phone && <span>📱 {node.phone}</span>}
+            <div className="text-xs text-slate-800 font-semibold pt-1 flex flex-col gap-1.5 font-mono bg-slate-100/80 p-2.5 rounded-xl border border-slate-200/60">
+              <span className="truncate">✉️ <strong className="text-slate-950 font-bold">{node.email}</strong></span>
+              {node.phone && <span className="truncate">📱 <strong className="text-slate-950 font-bold">{node.phone}</strong></span>}
             </div>
           </div>
         </div>
       </div>
 
       {isOpen && hasChildren && (
-        <div className="mt-2 space-y-2 animate-fadeIn">
+        <div className="mt-3 ml-2 md:ml-4 pl-2 md:pl-4 border-l-2 border-blue-500/40 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 animate-fadeIn col-span-full w-full">
           {node.team_members.map((child: any) => (
             <HierarchyNode key={child.id} node={child} />
           ))}
@@ -117,24 +121,26 @@ const EmployeeHierarchyTab = () => {
   }
 
   return (
-    <div className="p-6 bg-slate-50 min-h-screen space-y-6">
-      <div className="flex justify-between items-center bg-white p-6 rounded-2xl border shadow-sm">
+    <div className="p-6 bg-slate-100 min-h-screen space-y-8">
+      <div className="bg-white p-6 rounded-2xl border shadow-sm flex flex-wrap justify-between items-center gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Employee Hierarchy Tree</h2>
-          <p className="text-xs text-slate-500 mt-1">Click on any expandable node (&gt;) to view team members reporting to them.</p>
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Organization Directory Tree</h2>
+          <p className="text-xs font-medium text-slate-600 mt-1">Click on any expandable card (&gt;) to reveal direct team members reporting to them.</p>
         </div>
       </div>
       
       {hierarchy && hierarchy.map((deptGroup: any) => (
-        <div key={deptGroup.department} className="bg-white border rounded-2xl p-6 shadow-sm">
-          <h3 className="text-md font-extrabold text-slate-800 border-b pb-3 mb-4 uppercase flex items-center justify-between tracking-wide">
-            <span>🏢 {deptGroup.department} Department</span>
-            <span className="text-xs bg-blue-50 text-blue-600 border border-blue-100 px-3 py-1 rounded-full font-bold normal-case">
-              {deptGroup.members?.length || 0} Root Leaders
+        <div key={deptGroup.department} className="bg-white border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+          <div className="flex flex-wrap items-center justify-between border-b border-slate-200 pb-4 gap-2">
+            <h3 className="text-lg font-black text-slate-900 uppercase tracking-wide flex items-center gap-2.5">
+              <span>🏢 {deptGroup.department} Department</span>
+            </h3>
+            <span className="text-xs bg-blue-600 text-white font-extrabold px-3.5 py-1.5 rounded-full shadow-sm">
+              {deptGroup.members?.filter((m:any) => m.is_active !== false).length || 0} Root Leaders
             </span>
-          </h3>
+          </div>
           
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {deptGroup.members && deptGroup.members.map((member: any) => (
               <HierarchyNode key={member.id} node={member} />
             ))}
