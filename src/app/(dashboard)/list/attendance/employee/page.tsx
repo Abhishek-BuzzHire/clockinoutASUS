@@ -176,13 +176,15 @@ const PunchCard: React.FC<{
                     <div className="text-slate-400">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     </div>
+                </div>
+
                 {/* Clock Action Button */}
                 {!isPunchedIn && hasPunchedOut ? (
                     <button
                         disabled
-                        className="w-full py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-white text-base shadow-md transform transition-all duration-300 bg-slate-400 cursor-not-allowed opacity-90"
+                        className="w-full py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-white text-base shadow-md bg-[#22C55E] cursor-not-allowed opacity-80"
                     >
-                        <CheckCircle2 className="w-5 h-5" /> Successfully Punched Out
+                        Successfully Punched Out
                     </button>
                 ) : (
                     <button
