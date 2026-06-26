@@ -46,6 +46,7 @@ const fetcher = (url: string) => {
 const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: boolean }) => {
   const [isOpen, setIsOpen] = React.useState(isRoot);
   const hasChildren = node.team_members && node.team_members.length > 0;
+  const isLeader = hasChildren || isRoot || node.role === "admin" || node.role === "manager";
 
   if (node.is_active === false) return null;
 
@@ -55,7 +56,7 @@ const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: boolean }
       <div 
         onClick={() => hasChildren && setIsOpen(!isOpen)} 
         className={`w-full flex items-start justify-between p-4 rounded-xl border transition-all duration-200 ${
-          hasChildren 
+          isLeader 
             ? "cursor-pointer bg-gradient-to-r from-blue-50/60 via-white to-white border-blue-200 hover:border-blue-300 shadow-sm" 
             : "bg-white border-slate-200/80 hover:border-slate-300 shadow-2xs"
         }`}
@@ -73,11 +74,11 @@ const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: boolean }
             {/* Title & Badge */}
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                <h4 className={`truncate tracking-tight ${hasChildren ? "text-base font-bold text-slate-900" : "text-sm font-semibold text-slate-700"}`}>
+                <h4 className={`truncate tracking-tight ${isLeader ? "text-base font-bold text-slate-900 capitalize" : "text-sm font-semibold text-slate-700"}`}>
                   {node.name}
                 </h4>
                 <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider flex-shrink-0 ${
-                  hasChildren ? "bg-blue-600 text-white shadow-2xs" : "bg-slate-100 text-slate-600"
+                  isLeader ? "bg-blue-600 text-white shadow-2xs" : "bg-slate-100 text-slate-600"
                 }`}>
                   {node.role}
                 </span>
