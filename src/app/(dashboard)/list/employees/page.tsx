@@ -33,6 +33,7 @@ import UserCard from "@/components/UserCard";
 import EmployeeDetails from "@/components/EmployeeDetails";
 import { employeeData } from "@/lib/data";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
 
 
 const data = employeeData;
