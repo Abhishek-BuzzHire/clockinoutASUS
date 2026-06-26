@@ -19,7 +19,8 @@ import {
   Mail,
   UserCircle,
   Search,
-  Users
+  Users,
+  ChevronRight
 } from "lucide-react"
 import { apiUrl } from '@/lib/data'
 import axios from 'axios'
@@ -38,6 +39,110 @@ const data = employeeData;
 const fetcher = (url: string) => {
   const token = Cookies.get("access");
   return axios.get(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.data);
+};
+
+
+const HierarchyNode = ({ node }: { node: any }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const hasChildren = node.team_members && node.team_members.length > 0;
+
+  return (
+    <div className="ml-4 md:ml-6 border-l-2 border-slate-200 pl-3 md:pl-4 my-2">
+      <div 
+        onClick={() => hasChildren && setIsOpen(!isOpen)} 
+        className={`flex items-center justify-between p-3.5 rounded-xl border bg-white shadow-sm transition ${hasChildren ? "cursor-pointer hover:bg-slate-50 border-slate-300" : "border-slate-100"}`}
+      >
+        <div className="flex items-start gap-3">
+          {hasChildren ? (
+            <span className={`transform transition-transform duration-200 text-blue-600 font-bold mt-1 ${isOpen ? "rotate-90" : ""}`}>
+              <ChevronRight className="w-4 h-4" />
+            </span>
+          ) : (
+            <span className="w-4 h-4 mt-1 opacity-0">&gt;</span>
+          )}
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold text-slate-800">{node.name}</span>
+              <span className="text-[10px] font-extrabold bg-slate-100 text-slate-600 px-2 py-0.5 rounded uppercase tracking-wider">
+                {node.role}
+              </span>
+              {node.manager_id && (
+                <span className="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-200">
+                  Mgr ID: {node.manager_id}
+                </span>
+              )}
+            </div>
+            <p className="text-xs font-medium text-slate-500">
+              {node.designation || "No Designation"} • <span className="text-blue-600 font-semibold">{node.department || "No Dept"}</span>
+            </p>
+            <div className="text-xs text-slate-400 pt-1 flex flex-wrap gap-4 font-mono">
+              <span>✉️ {node.email}</span>
+              {node.phone && <span>📱 {node.phone}</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {isOpen && hasChildren && (
+        <div className="mt-2 space-y-2 animate-fadeIn">
+          {node.team_members.map((child: any) => (
+            <HierarchyNode key={child.id} node={child} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const EmployeeHierarchyTab = () => {
+  const { data: hierarchy, error } = useSWR(
+    `${apiUrl}/api/employee-hierarchy/`,
+    fetcher
+  );
+
+  if (!hierarchy && !error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center text-rose-500 font-semibold">
+        Failed to load employee hierarchy structure. Please check backend server.
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 bg-slate-50 min-h-screen space-y-6">
+      <div className="flex justify-between items-center bg-white p-6 rounded-2xl border shadow-sm">
+        <div>
+          <h2 className="text-xl font-bold text-slate-800">Employee Hierarchy Tree</h2>
+          <p className="text-xs text-slate-500 mt-1">Click on any expandable node (&gt;) to view team members reporting to them.</p>
+        </div>
+      </div>
+      
+      {hierarchy && hierarchy.map((deptGroup: any) => (
+        <div key={deptGroup.department} className="bg-white border rounded-2xl p-6 shadow-sm">
+          <h3 className="text-md font-extrabold text-slate-800 border-b pb-3 mb-4 uppercase flex items-center justify-between tracking-wide">
+            <span>🏢 {deptGroup.department} Department</span>
+            <span className="text-xs bg-blue-50 text-blue-600 border border-blue-100 px-3 py-1 rounded-full font-bold normal-case">
+              {deptGroup.members?.length || 0} Root Leaders
+            </span>
+          </h3>
+          
+          <div className="space-y-3">
+            {deptGroup.members && deptGroup.members.map((member: any) => (
+              <HierarchyNode key={member.id} node={member} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 };
 
 const EmployeesListPage = () => {
@@ -139,7 +244,7 @@ const EmployeesListPage = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const tabs = ["Employees", "Users"];
+  const tabs = ["Employees", "Users", "Employee Hierarchy"];
   const [activeTab, setActiveTab] = useState("Employees");
 
   const [formData, setFormData] = useState({
@@ -390,6 +495,8 @@ const EmployeesListPage = () => {
 
         return <EmployeeList />;
 
+      case "Employee Hierarchy":
+        return <EmployeeHierarchyTab />;
       case "Users":
         return (
           <>
