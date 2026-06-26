@@ -145,6 +145,7 @@ export const EmployeeHierarchyTab = () => {
     `${apiUrl}/api/employee-hierarchy/`,
     fetcher
   );
+  const [selectedDept, setSelectedDept] = React.useState<string | null>(null);
 
   if (!hierarchy && !error) {
     return (
@@ -162,33 +163,95 @@ export const EmployeeHierarchyTab = () => {
     );
   }
 
+  const selectedGroup = hierarchy?.find((g: any) => g.department === selectedDept);
+
   return (
     <div className="p-4 md:p-8 bg-slate-50 min-h-screen space-y-8 w-full">
+      {/* Header */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4 w-full">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800 tracking-tight">Organization Hierarchy Directory</h2>
-          <p className="text-xs text-slate-500 mt-1">Click on any leader card to expand or collapse their reporting team hierarchy.</p>
+        <div className="flex items-center gap-3">
+          {selectedDept && (
+            <button
+              onClick={() => setSelectedDept(null)}
+              className="flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200/60 px-3 py-1.5 rounded-lg transition-all duration-200"
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" />
+              All Departments
+            </button>
+          )}
+          <div>
+            <h2 className="text-xl font-bold text-slate-800 tracking-tight">
+              {selectedDept ? `${selectedDept} Department` : 'Organization Hierarchy Directory'}
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">
+              {selectedDept
+                ? 'Click on any leader card to expand or collapse their reporting team hierarchy.'
+                : 'Select a department to view its organizational structure.'}
+            </p>
+          </div>
         </div>
       </div>
-      
-      {hierarchy && hierarchy.map((deptGroup: any) => (
-        <div key={deptGroup.department} className="bg-white border border-slate-200/90 rounded-2xl p-6 md:p-8 shadow-sm space-y-6 w-full">
+
+      {/* Department Selection View */}
+      {!selectedDept && hierarchy && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full">
+          {hierarchy.map((deptGroup: any) => {
+            const activeMembers = deptGroup.members?.filter((m: any) => m.is_active !== false) || [];
+            const totalEmployees = activeMembers.reduce((sum: number, m: any) => sum + (m.team_members?.length || 0), 0);
+            return (
+              <div
+                key={deptGroup.department}
+                onClick={() => setSelectedDept(deptGroup.department)}
+                className="group cursor-pointer bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-300 flex flex-col gap-4"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors duration-200">
+                      <span className="text-lg">🏢</span>
+                    </div>
+                    <h3 className="text-base font-bold text-slate-800 tracking-tight group-hover:text-blue-700 transition-colors duration-200">
+                      {deptGroup.department}
+                    </h3>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all duration-200" />
+                </div>
+
+                <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
+                  <div className="flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5 text-blue-500" />
+                    <span className="text-xs font-semibold text-slate-600">{activeMembers.length} Leaders</span>
+                  </div>
+                  <div className="w-px h-3.5 bg-slate-200"></div>
+                  <div className="flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="text-xs font-semibold text-slate-600">{totalEmployees} Employees</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Selected Department Hierarchy View */}
+      {selectedDept && selectedGroup && (
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 md:p-8 shadow-sm space-y-6 w-full animate-fadeIn">
           <div className="flex flex-wrap items-center justify-between border-b border-slate-100 pb-4 gap-2">
             <h3 className="text-base font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2.5">
-              <span>🏢 {deptGroup.department} Department</span>
+              <span>🏢 {selectedGroup.department} Department</span>
             </h3>
             <span className="text-xs bg-blue-50 text-blue-600 border border-blue-200/60 font-bold px-3 py-1 rounded-full">
-              {deptGroup.members?.filter((m:any) => m.is_active !== false).length || 0} Root Leaders
+              {selectedGroup.members?.filter((m:any) => m.is_active !== false).length || 0} Root Leaders
             </span>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-5 w-full">
-            {deptGroup.members && deptGroup.members.map((member: any) => (
+            {selectedGroup.members && selectedGroup.members.map((member: any) => (
               <HierarchyNode key={member.id} node={member} isRoot={true} />
             ))}
           </div>
         </div>
-      ))}
+      )}
     </div>
   );
 };
