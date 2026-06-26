@@ -45,7 +45,7 @@ const fetcher = (url: string) => {
 
 
 export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: boolean }) => {
-  const [isOpen, setIsOpen] = React.useState(isRoot);
+  const [isOpen, setIsOpen] = React.useState(false);
   const hasChildren = node.team_members && node.team_members.length > 0;
   const isShivam = (node.name && node.name.toLowerCase().includes("shivam")) || (node.email && node.email.toLowerCase().includes("shivam"));
   const displayRole = isShivam ? "employee" : node.role;
