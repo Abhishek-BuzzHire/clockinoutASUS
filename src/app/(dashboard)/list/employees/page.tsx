@@ -43,7 +43,7 @@ const fetcher = (url: string) => {
 };
 
 
-const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: boolean }) => {
+export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: boolean }) => {
   const [isOpen, setIsOpen] = React.useState(isRoot);
   const hasChildren = node.team_members && node.team_members.length > 0;
   const isLeader = hasChildren || isRoot || node.role === "admin" || node.role === "manager";
@@ -137,7 +137,7 @@ const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: boolean }
   );
 };
 
-const EmployeeHierarchyTab = () => {
+export const EmployeeHierarchyTab = () => {
   const { data: hierarchy, error } = useSWR(
     `${apiUrl}/api/employee-hierarchy/`,
     fetcher
@@ -289,8 +289,12 @@ const EmployeesListPage = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const tabs = ["Employees", "Users", "Employee Hierarchy"];
+  const { user } = useAuth();
+  const tabs = user?.role === 'employee' ? ['Employees', 'Employee Hierarchy'] : ["Employees", "Users", "Employee Hierarchy"];
   const [activeTab, setActiveTab] = useState("Employees");
+  React.useEffect(() => {
+    if (user?.role === "employee") setActiveTab("Employee Hierarchy");
+  }, [user]);
 
   const [formData, setFormData] = useState({
     email: "",

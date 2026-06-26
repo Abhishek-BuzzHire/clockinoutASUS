@@ -25,6 +25,7 @@ import { toMinutes } from "../admin/page";
 import { useCurrentEmployee } from "@/hooks/useCurrentEmployee";
 import EmployeeCalendar from "@/components/attendance/EmployeeCalender";
 import EmployeeAttendanceSheet from "@/components/attendance/EmployeeAttendanceSheet";
+import { EmployeeHierarchyTab } from "../../employees/page";
 
 export const SHIFT_CONFIG: ShiftConfig = {
     startTime: "09:30",
@@ -68,12 +69,14 @@ type PunchResponse = {
 
 const PunchCard: React.FC<{
     isPunchedIn: boolean;
+    hasPunchedOut?: boolean;
+    workedSeconds?: number;
     handlePunchAction: () => void;
     punchTime: string;
     elapsedSeconds: number;
     profileName?: string;
     imgurl?: string;
-}> = ({ isPunchedIn, handlePunchAction, punchTime, elapsedSeconds, profileName, imgurl }) => {
+}> = ({ isPunchedIn, hasPunchedOut, workedSeconds, handlePunchAction, punchTime, elapsedSeconds, profileName, imgurl }) => {
     const [elapsedTime, setElapsedTime] = useState<number>(elapsedSeconds ?? 0);
     const intervalRef = useRef<number | null>(null);
 
@@ -163,9 +166,11 @@ const PunchCard: React.FC<{
                 {/* Time Elapsed Box */}
                 <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] relative flex justify-between items-center">
                     <div>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Time Elapsed</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">
+                            {!isPunchedIn && hasPunchedOut ? "Today Work Hour" : "Time Elapsed"}
+                        </p>
                         <p className="text-2xl font-light tracking-tight text-slate-800" style={{ fontFamily: "monospace" }}>
-                            {formatTime(elapsedTime)}
+                            {!isPunchedIn && hasPunchedOut ? formatTime(workedSeconds ?? 0) : formatTime(elapsedTime)}
                         </p>
                     </div>
                     <div className="text-slate-400">
@@ -235,7 +240,7 @@ const EmployeeAttendancePage = () => {
     const { user, loading, logout } = useAuth();
     const router = useRouter();
 
-    const tabs = ["Attendance", "Leaves & WFH"];
+    const tabs = ["Attendance", "Leaves & WFH", "Employee Hierarchy"];
     const [activeTab, setActiveTab] = useState("Attendance");
 
     const [calendarMap, setCalendarMap] = useState<Record<string, CalendarDay>>({});
@@ -258,6 +263,16 @@ const EmployeeAttendancePage = () => {
     const [initialElapsedSeconds, setInitialElapsedSeconds] = useState<number>(0);
 
     const [showClockOutModal, setShowClockOutModal] = useState(false);
+    const [showPunchOutToast, setShowPunchOutToast] = useState(false);
+
+    const workedSecondsToday = React.useMemo(() => {
+        if (attendanceStatus?.punch_in_time && attendanceStatus?.punch_out_time) {
+            const pIn = new Date(attendanceStatus.punch_in_time).getTime();
+            const pOut = new Date(attendanceStatus.punch_out_time).getTime();
+            return Math.max(0, Math.floor((pOut - pIn) / 1000));
+        }
+        return 0;
+    }, [attendanceStatus]);
     const [workingHours, setWorkingHours] = useState<string | undefined>(undefined);
 
     const [weeklyAttendance, setWeeklyAttendance] = useState<WeeklyAttendance[]>([]);
@@ -1116,6 +1131,8 @@ const EmployeeAttendancePage = () => {
     const confirmClockOut = () => {
         setShowClockOutModal(false);
         handleCheckOut(); // ⬅️ calls your actual punch out API
+        setShowPunchOutToast(true);
+        setTimeout(() => setShowPunchOutToast(false), 3000);
     };
 
     const cancelClockOut = () => {
@@ -1318,6 +1335,8 @@ const EmployeeAttendancePage = () => {
                                 <div className="w-full lg:w-[20%] mt-0 relative space-y-4">
                                     <PunchCard
                                         isPunchedIn={isPunchedInUI}
+                                        hasPunchedOut={Boolean(attendanceStatus?.punch_out_time)}
+                                        workedSeconds={workedSecondsToday}
                                         handlePunchAction={handlePunchAction}
                                         punchTime={punchTime}
                                         elapsedSeconds={initialElapsedSeconds}
@@ -1409,6 +1428,12 @@ const EmployeeAttendancePage = () => {
                     </>
                 )
 
+            case "Employee Hierarchy":
+                return (
+                    <div className="p-4 md:p-6 w-full">
+                        <EmployeeHierarchyTab />
+                    </div>
+                );
             case "Leaves & WFH":
                 return (
                     <>

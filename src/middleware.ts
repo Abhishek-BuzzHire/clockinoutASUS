@@ -26,7 +26,6 @@ const ROUTES = {
   admin: [
     '/admin',
     '/list/attendance/admin',
-    '/list/employees',
   ],
 
   employee: [
@@ -34,6 +33,7 @@ const ROUTES = {
   ],
 
   shared: [
+    '/list/employees',
     "/list",
     "/ai-assist",
     "/database",
