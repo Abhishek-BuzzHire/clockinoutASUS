@@ -46,7 +46,9 @@ const fetcher = (url: string) => {
 export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: boolean }) => {
   const [isOpen, setIsOpen] = React.useState(isRoot);
   const hasChildren = node.team_members && node.team_members.length > 0;
-  const isLeader = hasChildren || isRoot || node.role === "admin" || node.role === "manager";
+  const isShivam = (node.name && node.name.toLowerCase().includes("shivam")) || (node.email && node.email.toLowerCase().includes("shivam"));
+  const displayRole = isShivam ? "employee" : node.role;
+  const isLeader = hasChildren || isRoot || displayRole === "admin" || displayRole === "manager";
 
   if (node.is_active === false) return null;
 
@@ -80,7 +82,7 @@ export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: bo
                 <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider flex-shrink-0 ${
                   isLeader ? "bg-blue-600 text-white shadow-2xs" : "bg-slate-100 text-slate-600"
                 }`}>
-                  {node.role}
+                  {displayRole}
                 </span>
               </div>
 
@@ -278,7 +280,7 @@ const EmployeesListPage = () => {
       e_sign: profile.e_sign,
       created_at: profile.created_at,
       updated_at: profile.updated_at,
-      role: profile.user.role,
+      role: (profile?.name && String(profile.name).toLowerCase().includes("shivam")) || (profile?.email && String(profile.email).toLowerCase().includes("shivam")) || (profile?.user?.email && String(profile.user.email).toLowerCase().includes("shivam")) ? "employee" : profile.user.role,
       is_active: profile.user.is_active,
       manager: profile.user.manager
     }));
