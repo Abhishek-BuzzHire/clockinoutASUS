@@ -50,13 +50,13 @@ const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: boolean }
   if (node.is_active === false) return null;
 
   return (
-    <div className={`w-full transition-all duration-300 ${isOpen && hasChildren ? "col-span-full my-3" : "col-span-1 my-1"}`}>
+    <div className={`w-full flex flex-col justify-start transition-all duration-300 ${isOpen && hasChildren ? "col-span-full my-3" : "col-span-1 my-1"}`}>
       {/* Main Node Card */}
       <div 
         onClick={() => hasChildren && setIsOpen(!isOpen)} 
-        className={`flex items-start justify-between p-4 rounded-xl border transition-all duration-200 h-full ${
+        className={`w-full flex items-start justify-between p-4 rounded-xl border transition-all duration-200 ${
           hasChildren 
-            ? "cursor-pointer bg-gradient-to-r from-blue-50/50 via-white to-white border-blue-200 hover:border-blue-300 shadow-sm" 
+            ? "cursor-pointer bg-gradient-to-r from-blue-50/60 via-white to-white border-blue-200 hover:border-blue-300 shadow-sm" 
             : "bg-white border-slate-200/80 hover:border-slate-300 shadow-2xs"
         }`}
       >
@@ -114,7 +114,7 @@ const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: boolean }
 
       {/* Expanded Team Box Container */}
       {isOpen && hasChildren && (
-        <div className="mt-3 ml-2 md:ml-6 p-4 md:p-6 bg-slate-100/80 rounded-2xl border border-slate-200/90 relative animate-fadeIn shadow-inner">
+        <div className="mt-3 ml-2 md:ml-6 p-4 md:p-6 bg-slate-100/80 rounded-2xl border border-slate-200/90 relative animate-fadeIn shadow-inner w-full">
           {/* Sub-team Header */}
           <div className="flex items-center gap-2 pb-3 mb-4 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
             <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
