@@ -70,136 +70,133 @@ type PunchResponse = {
 
 const PunchCard: React.FC<{
     isPunchedIn: boolean;
-    hasPunchedOut?: boolean;
-    workedSeconds?: number;
     handlePunchAction: () => void;
     punchTime: string;
     elapsedSeconds: number;
     profileName?: string;
     imgurl?: string;
-}> = ({ isPunchedIn, hasPunchedOut, workedSeconds, handlePunchAction, punchTime, elapsedSeconds, profileName, imgurl }) => {
-    const [elapsedTime, setElapsedTime] = useState<number>(elapsedSeconds ?? 0);
-    const intervalRef = useRef<number | null>(null);
+}> = ({
+    isPunchedIn,
+    handlePunchAction,
+    punchTime,
+    elapsedSeconds,
+    profileName,
+    imgurl
+}) => {
 
-    const formatTime = (seconds: number) => {
-        const h = Math.floor(seconds / 3600).toString().padStart(2, "0");
-        const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, "0");
-        const s = (seconds % 60).toString().padStart(2, "0");
-        return `${h}:${m}:${s}`;
-    };
+        const [previewOpen, setPreviewOpen] = useState(false);
 
-    // Sync elapsedSeconds when it is provided/changes (e.g., on load)
-    useEffect(() => {
-        setElapsedTime(elapsedSeconds ?? 0);
-    }, [elapsedSeconds]);
+        const [elapsedTime, setElapsedTime] = useState<number>(
+            elapsedSeconds ?? 0
+        );
 
-    // Start/stop timer based on isPunchedIn
-    useEffect(() => {
-        if (isPunchedIn) {
-            // use window.setInterval return type for browsers
-            intervalRef.current = window.setInterval(() => {
-                setElapsedTime((prev) => prev + 1);
-            }, 1000) as unknown as number;
-        } else {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
+        const intervalRef = useRef<number | null>(null);
+
+        // Sync elapsedSeconds when it is provided/changes (e.g., on load)
+        useEffect(() => {
+            setElapsedTime(elapsedSeconds ?? 0);
+        }, [elapsedSeconds]);
+
+        // Start/stop timer based on isPunchedIn
+        useEffect(() => {
+            if (isPunchedIn) {
+                // use window.setInterval return type for browsers
+                intervalRef.current = window.setInterval(() => {
+                    setElapsedTime((prev) => prev + 1);
+                }, 1000) as unknown as number;
+            } else {
+                if (intervalRef.current) {
+                    clearInterval(intervalRef.current);
+                }
             }
-        }
 
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
+            return () => {
+                if (intervalRef.current) {
+                    clearInterval(intervalRef.current);
+                }
+            };
+        }, [isPunchedIn]);
+
+        // Reset briefly when punched out (visual)
+        useEffect(() => {
+            if (!isPunchedIn && elapsedTime > 0) {
+                const timeout = window.setTimeout(() => {
+                    setElapsedTime(0);
+                }, 3000);
+                return () => clearTimeout(timeout);
             }
-        };
-    }, [isPunchedIn]);
+        }, [isPunchedIn, elapsedTime]);
 
-    // Reset briefly when punched out (visual)
-    useEffect(() => {
-        if (!isPunchedIn && elapsedTime > 0) {
-            const timeout = window.setTimeout(() => {
-                setElapsedTime(0);
-            }, 3000);
-            return () => clearTimeout(timeout);
-        }
-    }, [isPunchedIn, elapsedTime]);
-
-    // Progress circle calculations
-    const radius = 16;
-    const circumference = 2 * Math.PI * radius;
-    const maxTime = 9 * 3600; // 9 hours for a full circle
-    const strokeDashoffset = circumference - (Math.min(elapsedTime / maxTime, 1) * circumference);
-
-    return (
-        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-0 mb-6">
-            
-            <div className="flex justify-center pt-5 relative z-10">
-                <div className="relative">
-                    <img
-                        src={imgurl || '/avatar.png'}
-                        alt={profileName || "employee"}
-                        className="rounded-full object-cover border-[5px] border-white shadow-sm w-24 h-24 bg-slate-50"
-                        onError={(e) => {
-                            e.currentTarget.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(profileName || "Employee") + "&background=0D8ABC&color=fff";
-                        }}
-                    />
-                    <div className="absolute bottom-2 right-2 w-5 h-5 rounded-full border-2 border-white bg-green-500 shadow-sm"></div>
-                </div>
-            </div>
-
-            <div className="text-center px-4 pb-3 pt-2 border-b border-slate-100">
-                <h3 className="text-lg font-bold text-slate-800">{profileName ?? "Employee"}</h3>
-            </div>
-
-            {/* Bottom Half: Details & Controls */}
-            <div className="px-5 pb-5 pt-4">
-                {/* Status & Punched At Row */}
-                <div className="flex justify-between items-center mb-5">
-                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isPunchedIn ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
-                        <div className={`w-1.5 h-1.5 rounded-full ${isPunchedIn ? "bg-green-500" : "bg-slate-400"}`}></div>
-                        {isPunchedIn ? "Clocked in" : "Clocked out"}
+        return (
+            <>
+                <div className="relative w-full max-w-sm mx-auto bg-white rounded-xl shadow-lg border border-gray-200">
+                    <div className="flex justify-center -mt-12 mb-4">
+                        <img
+                            src={imgurl || "/image.jpg"}
+                            alt={profileName || "employee"}
+                            onClick={() => setPreviewOpen(true)}
+                            className="
+            rounded-full
+            object-cover
+            border-2
+            border-white
+            shadow-md
+            relative
+            w-[112px]
+            h-[112px]
+            cursor-pointer
+            hover:scale-105
+            transition-all
+        "
+                        />
                     </div>
-                    <div className="text-right">
-                        <p className="text-[10px] text-slate-400 font-medium">{isPunchedIn ? "Punched at" : "Last Punched out"}</p>
-                        <p className="text-xs font-semibold text-slate-700">{punchTime || "--:--"}</p>
-                    </div>
-                </div>
 
-                {/* Time Elapsed Box */}
-                <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] relative flex justify-between items-center">
-                    <div>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">
-                            {!isPunchedIn && hasPunchedOut ? "Today Work Hour" : "Time Elapsed"}
+                    <div className="text-center px-4 pb-8">
+                        <h3 className="text-xl font-semibold text-gray-800">{profileName ?? "Employee"}</h3>
+                        <p className="text-sm text-gray-500 mb-2">BuzzHire User</p>
+
+                        <p className={`font-bold text-lg mb-2 ${isPunchedIn ? "text-green-600" : "text-red-600"}`}>
+                            {isPunchedIn ? "IN" : "OUT"}
                         </p>
-                        <p className="text-2xl font-light tracking-tight text-slate-800" style={{ fontFamily: "monospace" }}>
-                            {!isPunchedIn && hasPunchedOut ? formatTime(workedSeconds ?? 0) : formatTime(elapsedTime)}
+                        <button
+                            onClick={handlePunchAction}
+                            className={`w-2/3 py-3 rounded-lg font-normal text-white text-md shadow-lg transform transition-all duration-300
+            ${isPunchedIn ? "bg-red-500 shadow-red-300/50" : "bg-green-500 shadow-green-300/50"}
+            hover:scale-[1.02] active:scale-[0.98]`}
+                        >
+                            {isPunchedIn ? "Clock Out" : "Clock In"}
+                        </button>
+                        <p className="mt-4 text-xs text-gray-500">
+                            {isPunchedIn ? `Punched In at: ${punchTime}` : punchTime ? `Punched Out at: ${punchTime}` : "Ready to start your shift."}
                         </p>
                     </div>
-                    <div className="text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    </div>
                 </div>
 
-                {/* Clock Action Button */}
-                {!isPunchedIn && hasPunchedOut ? (
-                    <button
-                        disabled
-                        className="w-full py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-white text-base shadow-md bg-[#22C55E] cursor-not-allowed opacity-80"
+                {previewOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                        onClick={() => setPreviewOpen(false)}
                     >
-                        Successfully Punched Out
-                    </button>
-                ) : (
-                    <button
-                        onClick={handlePunchAction}
-                        className={`w-full py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-white text-base shadow-md transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]
-                ${isPunchedIn ? "bg-[#EF4444] shadow-red-200" : "bg-[#22C55E] shadow-green-200"}`}
-                    >
-                        {isPunchedIn ? "Clock Out" : "Clock In"}
-                    </button>
+                        <div className="relative">
+                            <img
+                                src={imgurl || "/image.jpg"}
+                                alt={profileName || "employee"}
+                                className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain"
+                            />
+
+                            <button
+                                onClick={() => setPreviewOpen(false)}
+                                className="absolute -top-3 -right-3 w-10 h-10 rounded-full bg-white text-black font-bold shadow-lg"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    </div>
                 )}
-            </div>
-        </div>
-    );
-};
+            </>
+
+        );
+    };
 
 const sumWorkingTime = (data: WeeklyAttendance[]) => {
     let totalMinutes = 0;
@@ -250,7 +247,7 @@ const EmployeeAttendancePage = () => {
     const { user, loading, logout } = useAuth();
     const router = useRouter();
 
-    const tabs = ["Attendance", "Leaves & WFH", "Employee Hierarchy"];
+    const tabs = ["Attendance", "Leaves & WFH"];
     const [activeTab, setActiveTab] = useState("Attendance");
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -1346,8 +1343,6 @@ const EmployeeAttendancePage = () => {
                                 <div className="w-full lg:w-[20%] mt-0 relative space-y-4">
                                     <PunchCard
                                         isPunchedIn={isPunchedInUI}
-                                        hasPunchedOut={Boolean(attendanceStatus?.punch_out_time)}
-                                        workedSeconds={workedSecondsToday}
                                         handlePunchAction={handlePunchAction}
                                         punchTime={punchTime}
                                         elapsedSeconds={initialElapsedSeconds}
@@ -1356,14 +1351,25 @@ const EmployeeAttendancePage = () => {
                                     />
 
                                     {/* Location display & refresh */}
-                                    <div className="mb-4">
-                                        <button
-                                            onClick={() => fetchGeolocation(true)}
-                                            disabled={isProcessing}
-                                            className={`w-full py-3 px-4 rounded-2xl text-sm font-semibold flex items-center justify-center transition duration-200 shadow-sm ${locationError ? "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50" : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100"}`}
-                                        >
-                                            {isProcessing ? "Updating Location..." : "Refresh Location"}
-                                        </button>
+                                    <div className={`p-4 rounded-md ${locationError ? "bg-red-100 text-red-700" : "bg-green-50 text-green-700"} mb-4`}>
+                                        <h3 className="font-semibold text-sm mb-1">Current Location Status:</h3>
+                                        {isProcessing && location === null ? (
+                                            <p className="text-xs">Fetching location...</p>
+                                        ) : locationError ? (
+                                            <p className="text-xs">{locationError}</p>
+                                        ) : (
+                                            <p className="text-xs">Lat: {location?.lat?.toFixed(6)}, Lon: {location?.lon?.toFixed(6)}</p>
+                                        )}
+
+                                        <div className="mt-3">
+                                            <button
+                                                onClick={() => fetchGeolocation()}
+                                                disabled={isProcessing}
+                                                className="w-full bg-white text-black border rounded-lg py-2 text-xs font-semibold hover:bg-gray-50 transition"
+                                            >
+                                                {isProcessing ? "Fetching..." : "Refresh Location"}
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {/* QUICK ACTIONS FOR ATTENDANCE TAB */}
