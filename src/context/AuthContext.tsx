@@ -67,6 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     Cookies.remove("access");
     Cookies.remove("refresh");
     setUser(null);
+    window.location.href = "/login";
   };
 
   const contextValue: AuthContextValue = {

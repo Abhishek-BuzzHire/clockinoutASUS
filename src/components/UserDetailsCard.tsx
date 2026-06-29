@@ -16,6 +16,7 @@ import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import ChangePassword from "./ChangePassword";
+import LogoutConfirmModal from "./LogoutConfirmModal";
 import { apiUrl } from "@/lib/data";
 
 
@@ -26,6 +27,7 @@ export function UserDetailsCard() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const [changePassPopUp, setChangePassPopUp] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
 
   const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
@@ -68,7 +70,6 @@ export function UserDetailsCard() {
 
   const handleLogout = () => {
     logout();
-    router.push("/login");
   };
 
   return (<>
@@ -150,7 +151,7 @@ export function UserDetailsCard() {
                 variant="outline"
                 size="sm"
                 className="w-full justify-center gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
-                onClick={handleLogout}
+                onClick={() => setShowLogoutModal(true)}
               >
                 <LogOut className="size-4" />
                 Logout
@@ -175,7 +176,17 @@ export function UserDetailsCard() {
           />
         </div>
       </div>
-    )}</>
+    )}
+    <LogoutConfirmModal
+      isOpen={showLogoutModal}
+      onConfirm={() => {
+        setShowLogoutModal(false);
+        setDropdownOpen(false);
+        handleLogout();
+      }}
+      onCancel={() => setShowLogoutModal(false)}
+    />
+  </>
   );
 }
 

@@ -26,6 +26,7 @@ import { useCurrentEmployee } from "@/hooks/useCurrentEmployee";
 import EmployeeCalendar from "@/components/attendance/EmployeeCalender";
 import EmployeeAttendanceSheet from "@/components/attendance/EmployeeAttendanceSheet";
 import { EmployeeHierarchyTab } from "../../employees/page";
+import LogoutConfirmModal from "@/components/LogoutConfirmModal";
 
 export const SHIFT_CONFIG: ShiftConfig = {
     startTime: "09:30",
@@ -251,6 +252,7 @@ const EmployeeAttendancePage = () => {
 
     const tabs = ["Attendance", "Leaves & WFH", "Employee Hierarchy"];
     const [activeTab, setActiveTab] = useState("Attendance");
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
 
     const [calendarMap, setCalendarMap] = useState<Record<string, CalendarDay>>({});
 
@@ -1600,12 +1602,20 @@ const EmployeeAttendancePage = () => {
                         </div>
 
                         <button
-                            onClick={logout}
+                            onClick={() => setShowLogoutModal(true)}
                             className="flex items-center justify-center gap-2 w-full px-4 py-3.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-100 hover:border-red-600 font-semibold text-xs uppercase tracking-widest rounded-2xl transition-all duration-300 active:scale-[0.98]"
                         >
                             <LogOut className="w-4 h-4" />
                             Logout System
                         </button>
+                        <LogoutConfirmModal
+                            isOpen={showLogoutModal}
+                            onConfirm={() => {
+                                setShowLogoutModal(false);
+                                logout();
+                            }}
+                            onCancel={() => setShowLogoutModal(false)}
+                        />
                     </>
                 )
 
