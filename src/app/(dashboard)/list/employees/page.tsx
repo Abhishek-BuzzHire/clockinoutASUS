@@ -725,12 +725,14 @@ const EmployeesListPage = () => {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                 <div className="flex items-center gap-4">
                   <h2 className="text-xl font-semibold text-slate-800">Employees</h2>
-                  <button 
-                    onClick={() => setShowDeactivated(!showDeactivated)}
-                    className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${showDeactivated ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'}`}
-                  >
-                    {showDeactivated ? "Hide Deactivated" : "Show Deactivated"}
-                  </button>
+                  {user?.role === 'admin' && (
+                    <button 
+                      onClick={() => setShowDeactivated(!showDeactivated)}
+                      className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${showDeactivated ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                    >
+                      {showDeactivated ? "Hide Deactivated" : "Show Deactivated"}
+                    </button>
+                  )}
                 </div>
 
                 <div className="relative w-full sm:w-72">
