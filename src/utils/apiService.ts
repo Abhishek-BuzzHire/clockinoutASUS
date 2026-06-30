@@ -21,6 +21,18 @@ export const apiService = {
             throw error; // Rethrow other errors
         }
     },
+    async addMultipleCandidates(candidates: Omit<Candidate, 'id' | 'createdAt'>[]): Promise<any> {
+        try {
+            const response = await axios.post(`${API_URL}/api/candidates/`, candidates, { headers: { Authorization: `Bearer ${token}` } });
+            return response.data;
+        } catch (error) {
+            console.error('Error adding Candidates in bulk:', error);
+            if (axios.isAxiosError(error) && error.response) {
+                throw new Error(error.response.data.error || `API error: ${error.response.status}`);
+            }
+            throw error;
+        }
+    },
 }
 
 const token = Cookies.get("access");

@@ -145,17 +145,20 @@ const BulkUploadForm: React.FC = () => {
 
         setIsSavingAll(true);
         
+        const validPayloads = [];
+        const invalidIds = new Set<string>();
+
+        // Pre-validate all candidates
         for (const c of toSave) {
-            // Validate
             if (!c.name.trim() || !c.email.trim()) {
+                invalidIds.add(c._uiId);
                 setCandidates(prev => prev.map(cand => cand._uiId === c._uiId ? { ...cand, status: 'failed', errorMsg: 'Name and Email required' } : cand));
                 continue;
             }
-
-            setCandidates(prev => prev.map(cand => cand._uiId === c._uiId ? { ...cand, status: 'saving' } : cand));
-
-            try {
-                const payload = {
+            
+            validPayloads.push({
+                _uiId: c._uiId, // Keep this to map back results
+                payload: {
                     id: '',
                     name: c.name,
                     phone: c.phone,
@@ -170,25 +173,30 @@ const BulkUploadForm: React.FC = () => {
                     skills: c.skills,
                     education: c.education,
                     jobTitle: c.jobTitle,
-                };
-
-                const savedId = await addCandidate(payload);
-                if (savedId) {
-                    setCandidates(prev => prev.map(cand => cand._uiId === c._uiId ? { ...cand, status: 'saved', isExpanded: false } : cand));
-                } else {
-                    throw new Error("Failed");
                 }
+            });
+        }
+
+        if (validPayloads.length > 0) {
+            // Mark valid ones as saving
+            const validUiIds = validPayloads.map(vp => vp._uiId);
+            setCandidates(prev => prev.map(cand => validUiIds.includes(cand._uiId) ? { ...cand, status: 'saving' } : cand));
+
+            try {
+                // Send them all at once!
+                await apiService.addMultipleCandidates(validPayloads.map(vp => vp.payload));
+                
+                // If successful, mark all as saved
+                setCandidates(prev => prev.map(cand => validUiIds.includes(cand._uiId) ? { ...cand, status: 'saved', isExpanded: false } : cand));
+                toast.success(`Successfully saved ${validPayloads.length} candidates in one click!`);
             } catch (err) {
-                setCandidates(prev => prev.map(cand => cand._uiId === c._uiId ? { ...cand, status: 'failed', errorMsg: 'Save failed' } : cand));
+                console.error("Bulk save failed", err);
+                setCandidates(prev => prev.map(cand => validUiIds.includes(cand._uiId) ? { ...cand, status: 'failed', errorMsg: 'Save failed' } : cand));
+                toast.error("Failed to save candidates. Please try again.");
             }
         }
         
         setIsSavingAll(false);
-        toast.success("Bulk save operation completed!");
-        
-        // Redirect to database if all are saved successfully
-        const allSaved = candidates.every(c => c.status === 'saved' || c.status === 'pending'); // Wait, if some are pending we might not want to redirect
-        // For now just show toast.
     };
 
 
