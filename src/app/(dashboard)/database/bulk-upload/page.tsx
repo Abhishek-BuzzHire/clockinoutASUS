@@ -37,10 +37,12 @@ const BulkUploadForm: React.FC = () => {
             try {
                 const parsed = JSON.parse(saved);
                 // We cannot restore File objects, so any pending/parsing ones are stuck or lost.
-                // Best to only restore 'parsed', 'failed', 'saving' or 'saved' states.
-                const validRestored = parsed.filter((c: any) => c.status !== 'pending' && c.status !== 'parsing');
+                // ALSO, DO NOT restore 'saved' ones, because they are already in the DB.
+                const validRestored = parsed.filter((c: any) => c.status !== 'pending' && c.status !== 'parsing' && c.status !== 'saved');
                 if (validRestored.length > 0) {
                     setCandidates(validRestored);
+                } else {
+                    localStorage.removeItem('bulkUploadCandidates');
                 }
             } catch (e) {
                 console.error("Failed to load candidates from local storage");
