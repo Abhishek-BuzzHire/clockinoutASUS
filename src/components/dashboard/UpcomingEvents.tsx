@@ -82,7 +82,7 @@ export default function UpcomingEvents() {
           Birthdays & Anniversaries
         </h3>
         <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium whitespace-nowrap ml-2">
-          Past 10 & Next 30 days
+          Next 30 days
         </span>
       </div>
 
