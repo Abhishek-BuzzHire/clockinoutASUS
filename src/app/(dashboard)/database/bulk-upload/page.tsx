@@ -9,7 +9,7 @@ import { Candidate } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import FormField from '@/components/ui/FormField';
-import { uploadAndParseResume } from '@/utils/apiService';
+import { uploadAndParseResume, apiService } from '@/utils/apiService';
 
 type BulkCandidate = Omit<Candidate, 'id' | 'createdAt'> & {
     _uiId: string;
