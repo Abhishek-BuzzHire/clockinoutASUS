@@ -292,8 +292,10 @@ const EmployeesListPage = () => {
     { revalidateOnFocus: false }
   );
 
+  const [showDeactivated, setShowDeactivated] = useState(false)
+
   const { data: usersData, mutate: mutateUsers } = useSWR(
-    `${apiUrl}/api/users/`,
+    `${apiUrl}/api/users/?include_inactive=${showDeactivated}`,
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -720,10 +722,18 @@ const EmployeesListPage = () => {
             {/* ================= USERS LIST ================= */}
             <div className="min-h-screen bg-slate-50 p-6">
 
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-slate-800">Employees</h2>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                <div className="flex items-center gap-4">
+                  <h2 className="text-xl font-semibold text-slate-800">Employees</h2>
+                  <button 
+                    onClick={() => setShowDeactivated(!showDeactivated)}
+                    className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${showDeactivated ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                  >
+                    {showDeactivated ? "Hide Deactivated" : "Show Deactivated"}
+                  </button>
+                </div>
 
-                <div className="relative w-72">
+                <div className="relative w-full sm:w-72">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
@@ -737,12 +747,17 @@ const EmployeesListPage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {filteredUsers.map((user: any) => (
-                  <div key={user.id} className="bg-white border rounded-xl p-5">
+                  <div key={user.id} className={`bg-white border rounded-xl p-5 ${user.is_active === false ? 'opacity-60 grayscale-[50%]' : ''}`}>
                     <div className="flex justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <UserCircle className="w-8 h-8 text-slate-400" />
                         <div>
-                          <p className="font-semibold">{user.name || user.username}</p>
+                          <p className="font-semibold flex items-center gap-2">
+                            {user.name || user.username}
+                            {user.is_active === false && (
+                              <span className="text-[10px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Suspended</span>
+                            )}
+                          </p>
                           <p className="text-sm text-slate-500">{user.username}</p>
                         </div>
                       </div>
