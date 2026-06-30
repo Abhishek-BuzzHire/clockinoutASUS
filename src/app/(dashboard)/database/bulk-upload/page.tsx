@@ -224,15 +224,13 @@ const BulkUploadForm: React.FC = () => {
                 // Send them all at once!
                 await apiService.addMultipleCandidates(validPayloads.map(vp => vp.payload));
                 
-                // If successful, mark all as saved
+                // If successful, remove saved candidates from the UI entirely
                 setCandidates(prev => {
-                    const newCands = prev.map(cand => validUiIds.includes(cand._uiId) ? { ...cand, status: 'saved' as const, isExpanded: false } : cand);
-                    // Filter out saved ones from localStorage so they don't persist forever
-                    const remaining = newCands.filter(c => c.status !== 'saved');
-                    if (remaining.length === 0) {
+                    const remainingCands = prev.filter(cand => !validUiIds.includes(cand._uiId));
+                    if (remainingCands.length === 0) {
                         localStorage.removeItem('bulkUploadCandidates');
                     }
-                    return newCands;
+                    return remainingCands;
                 });
                 toast.success(`Successfully saved ${validPayloads.length} candidates in one click!`);
             } catch (err) {
