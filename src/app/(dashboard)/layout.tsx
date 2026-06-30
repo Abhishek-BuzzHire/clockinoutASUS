@@ -2,7 +2,6 @@ import Menu from "@/components/Menu";
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import Link from "next/link";
-import BirthdayCelebration from "@/components/BirthdayCelebration";
 
 export default function DashboardLayout({
   children,
@@ -26,8 +25,6 @@ export default function DashboardLayout({
         <Navbar />
         {children}
       </div>
-
-      <BirthdayCelebration />
     </div>
   );
 }
