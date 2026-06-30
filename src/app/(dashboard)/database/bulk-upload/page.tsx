@@ -28,6 +28,44 @@ const BulkUploadForm: React.FC = () => {
     const [candidates, setCandidates] = useState<BulkCandidate[]>([]);
     const [isProcessingAll, setIsProcessingAll] = useState(false);
     const [isSavingAll, setIsSavingAll] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    // Load from localStorage on mount
+    React.useEffect(() => {
+        const saved = localStorage.getItem('bulkUploadCandidates');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                // We cannot restore File objects, so any pending/parsing ones are stuck or lost.
+                // Best to only restore 'parsed', 'failed', 'saving' or 'saved' states.
+                const validRestored = parsed.filter((c: any) => c.status !== 'pending' && c.status !== 'parsing');
+                if (validRestored.length > 0) {
+                    setCandidates(validRestored);
+                }
+            } catch (e) {
+                console.error("Failed to load candidates from local storage");
+            }
+        }
+        setIsLoaded(true);
+    }, []);
+
+    // Save to localStorage whenever candidates change
+    React.useEffect(() => {
+        if (!isLoaded) return;
+        
+        if (candidates.length === 0) {
+            localStorage.removeItem('bulkUploadCandidates');
+            return;
+        }
+
+        // We must strip out the 'file' property because File objects cannot be JSON serialized
+        const serializableCandidates = candidates.map(c => {
+            const { file, ...rest } = c;
+            return rest;
+        });
+
+        localStorage.setItem('bulkUploadCandidates', JSON.stringify(serializableCandidates));
+    }, [candidates, isLoaded]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
@@ -187,7 +225,15 @@ const BulkUploadForm: React.FC = () => {
                 await apiService.addMultipleCandidates(validPayloads.map(vp => vp.payload));
                 
                 // If successful, mark all as saved
-                setCandidates(prev => prev.map(cand => validUiIds.includes(cand._uiId) ? { ...cand, status: 'saved', isExpanded: false } : cand));
+                setCandidates(prev => {
+                    const newCands = prev.map(cand => validUiIds.includes(cand._uiId) ? { ...cand, status: 'saved' as const, isExpanded: false } : cand);
+                    // Filter out saved ones from localStorage so they don't persist forever
+                    const remaining = newCands.filter(c => c.status !== 'saved');
+                    if (remaining.length === 0) {
+                        localStorage.removeItem('bulkUploadCandidates');
+                    }
+                    return newCands;
+                });
                 toast.success(`Successfully saved ${validPayloads.length} candidates in one click!`);
             } catch (err) {
                 console.error("Bulk save failed", err);
