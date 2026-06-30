@@ -358,10 +358,13 @@ const EmployeesListPage = () => {
   const [isUpdating, setIsUpdating] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { user } = useAuth();
-  const tabs = user?.role === 'employee' ? ['Employees', 'Employee Hierarchy'] : ["Employees", "Users", "Employee Hierarchy"];
-  const [activeTab, setActiveTab] = useState("Employees");
+  const tabs = user?.role === 'employee' ? ['Employee Hierarchy'] : ["Employees", "Users", "Employee Hierarchy"];
+  const [activeTab, setActiveTab] = useState("Employee Hierarchy");
+
   React.useEffect(() => {
-    if (user?.role === "employee") setActiveTab("Employee Hierarchy");
+    if (user?.role && user.role !== "employee") {
+      setActiveTab("Employees");
+    }
   }, [user]);
 
   const [formData, setFormData] = useState({
