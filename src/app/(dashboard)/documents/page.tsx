@@ -314,6 +314,11 @@ export default function DocumentsPage() {
                     <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-medium text-xs transition-all duration-200 border border-amber-200 bg-amber-50 text-amber-700">
                         <Clock size={14} /> Pending
                     </div>
+                ) : uploading[actualDocId] ? (
+                    <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-semibold text-xs transition-all duration-200 border border-blue-200 bg-blue-50 text-blue-700 shadow-sm">
+                        <Upload size={14} className="animate-bounce" />
+                        Uploading...
+                    </div>
                 ) : selectedFile ? (
                     <div className="flex gap-2">
                         <button 
