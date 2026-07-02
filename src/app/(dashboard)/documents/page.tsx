@@ -522,6 +522,7 @@ export default function DocumentsPage() {
                                     onLoad={(e) => {
                                         const { naturalWidth, naturalHeight } = e.currentTarget;
                                         setCroppedAreaPixels({
+                                            unit: 'px',
                                             x: naturalWidth * 0.05,
                                             y: naturalHeight * 0.05,
                                             width: naturalWidth * 0.9,
