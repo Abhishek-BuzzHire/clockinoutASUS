@@ -77,7 +77,9 @@ const PunchCard: React.FC<{
     elapsedSeconds: number;
     profileName?: string;
     imgurl?: string;
-}> = ({ isPunchedIn, hasPunchedOut, workedSeconds, handlePunchAction, punchTime, elapsedSeconds, profileName, imgurl }) => {
+    onRefreshLocation?: () => void;
+    isProcessingLocation?: boolean;
+}> = ({ isPunchedIn, hasPunchedOut, workedSeconds, handlePunchAction, punchTime, elapsedSeconds, profileName, imgurl, onRefreshLocation, isProcessingLocation }) => {
     const [elapsedTime, setElapsedTime] = useState<number>(elapsedSeconds ?? 0);
     const intervalRef = useRef<number | null>(null);
 
@@ -170,12 +172,25 @@ const PunchCard: React.FC<{
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">
                             {!isPunchedIn && hasPunchedOut ? "Today Work Hour" : "Time Elapsed"}
                         </p>
-                        <p className="text-2xl font-light tracking-tight text-slate-800" style={{ fontFamily: "monospace" }}>
+                        <p className="text-2xl font-bold tracking-wider text-slate-800 font-sans">
                             {!isPunchedIn && hasPunchedOut ? formatTime(workedSeconds ?? 0) : formatTime(elapsedTime)}
                         </p>
                     </div>
-                    <div className="text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <div className="flex items-center gap-2">
+                        {onRefreshLocation && (
+                            <button
+                                onClick={onRefreshLocation}
+                                disabled={isProcessingLocation}
+                                title="Refresh GPS Location"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200/80 shadow-xs text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 active:scale-95 transition cursor-pointer text-xs font-bold shrink-0"
+                            >
+                                <MapPin size={14} className={`shrink-0 ${isProcessingLocation ? "animate-bounce text-indigo-500" : "text-indigo-600"}`} />
+                                <span>{isProcessingLocation ? "Updating..." : "Refresh Location"}</span>
+                            </button>
+                        )}
+                        <div className="text-slate-400 hidden sm:block">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
                     </div>
                 </div>
 
@@ -1353,18 +1368,9 @@ const EmployeeAttendancePage = () => {
                                         elapsedSeconds={initialElapsedSeconds}
                                         profileName={employee?.name ?? "Employee"}
                                         imgurl={avatarSrc}
+                                        onRefreshLocation={() => fetchGeolocation(true)}
+                                        isProcessingLocation={isProcessing}
                                     />
-
-                                    {/* Location display & refresh */}
-                                    <div className="mb-4">
-                                        <button
-                                            onClick={() => fetchGeolocation(true)}
-                                            disabled={isProcessing}
-                                            className={`w-full py-3 px-4 rounded-2xl text-sm font-semibold flex items-center justify-center transition duration-200 shadow-sm ${locationError ? "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50" : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100"}`}
-                                        >
-                                            {isProcessing ? "Updating Location..." : "Refresh Location"}
-                                        </button>
-                                    </div>
 
                                     {/* QUICK ACTIONS FOR ATTENDANCE TAB */}
                                     <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 mb-0 lg:mb-4">
