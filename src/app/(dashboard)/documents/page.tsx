@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Cookies from "js-cookie";
 import { apiUrl } from '@/lib/data';
 import { ArrowLeft, Upload, File, CheckCircle, ShieldCheck, Info, CreditCard, IdCard, GraduationCap, Award, Briefcase, Mail, FileCheck, FileText, Clock, XCircle } from 'lucide-react';
@@ -140,6 +140,22 @@ export default function DocumentsPage() {
         baseURL: apiUrl,
         headers: { Authorization: `Bearer ${token}` }
     });
+
+    useEffect(() => {
+        const fetchDocuments = async () => {
+            try {
+                const res = await api.get('/api/documents/my/');
+                const fetchedStatuses: { [key: string]: 'PENDING' | 'VERIFIED' | 'REJECTED' | null } = {};
+                res.data.forEach((doc: any) => {
+                    fetchedStatuses[doc.doc_type] = doc.status;
+                });
+                setDocStatuses(fetchedStatuses);
+            } catch (err) {
+                console.error("Failed to fetch documents", err);
+            }
+        };
+        fetchDocuments();
+    }, []);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, actualDocId: string, allowedFormats: string[]) => {
         const file = e.target.files?.[0];

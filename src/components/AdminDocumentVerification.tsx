@@ -114,6 +114,58 @@ const getCombinedComments = (doc: DocumentTypeDefinition, getRecord: (id: string
   return getRecord(doc.id)?.admin_comment;
 };
 
+const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: string; isPdf: boolean }) => {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+
+  React.useEffect(() => {
+    let objectUrl = "";
+    const fetchDoc = async () => {
+      try {
+        const token = Cookies.get("access");
+        const response = await axios.get(`${apiUrl}${url}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob'
+        });
+        objectUrl = URL.createObjectURL(response.data);
+        setBlobUrl(objectUrl);
+      } catch (err) {
+        console.error("Failed to fetch document blob", err);
+        setError(true);
+      }
+    };
+    fetchDoc();
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [url]);
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-48 gap-3 bg-red-50 rounded-xl border border-dashed border-red-200 w-full">
+         <AlertTriangle size={24} className="text-red-400" />
+         <p className="text-sm font-medium text-red-500">Preview Not Available</p>
+      </div>
+    );
+  }
+
+  if (!blobUrl) {
+    return <div className="h-48 flex items-center justify-center text-slate-400 w-full">Loading preview...</div>;
+  }
+
+  if (isPdf) {
+    return <iframe src={blobUrl} className="w-full h-full min-h-[350px] rounded-xl border border-slate-200 bg-white shadow-sm" title={label} />;
+  }
+  
+  return (
+    <img
+      src={blobUrl}
+      alt={label || "Document"}
+      className="w-full h-auto max-h-[400px] object-contain rounded-xl shadow-sm border border-slate-200 bg-white p-1"
+    />
+  );
+};
+
 const DocumentPreviewModal = ({
   doc,
   getRecord,
@@ -159,16 +211,7 @@ const DocumentPreviewModal = ({
     return (
       <div className="flex flex-col gap-2 h-full">
         {label && <p className="text-sm font-bold text-slate-700 bg-white px-3 py-1 rounded-full shadow-sm w-fit border border-slate-100">{label}</p>}
-        {isPdf ? (
-          <iframe src={record.file_url} className="w-full h-full min-h-[350px] rounded-xl border border-slate-200 bg-white shadow-sm" title={label} />
-        ) : (
-          <img
-            src={record.file_url}
-            alt={label || doc.name}
-            className="w-full h-auto max-h-[400px] object-contain rounded-xl shadow-sm border border-slate-200 bg-white p-1"
-            onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/600x400?text=Preview+Not+Available"; }}
-          />
-        )}
+        <SecureDocumentViewer url={record.file_url} label={label} isPdf={isPdf} />
       </div>
     );
   };
