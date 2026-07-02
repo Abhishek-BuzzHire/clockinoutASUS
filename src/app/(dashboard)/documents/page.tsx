@@ -255,7 +255,6 @@ export default function DocumentsPage() {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            // Update status immediately
             setDocStatuses(prev => ({ ...prev, [actualDocId]: 'PENDING' }));
             // Remove from selected files
             setSelectedFiles(prev => {
@@ -265,7 +264,21 @@ export default function DocumentsPage() {
             });
             setError(null);
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to upload document');
+            const data = err.response?.data;
+            let msg = 'Failed to upload document';
+            if (data) {
+                if (data.error) msg = data.error;
+                else if (data.message) msg = data.message;
+                else if (typeof data === 'object') {
+                    const firstKey = Object.keys(data)[0];
+                    if (Array.isArray(data[firstKey])) {
+                        msg = `${firstKey}: ${data[firstKey][0]}`;
+                    } else if (typeof data[firstKey] === 'string') {
+                        msg = data[firstKey];
+                    }
+                }
+            }
+            setError(msg);
         } finally {
             setUploading(prev => ({ ...prev, [actualDocId]: false }));
         }
