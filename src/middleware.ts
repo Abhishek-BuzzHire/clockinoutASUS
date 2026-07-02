@@ -40,6 +40,7 @@ const ROUTES = {
     "/database/add-candidate",
     '/list/attendance/employee',
     '/profile',
+    '/documents',
     '/dashboard'
   ]
 }
@@ -96,5 +97,6 @@ export const config = {
     "/profile/:path*",
     "/ai-assist/:path*",
     "/database/:path*",
+    "/documents/:path*",
   ],
 };

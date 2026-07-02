@@ -6,6 +6,7 @@ import { Linkedin } from "lucide-react";
 import Image from "next/image"
 import { apiUrl } from "@/lib/data";
 import { useState, useEffect } from "react";
+import AdminDocumentVerification from "@/components/AdminDocumentVerification";
 
 
 const EmployeeDetails = ({
@@ -139,10 +140,14 @@ const EmployeeDetails = ({
             </div>
           </div>
         );
-      case 'Payroll':
+
+      case 'Documents':
         return (
-          <div className="mt-6 bg-white p-6 rounded-md shadow-md">
-            <h2 className="text-lg font-bold mb-4">Payroll</h2>
+          <div className="mt-6 px-2">
+            <AdminDocumentVerification
+              employeeId={data.user_id || data.id}
+              employeeName={data.name || "Employee"}
+            />
           </div>
         );
       default:
@@ -150,7 +155,7 @@ const EmployeeDetails = ({
     }
   }
 
-  const tabs = ['Details', 'Payroll', 'Attendance', 'Leaves'];
+  const tabs = ['Details', 'Documents', 'Attendance'];
 
   return (
     <div className="w-full min-h-screen bg-white ">

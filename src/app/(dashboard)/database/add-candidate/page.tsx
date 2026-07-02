@@ -205,9 +205,9 @@ const CandidateForm: React.FC = () => {
                 </div>
             </Card>
 
-            <Card>
+            <Card className="p-8">
                 <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                         {/* Basic Information */}
                         <FormField
                             label="Full Name"
@@ -223,7 +223,7 @@ const CandidateForm: React.FC = () => {
                                 onChange={handleInputChange}
                                 className={`mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm
                   ${errors.name ? 'border-red-300' : 'border-gray-300'}`}
-                                placeholder="John Doe"
+                                placeholder="Rahul Sharma"
                             />
                         </FormField>
 
@@ -241,7 +241,7 @@ const CandidateForm: React.FC = () => {
                                 onChange={handleInputChange}
                                 className={`mt-1 p-2 block w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm
                   ${errors.email ? 'border-red-300' : 'border-gray-300'}`}
-                                placeholder="john.doe@example.com"
+                                placeholder="info@buzzhire.in"
                             />
                         </FormField>
 
@@ -257,7 +257,7 @@ const CandidateForm: React.FC = () => {
                                 value={formData.phone}
                                 onChange={handleInputChange}
                                 className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                placeholder="+1 (123) 456-7890"
+                                placeholder="+91 98765 43210"
                             />
                         </FormField>
 
@@ -272,7 +272,7 @@ const CandidateForm: React.FC = () => {
                                 value={formData.currentCompanyName}
                                 onChange={handleInputChange}
                                 className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                placeholder="ABC Corp"
+                                placeholder="TCS"
                             />
                         </FormField>
 
@@ -302,7 +302,7 @@ const CandidateForm: React.FC = () => {
                                 value={formData.totalExperienceYears ?? ''}
                                 onChange={handleInputChange}
                                 className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                placeholder="5 years"
+                                placeholder="5"
                             />
                         </FormField>
 
@@ -317,7 +317,7 @@ const CandidateForm: React.FC = () => {
                                 value={formData.salary ?? ''}
                                 onChange={handleInputChange}
                                 className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                placeholder="$100,000"
+                                placeholder="₹10,00,000"
                             />
                         </FormField>
 
@@ -332,7 +332,7 @@ const CandidateForm: React.FC = () => {
                                 value={formData.expected_ctc ?? ''}
                                 onChange={handleInputChange}
                                 className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                placeholder="$100,000"
+                                placeholder="₹12,00,000"
                             />
                         </FormField>
 
@@ -347,7 +347,7 @@ const CandidateForm: React.FC = () => {
                                 value={formData.location}
                                 onChange={handleInputChange}
                                 className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                placeholder="New York, NY"
+                                placeholder="Mumbai, MH"
                             />
                         </FormField>
 

@@ -142,8 +142,16 @@ export default function RecentRequests() {
     } else if (req.typeKey === "wfh") {
       setSelectedWFH(req.rawData);
     } else if (req.typeKey === "regularize") {
-      setCorrectionToken(req.rawData.approval_token);
-      setCorrectionDetail(req.rawData);
+      try {
+        const tkn = Cookies.get("access");
+        const res = await axios.get(`${apiUrl}/api/admin/attendance-approval/${req.rawData.approval_token}`, {
+          headers: { Authorization: `Bearer ${tkn}` }
+        });
+        setCorrectionToken(req.rawData.approval_token);
+        setCorrectionDetail(res.data.data);
+      } catch (err) {
+        alert("Failed to fetch correction detail");
+      }
     }
   };
 

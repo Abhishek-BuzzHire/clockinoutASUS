@@ -253,12 +253,11 @@ const AdminAttendancePage = () => {
 
         const calendarDay = calMap[dateKey];
 
-        const isWorkingDay = calendarDay?.is_working_day ?? !isWeekend(thisDate);
+        const isWorkingDay = calendarDay?.is_working_day ?? true;
         const isLeave = day.work_status === "LEAVE";
         const isWFH = day.work_status === "WFH";
         const isWFO = day.work_status === "WFO";
         const hasPunch = !!day.punch_in;
-        const isOffDay = !isWorkingDay || isWeekend(thisDate) || day.work_status === "OFF";
         const isPastDay = isBefore(startOfDay(thisDate), startOfDay(today));
         const isFutureDay = isAfter(startOfDay(thisDate), startOfDay(today));
 
@@ -267,7 +266,7 @@ const AdminAttendancePage = () => {
 
         if (isLeave) {
           attendanceStatus = "leave";
-        } else if (isFutureDay || (isOffDay && !hasPunch)) {
+        } else if (isFutureDay) {
           attendanceStatus = null;
         } else if (isPastDay) {
           if (!hasPunch) {
@@ -296,7 +295,7 @@ const AdminAttendancePage = () => {
               const mins = diff % 60;
               lateBy = `${hrs > 0 ? `${hrs}h ` : ""}${mins}m`;
             }
-          } else if (!isOffDay) {
+          } else {
             attendanceStatus = "absent";
           }
         }
@@ -340,8 +339,8 @@ const AdminAttendancePage = () => {
 
       setList(res.data.data || []);
     } catch (err) {
-      console.error(err);
-      alert("Failed to load requests");
+      console.error("Failed to load regularization requests:", err);
+      // Backend not connected yet - silently handle
     } finally {
       setLoadingPage(false);
     }
@@ -352,12 +351,6 @@ const AdminAttendancePage = () => {
   }, [statusFilter]);
 
   const openDetail = async (token: string) => {
-    const existing = list.find((r: any) => r.approval_token === token);
-    if (existing) {
-      setSelected(token);
-      setDetail(existing);
-      return;
-    }
     try {
       const tkn = Cookies.get("access");
       const res = await axios.get(`${apiUrl}/api/admin/attendance-approval/${token}`, {
@@ -409,8 +402,8 @@ const AdminAttendancePage = () => {
 
       setLeaves(res.data.results || []);
     } catch (err) {
-      console.error(err);
-      alert("Failed to fetch leave requests");
+      console.error("Failed to fetch leave requests:", err);
+      // Backend not connected yet - silently handle
     } finally {
       setLoadingPage(false);
     }
@@ -455,8 +448,8 @@ const AdminAttendancePage = () => {
 
       setWfhList(res.data.results || []);
     } catch (err) {
-      console.error(err);
-      alert("Failed to load WFH requests");
+      console.error("Failed to load WFH requests:", err);
+      // Backend not connected yet - silently handle
     } finally {
       setLoadingPage(false);
     }
@@ -489,9 +482,6 @@ const AdminAttendancePage = () => {
 
   // When month changes via calendar — SWR auto-fetches based on currentDate
   const handleMonthChange = (newMonth: Date) => {
-    if (newMonth.getFullYear() < 2025 || (newMonth.getFullYear() === 2025 && newMonth.getMonth() < 11)) {
-      return;
-    }
     setCurrentDate(newMonth);
     setSelectedDate(newMonth);
     // SWR key changes with currentDate, so it auto-fetches or serves from cache ⚡

@@ -5,10 +5,10 @@ import React, { useState, useEffect, ChangeEvent, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
 import Cookies from "js-cookie";
 import { apiUrl } from '@/lib/data';
-import { X, ZoomIn, ZoomOut } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, Upload, User, Briefcase, MapPin, Camera, Linkedin } from 'lucide-react';
 import { useCurrentEmployee } from '@/hooks/useCurrentEmployee';
 import { format, startOfMonth, endOfMonth } from "date-fns";
-import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
+import { useRouter } from 'next/navigation';
 
 interface ProfileData {
     id?: number;
@@ -89,6 +89,8 @@ export default function ProfilePage() {
     const [profile, setProfile] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
     const [files, setFiles] = useState<{ [key: string]: File }>({});
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -208,6 +210,7 @@ export default function ProfilePage() {
     const handleSave = async () => {
         if (!profile) return;
         setSaving(true);
+        setError(null);
 
         // Use FormData for binary/file uploads
         const formData = new FormData();
@@ -221,19 +224,21 @@ export default function ProfilePage() {
 
         // Append specific files for binary fields as defined in your Serializer
         if (files.profile_photo_file) formData.append('profile_photo_file', files.profile_photo_file);
-        if (files.e_sign_file) formData.append('e_sign_file', files.e_sign_file);
 
         try {
             await api.patch(`/api/profile/me/`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            alert("Profile updated successfully");
+            alert("✅ Details updated successfully");
             setPreviewUrl(null);
             setPhotoTimestamp(Date.now());
             mutateCurrentEmployee();
             fetchProfile(); // Refresh data
-        } catch (error) {
+        } catch (error: any) {
             console.error("Update failed", error);
+            const errorMessage = error?.response?.data?.message || error?.message || "Failed to update profile. Please try again.";
+            setError(errorMessage);
+            alert(`❌ Error: ${errorMessage}`);
         } finally {
             setSaving(false);
         }
@@ -242,72 +247,92 @@ export default function ProfilePage() {
     if (loading) return <div className="p-8 text-slate-500">Loading profile...</div>;
 
     return (
-        <div className="min-h-screen bg-slate-50 p-4 md:p-8 text-slate-800">
-            <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-
+        <div className="min-h-screen bg-slate-50/50 p-4 md:p-8 text-slate-800 font-sans">
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                
                 {/* Header */}
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
-                    <div>
-                        <h1 className="text-xl font-semibold text-slate-900">Employee Profile</h1>
-                        <p className="text-sm text-slate-500">Update your professional information and documents</p>
+                <div className="p-6 md:p-8 border-b border-slate-100 bg-white">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Employee Profile</h1>
+                            <p className="text-sm text-slate-500 mt-1">Manage your personal and professional details</p>
+                        </div>
+                        <button
+                            onClick={() => router.push('/documents')}
+                            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors text-sm font-semibold shadow-sm hover:shadow-md"
+                        >
+                            <Upload size={18} />
+                            Upload Documents
+                        </button>
                     </div>
-                    <button
-                        onClick={handleSave}
-                        disabled={saving}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-semibold disabled:bg-slate-300"
-                    >
-                        {saving ? 'Saving...' : 'Save Changes'}
-                    </button>
+                    {error && (
+                        <div className="mt-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl flex justify-between items-center shadow-sm">
+                            <span className="text-sm font-medium text-red-800">{error}</span>
+                            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 transition-colors">✕</button>
+                        </div>
+                    )}
                 </div>
 
-                <div className="p-6 md:p-8 space-y-8">
+                <div className="p-6 md:p-8 space-y-10">
 
                     {/* Section 1: Basic Info */}
                     <section>
-                        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">Basic Information</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                <User size={18} />
+                            </div>
+                            <h2 className="text-base font-semibold text-slate-900">Basic Information</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                            
                             {/* Profile Photo Display & Upload */}
-                            <div className="flex flex-col items-center space-y-3 p-4 bg-slate-50 rounded-lg">
-                                <div className="w-24 h-24 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">
-                                    {previewUrl ? (
-                                        <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                                    ) : profile?.profile_photo ? (
-                                        <img src={
-                                            profile.profile_photo.startsWith('/api/') 
-                                                ? (profile.profile_photo.includes('?') 
-                                                    ? `${apiUrl}${profile.profile_photo}` 
-                                                    : `${apiUrl}${profile.profile_photo}?t=${photoTimestamp}`)
-                                                : profile.profile_photo.startsWith('data:') 
-                                                    ? profile.profile_photo 
-                                                    : `data:image/jpeg;base64,${profile.profile_photo}`
-                                        } alt="Profile" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">No Photo</div>
-                                    )}
+                            <div className="md:col-span-4 flex flex-col items-center">
+                                <div className="relative group">
+                                    <div className="w-32 h-32 rounded-full bg-slate-100 overflow-hidden ring-4 ring-slate-50 shadow-md">
+                                        {previewUrl ? (
+                                            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                                        ) : profile?.profile_photo ? (
+                                            <img src={
+                                                profile.profile_photo.startsWith('/api/') 
+                                                    ? (profile.profile_photo.includes('?') 
+                                                        ? `${apiUrl}${profile.profile_photo}` 
+                                                        : `${apiUrl}${profile.profile_photo}?t=${photoTimestamp}`)
+                                                    : profile.profile_photo.startsWith('data:') 
+                                                        ? profile.profile_photo 
+                                                        : `data:image/jpeg;base64,${profile.profile_photo}`
+                                            } alt="Profile" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
+                                                <User size={32} className="opacity-50 mb-1" />
+                                                <span className="text-[10px] uppercase font-semibold">No Photo</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <label className="absolute bottom-0 right-0 p-2.5 bg-blue-600 text-white rounded-full shadow-lg cursor-pointer hover:bg-blue-700 transition-colors ring-4 ring-white group-hover:scale-105 transform duration-200">
+                                        <Camera size={16} />
+                                        <input type="file" name="profile_photo_file" className="hidden" onChange={handleFileChange} />
+                                    </label>
                                 </div>
-                                <label className="cursor-pointer text-blue-600 text-xs font-semibold hover:underline">
-                                    Change Photo
-                                    <input type="file" name="profile_photo_file" className="hidden" onChange={handleFileChange} />
-                                </label>
+                                <p className="text-xs text-slate-500 mt-4 font-medium">Allowed: JPG, PNG (Max 5MB)</p>
                             </div>
 
-                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Inputs */}
+                            <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Full Name</label>
-                                    <input type="text" name="name" value={profile?.name || ''} onChange={handleInputChange} className="w-full p-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Full Name</label>
+                                    <input type="text" name="name" value={profile?.name || ''} onChange={handleInputChange} className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Email Address</label>
-                                    <input type="email" name="email" value={profile?.email || ''} onChange={handleInputChange} className="w-full p-2 border border-slate-200 rounded text-sm bg-slate-50" />
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Email Address</label>
+                                    <input type="email" name="email" value={profile?.email || ''} onChange={handleInputChange} className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Phone Number</label>
-                                    <input type="text" name="phone" value={profile?.phone || ''} onChange={handleInputChange} className="w-full p-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Phone Number</label>
+                                    <input type="text" name="phone" value={profile?.phone || ''} onChange={handleInputChange} className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Gender</label>
-                                    <select name="gender" value={profile?.gender || ''} onChange={handleInputChange} className="w-full p-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Gender</label>
+                                    <select name="gender" value={profile?.gender || ''} onChange={handleInputChange} className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                                         <option value="">Select Gender</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
@@ -315,96 +340,110 @@ export default function ProfilePage() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Emergency Contact</label>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Emergency Contact</label>
                                     <input
                                         type="text"
                                         name="emergency_contact"
                                         value={profile?.emergency_contact || ''}
                                         onChange={handleInputChange}
-                                        className="w-full p-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                     />
                                 </div>
-
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Date of Birth</label>
-                                    <CustomDatePicker
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Date of Birth</label>
+                                    <input
+                                        type="date"
+                                        name="date_of_birth"
                                         value={profile?.date_of_birth || ''}
-                                        onChange={val => setProfile(prev => prev ? { ...prev, date_of_birth: val } : null)}
-                                        placeholder="Select date of birth"
+                                        onChange={handleInputChange}
+                                        className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                     />
                                 </div>
-
                             </div>
                         </div>
                     </section>
 
+                    <hr className="border-slate-100" />
+
                     {/* Section 2: Work Details */}
-                    <section className="pt-6 border-t border-slate-100">
-                        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">Professional Details</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <section>
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                                <Briefcase size={18} />
+                            </div>
+                            <h2 className="text-base font-semibold text-slate-900">Professional Details</h2>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
-                                <label className="block text-xs font-semibold text-slate-500 mb-1">Department</label>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Department</label>
                                 <select
                                     name="department"
                                     value={profile?.department || ''}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 >
                                     <option value="">Select Department</option>
                                     <option value="Technology">Technology</option>
                                     <option value="Human Resource">Human Resource</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="Marketing">Marketing</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold text-slate-500 mb-1">Designation</label>
-                                <input type="text" name="designation" value={profile?.designation || ''} onChange={handleInputChange} className="w-full p-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Designation</label>
+                                <input type="text" name="designation" value={profile?.designation || ''} onChange={handleInputChange} className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold text-slate-500 mb-1">Joining Date</label>
-                                <CustomDatePicker
+                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Joining Date</label>
+                                <input
+                                    type="date"
+                                    name="joining_date"
                                     value={profile?.joining_date || ''}
-                                    onChange={val => setProfile(prev => prev ? { ...prev, joining_date: val } : null)}
-                                    placeholder="Select joining date"
+                                    onChange={handleInputChange}
+                                    className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                             </div>
-
                             <div>
-                                <label className="block text-xs font-semibold text-slate-500 mb-1">LinkedIn URL</label>
-                                <input type="url" name="linkedIn" value={profile?.linkedIn || ''} onChange={handleInputChange} className="w-full p-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">LinkedIn Profile</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                        <img src="https://img.icons8.com/color/48/linkedin.png" alt="LinkedIn" className="w-5 h-5 object-contain" />
+                                    </div>
+                                    <input type="url" name="linkedIn" value={profile?.linkedIn || ''} onChange={handleInputChange} placeholder="https://linkedin.com/in/username" className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                                </div>
                             </div>
                         </div>
                     </section>
 
-                    {/* Section 3: Address & Bio */}
-                    <section className="pt-6 border-t border-slate-100">
-                        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">Residential Address</h2>
+                    <hr className="border-slate-100" />
+
+                    {/* Section 3: Address */}
+                    <section>
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                                <MapPin size={18} />
+                            </div>
+                            <h2 className="text-base font-semibold text-slate-900">Residential Address</h2>
+                        </div>
                         <textarea
                             name="address"
                             rows={3}
                             value={profile?.address || ''}
                             onChange={handleInputChange}
-                            className="w-full p-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
                             placeholder="Enter your full home address..."
                         />
                     </section>
-                    <div className="flex flex-col items-center space-y-3 p-4 bg-slate-50 rounded-lg">
-                        <div className="w-40 h-20 border border-dashed border-slate-300 rounded bg-white flex items-center justify-center">
-                            {profile?.e_sign ? (
-                                <img src={`data:image/png;base64,${profile.e_sign}`} alt="E-Sign" className="max-h-full" />
-                            ) : (
-                                <span className="text-xs text-slate-400">No E-Sign</span>
-                            )}
-                        </div>
 
-                        <label className="cursor-pointer text-blue-600 text-xs font-semibold hover:underline">
-                            Upload E-Sign
-                            <input
-                                type="file"
-                                name="e_sign_file"
-                                className="hidden"
-                                onChange={handleFileChange}
-                            />
-                        </label>
+                    {/* Save Changes Button */}
+                    <div className="pt-4 pb-2 flex justify-end">
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="px-8 py-3 bg-slate-900 text-white rounded-xl hover:bg-blue-600 transition-all duration-300 text-sm font-semibold disabled:bg-slate-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0.5"
+                        >
+                            {saving ? 'Saving Changes...' : 'Save Changes'}
+                        </button>
                     </div>
 
                 </div>

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 
 export default function HolidayFormModal({
   holiday,
@@ -57,13 +56,12 @@ export default function HolidayFormModal({
 
           <div>
             <label className="text-xs font-semibold">Date</label>
-            <div className="mt-1">
-              <CustomDatePicker
-                value={date}
-                onChange={val => setDate(val)}
-                placeholder="Select holiday date"
-              />
-            </div>
+            <input
+              type="date"
+              className="w-full border rounded p-2"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+            />
           </div>
 
           <div>

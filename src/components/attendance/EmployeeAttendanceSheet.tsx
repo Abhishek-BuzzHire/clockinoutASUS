@@ -4,7 +4,6 @@ import { Calendar, X, Send, Download, Clock, TrendingUp, AlertCircle } from "luc
 import { useState, useMemo } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 
 /* ================================================================
    TYPES
@@ -309,13 +308,13 @@ export default function EmployeeAttendanceSheet({
                         <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                             Start Date
                         </label>
-                        <div className="mt-1">
-                            <CustomDatePicker
-                                value={localStart}
-                                maxDate={localEnd || today}
-                                onChange={(val) => setLocalStart(val)}
-                            />
-                        </div>
+                        <input
+                            type="date"
+                            value={localStart}
+                            max={localEnd || today}
+                            onChange={(e) => setLocalStart(e.target.value)}
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 mt-1 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
                         {calendarWarning(localStart) && (
                             <p className="text-xs text-amber-600 font-medium mt-1 flex items-center gap-1">
                                 <AlertCircle className="w-3 h-3" />
@@ -327,14 +326,14 @@ export default function EmployeeAttendanceSheet({
                         <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                             End Date
                         </label>
-                        <div className="mt-1">
-                            <CustomDatePicker
-                                value={localEnd}
-                                minDate={localStart || undefined}
-                                maxDate={today}
-                                onChange={(val) => setLocalEnd(val)}
-                            />
-                        </div>
+                        <input
+                            type="date"
+                            value={localEnd}
+                            min={localStart || undefined}
+                            max={today}
+                            onChange={(e) => setLocalEnd(e.target.value)}
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 mt-1 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
                         {calendarWarning(localEnd) && (
                             <p className="text-xs text-amber-600 font-medium mt-1 flex items-center gap-1">
                                 <AlertCircle className="w-3 h-3" />

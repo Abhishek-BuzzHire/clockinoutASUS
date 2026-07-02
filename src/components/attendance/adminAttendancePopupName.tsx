@@ -3,7 +3,6 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { format } from "date-fns";
 import { FileText, X, Calendar, Clock, Users, Search, CheckCircle2, ChevronDown, Download } from "lucide-react";
-import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -157,20 +156,22 @@ export default function AdminAttendancePopupByName({ onClose }: { onClose: () =>
             {/* Start Date */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-tight">Start Date</label>
-              <CustomDatePicker
+              <input
+                type="date"
                 value={startDate}
-                onChange={val => setStartDate(val)}
-                placeholder="Select start date"
+                onChange={e => setStartDate(e.target.value)}
+                className="pl-3 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white"
               />
             </div>
 
             {/* End Date */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-tight">End Date</label>
-              <CustomDatePicker
+              <input
+                type="date"
                 value={endDate}
-                onChange={val => setEndDate(val)}
-                placeholder="Select end date"
+                onChange={e => setEndDate(e.target.value)}
+                className="pl-3 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white"
               />
             </div>
 

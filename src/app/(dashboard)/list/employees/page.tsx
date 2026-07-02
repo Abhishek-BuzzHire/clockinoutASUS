@@ -38,6 +38,58 @@ import { useAuth } from "@/context/AuthContext";
 
 const data = employeeData;
 
+// Mock employees for demo when backend is not connected
+const MOCK_EMPLOYEES = [
+  {
+    id: 'MOCK001',
+    user_id: 1,
+    username: 'priya.sharma@buzzhire.in',
+    name: 'Priya Sharma',
+    email: 'priya.sharma@buzzhire.in',
+    phone: '+91 98765 43210',
+    department: 'Engineering',
+    designation: 'Frontend Developer',
+    joining_date: '2023-04-01',
+    gender: 'Female',
+    address: 'Sector 21, Noida, Uttar Pradesh',
+    date_of_birth: '1997-08-15',
+    role: 'employee',
+    is_active: true,
+    profile_photo: 'https://randomuser.me/api/portraits/women/44.jpg',
+    manager: null,
+    linkedIn: 'https://linkedin.com/in/priya-sharma',
+    emergency_contact: null,
+    education_1: null, education_2: null, education_3: null,
+    past_experience_1: null, past_experience_2: null,
+    aadhar_file: null, pan_file: null, resume_file: null, e_sign: null,
+    created_at: '2023-04-01', updated_at: '2023-04-01',
+  },
+  {
+    id: 'MOCK002',
+    user_id: 2,
+    username: 'rahul.verma@buzzhire.in',
+    name: 'Rahul Verma',
+    email: 'rahul.verma@buzzhire.in',
+    phone: '+91 91234 56789',
+    department: 'Human Resources',
+    designation: 'HR Executive',
+    joining_date: '2022-09-15',
+    gender: 'Male',
+    address: 'Koramangala, Bengaluru, Karnataka',
+    date_of_birth: '1995-03-22',
+    role: 'employee',
+    is_active: true,
+    profile_photo: 'https://randomuser.me/api/portraits/men/32.jpg',
+    manager: null,
+    linkedIn: 'https://linkedin.com/in/rahul-verma',
+    emergency_contact: null,
+    education_1: null, education_2: null, education_3: null,
+    past_experience_1: null, past_experience_2: null,
+    aadhar_file: null, pan_file: null, resume_file: null, e_sign: null,
+    created_at: '2022-09-15', updated_at: '2022-09-15',
+  }
+];
+
 const fetcher = (url: string) => {
   const token = Cookies.get("access");
   return axios.get(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.data);
@@ -318,7 +370,8 @@ const EmployeesListPage = () => {
   const managers = users;
 
   const employees = React.useMemo(() => {
-    if (!effectiveEmployees) return [];
+    // If backend not connected, use mock employees for demo
+    if (!effectiveEmployees) return MOCK_EMPLOYEES;
     return effectiveEmployees.map((profile: any) => ({
       id: profile.id,
       user_id: profile.user.id,
@@ -544,14 +597,14 @@ const EmployeesListPage = () => {
                 </div>
               </div>
 
-              {/* LOADING STATE */}
-              {!effectiveEmployees && (
+              {/* LOADING STATE - only show when truly loading (no mock data either) */}
+              {!effectiveEmployees && employees.length === 0 && (
                 <div className="flex items-center justify-center h-96">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                 </div>
               )}
 
-              {effectiveEmployees && (
+              {employees.length > 0 && (
                 <div>
                   {view === 'userCard' && (
                     <>
