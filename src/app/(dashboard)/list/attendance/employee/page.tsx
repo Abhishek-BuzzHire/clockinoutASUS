@@ -167,27 +167,18 @@ const PunchCard: React.FC<{
                 </div>
 
                 {/* Time Elapsed Box */}
-                <div className="bg-[#F5F5F0] rounded-2xl p-3.5 mb-4 border border-[#E8E8E3] relative flex justify-between items-center shadow-2xs gap-2">
+                <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] relative flex justify-between items-center">
                     <div>
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">
                             {!isPunchedIn && hasPunchedOut ? "Today Work Hour" : "Time Elapsed"}
                         </p>
-                        <p className="text-2xl sm:text-3xl font-extrabold tracking-wider text-slate-800 font-sans">
+                        <p className="text-2xl font-bold tracking-wider text-slate-800 font-sans">
                             {!isPunchedIn && hasPunchedOut ? formatTime(workedSeconds ?? 0) : formatTime(elapsedTime)}
                         </p>
                     </div>
-
-                    {onRefreshLocation && (
-                        <button
-                            onClick={onRefreshLocation}
-                            disabled={isProcessingLocation}
-                            title="Refresh GPS Location"
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 border border-indigo-100/80 shadow-xs text-indigo-600 hover:bg-indigo-100 active:scale-95 transition cursor-pointer shrink-0"
-                        >
-                            <MapPin size={16} className={`shrink-0 ${isProcessingLocation ? "animate-bounce text-indigo-500" : "text-indigo-600"}`} />
-                            <span className="text-xs font-bold whitespace-nowrap">{isProcessingLocation ? "Locating..." : "Refresh Location"}</span>
-                        </button>
-                    )}
+                    <div className="text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
                 </div>
 
                 {/* Clock Action Button */}
@@ -274,6 +265,7 @@ const EmployeeAttendancePage = () => {
     const [showOutOfRangePopup, setShowOutOfRangePopup] = useState(false);
     const [outOfRangeMessage, setOutOfRangeMessage] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
+    const [showRefreshSuccess, setShowRefreshSuccess] = useState(false);
 
     // Attendance state (backend-driven)
     const [attendanceStatus, setAttendanceStatus] = useState<AttendanceRecord | null>(null);
@@ -527,6 +519,10 @@ const EmployeeAttendancePage = () => {
                 });
                 setMessage("Location successfully updated. Ready to punch.");
                 setIsProcessing(false);
+                if (showPopup) {
+                    setShowRefreshSuccess(true);
+                    setTimeout(() => setShowRefreshSuccess(false), 2000);
+                }
             },
             (error) => {
                 let errorMessage = "Geolocation failed: ";
@@ -1364,9 +1360,33 @@ const EmployeeAttendancePage = () => {
                                         elapsedSeconds={initialElapsedSeconds}
                                         profileName={employee?.name ?? "Employee"}
                                         imgurl={avatarSrc}
-                                        onRefreshLocation={() => fetchGeolocation(true)}
-                                        isProcessingLocation={isProcessing}
                                     />
+
+                                    {/* Location display & refresh */}
+                                    <div className="mb-4">
+                                        <button
+                                            onClick={() => fetchGeolocation(true)}
+                                            disabled={isProcessing || showRefreshSuccess}
+                                            className={`w-full py-3.5 px-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition duration-200 shadow-sm cursor-pointer ${
+                                                showRefreshSuccess
+                                                    ? "bg-green-50 text-green-600 border border-green-200"
+                                                    : locationError
+                                                    ? "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                                                    : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100"
+                                            }`}
+                                        >
+                                            {showRefreshSuccess ? (
+                                                <>
+                                                    <span className="w-2 h-2 rounded-full bg-green-500 shrink-0 animate-pulse"></span>
+                                                    <span>Successfully Updated</span>
+                                                </>
+                                            ) : isProcessing ? (
+                                                <span>Updating Location...</span>
+                                            ) : (
+                                                <span>Refresh Location</span>
+                                            )}
+                                        </button>
+                                    </div>
 
                                     {/* QUICK ACTIONS FOR ATTENDANCE TAB */}
                                     <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 mb-0 lg:mb-4">
