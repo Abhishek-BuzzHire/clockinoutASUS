@@ -18,11 +18,11 @@ const MobileMenu = () => {
   const attendanceHref = role === "admin" ? "/list/attendance/admin" : "/list/attendance/employee";
 
   const navItems = [
-    { icon: "/dashboard.png", label: "Dashboard", href: dashboardHref },
-    { icon: "/candidates.png", label: "Employees", href: "/list/employees" },
-    { icon: "/calendar.png", label: "Attendance", href: attendanceHref },
-    { icon: "/profile.png", label: "Profile", href: "/profile" },
-  ];
+    { icon: "/dashboard.png", label: "Dashboard", href: dashboardHref, visible: ["admin", "employee", "developer"] },
+    { icon: "/candidates.png", label: "Employees", href: "/list/employees", visible: ["admin", "developer"] },
+    { icon: "/calendar.png", label: "Attendance", href: attendanceHref, visible: ["admin", "employee", "developer"] },
+    { icon: "/profile.png", label: "Profile", href: "/profile", visible: ["admin", "employee", "developer"] },
+  ].filter(item => item.visible.includes(role));
 
   return (
     <>
