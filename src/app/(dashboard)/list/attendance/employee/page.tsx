@@ -154,30 +154,24 @@ const PunchCard: React.FC<{
 
             {/* Bottom Half: Details & Controls */}
             <div className="px-5 pb-5 pt-4">
-                {/* Status & Punched At Row */}
-                <div className="flex justify-between items-center mb-5">
-                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isPunchedIn ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
-                        <div className={`w-1.5 h-1.5 rounded-full ${isPunchedIn ? "bg-green-500" : "bg-slate-400"}`}></div>
-                        {isPunchedIn ? "Clocked in" : "Clocked out"}
-                    </div>
-                    <div className="text-right">
-                        <p className="text-[10px] text-slate-400 font-medium">{isPunchedIn ? "Punched at" : "Last Punched out"}</p>
-                        <p className="text-xs font-semibold text-slate-700">{punchTime || "--:--"}</p>
-                    </div>
-                </div>
-
                 {/* Time Elapsed Box */}
-                <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] relative flex justify-between items-center">
+                <div className="bg-[#F5F5F0] rounded-2xl p-3.5 sm:p-4 mb-4 border border-[#E8E8E3] relative flex justify-between items-center shadow-xs">
                     <div>
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">
                             {!isPunchedIn && hasPunchedOut ? "Today Work Hour" : "Time Elapsed"}
                         </p>
-                        <p className="text-2xl font-bold tracking-wider text-slate-800 font-sans">
+                        <p className="text-2xl sm:text-3xl font-extrabold tracking-wider text-slate-800 font-sans">
                             {!isPunchedIn && hasPunchedOut ? formatTime(workedSeconds ?? 0) : formatTime(elapsedTime)}
                         </p>
                     </div>
-                    <div className="text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    
+                    <div className="text-right bg-white/90 border border-slate-200/70 px-3 py-1.5 rounded-xl shadow-2xs shrink-0">
+                        <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                            {isPunchedIn ? "Punched at" : "Last Punched"}
+                        </p>
+                        <p className="text-xs sm:text-sm font-bold text-slate-700 mt-0.5">
+                            {punchTime || "--:--"}
+                        </p>
                     </div>
                 </div>
 
