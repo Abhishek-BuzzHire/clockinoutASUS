@@ -215,7 +215,7 @@ export default function DocumentsPage() {
         }
 
         if (fileExtension === 'pdf') {
-            setSelectedFiles(prev => ({ ...prev, [actualDocId]: file }));
+            handleSubmit(actualDocId, file);
         } else {
             const reader = new FileReader();
             reader.onload = () => {
@@ -235,9 +235,12 @@ export default function DocumentsPage() {
         try {
             const croppedBlob = await getCroppedImg(imgRef.current, croppedAreaPixels);
             const croppedFile = new window.File([croppedBlob], `${cropDocId}.jpg`, { type: 'image/jpeg' });
-            setSelectedFiles(prev => ({ ...prev, [cropDocId]: croppedFile }));
+            
+            const docIdToSubmit = cropDocId;
             setCropImageSrc(null);
             setCropDocId(null);
+            
+            handleSubmit(docIdToSubmit, croppedFile);
         } catch (e) {
             console.error("Error cropping image", e);
             setError("Failed to crop image.");
@@ -516,6 +519,15 @@ export default function DocumentsPage() {
                                     src={cropImageSrc}
                                     alt="Crop me"
                                     style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }}
+                                    onLoad={(e) => {
+                                        const { naturalWidth, naturalHeight } = e.currentTarget;
+                                        setCroppedAreaPixels({
+                                            x: naturalWidth * 0.05,
+                                            y: naturalHeight * 0.05,
+                                            width: naturalWidth * 0.9,
+                                            height: naturalHeight * 0.9,
+                                        });
+                                    }}
                                 />
                             </ReactCrop>
                         </div>
