@@ -1350,7 +1350,7 @@ export function AdminAttendancePivotReport() {
                   Total Hours Worked
                 </td>
                 <td className="sticky left-[110px] z-20 bg-emerald-50 border px-4 py-2.5 font-semibold whitespace-nowrap text-center">
-                  ⏱️ Hours
+                  Hours
                 </td>
                 {displayedEmployees.map(emp => (
                   <td key={emp.id} className="border px-4 py-2.5 text-center font-black">
@@ -1365,7 +1365,7 @@ export function AdminAttendancePivotReport() {
                   Expected Hours
                 </td>
                 <td className="sticky left-[110px] z-20 bg-blue-50 border px-4 py-2.5 font-semibold whitespace-nowrap text-center">
-                  🎯 Expected
+                  Expected
                 </td>
                 {displayedEmployees.map(emp => (
                   <td key={emp.id} className="border px-4 py-2.5 text-center font-black">
@@ -1380,7 +1380,7 @@ export function AdminAttendancePivotReport() {
                   Total Present Days
                 </td>
                 <td className="sticky left-[110px] z-20 bg-green-50 border px-4 py-2.5 font-semibold whitespace-nowrap text-center">
-                  ✅ Present
+                  Present
                 </td>
                 {displayedEmployees.map(emp => (
                   <td key={emp.id} className="border px-4 py-2.5 text-center">
@@ -1397,7 +1397,7 @@ export function AdminAttendancePivotReport() {
                   Total WFH Days
                 </td>
                 <td className="sticky left-[110px] z-20 bg-purple-50 border px-4 py-2.5 font-semibold whitespace-nowrap text-center">
-                  💻 WFH
+                  WFH
                 </td>
                 {displayedEmployees.map(emp => (
                   <td key={emp.id} className="border px-4 py-2.5 text-center">
@@ -1414,7 +1414,7 @@ export function AdminAttendancePivotReport() {
                   Total Leave Days
                 </td>
                 <td className="sticky left-[110px] z-20 bg-amber-50 border px-4 py-2.5 font-semibold whitespace-nowrap text-center">
-                  🏖️ Leave
+                  Leave
                 </td>
                 {displayedEmployees.map(emp => (
                   <td key={emp.id} className="border px-4 py-2.5 text-center">
@@ -1431,7 +1431,7 @@ export function AdminAttendancePivotReport() {
                   Total Absent Days
                 </td>
                 <td className="sticky left-[110px] z-20 bg-red-50 border px-4 py-2.5 font-semibold whitespace-nowrap text-center">
-                  ❌ Absent
+                  Absent
                 </td>
                 {displayedEmployees.map(emp => (
                   <td key={emp.id} className="border px-4 py-2.5 text-center">
