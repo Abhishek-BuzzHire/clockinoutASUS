@@ -167,29 +167,32 @@ const PunchCard: React.FC<{
                 </div>
 
                 {/* Time Elapsed Box */}
-                <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] relative flex justify-between items-center">
-                    <div>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">
+                <div className="bg-[#F5F5F0] rounded-2xl p-4 mb-4 border border-[#E8E8E3] relative flex flex-col justify-between shadow-xs">
+                    {/* Top Bar: Title on Left, Refresh Location on Right */}
+                    <div className="flex justify-between items-center w-full mb-2.5">
+                        <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">
                             {!isPunchedIn && hasPunchedOut ? "Today Work Hour" : "Time Elapsed"}
-                        </p>
-                        <p className="text-2xl font-bold tracking-wider text-slate-800 font-sans">
-                            {!isPunchedIn && hasPunchedOut ? formatTime(workedSeconds ?? 0) : formatTime(elapsedTime)}
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-2">
+                        </span>
                         {onRefreshLocation && (
                             <button
                                 onClick={onRefreshLocation}
                                 disabled={isProcessingLocation}
                                 title="Refresh GPS Location"
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200/80 shadow-xs text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 active:scale-95 transition cursor-pointer text-xs font-bold shrink-0"
+                                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200/80 shadow-xs text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 active:scale-95 transition cursor-pointer text-xs font-bold shrink-0"
                             >
-                                <MapPin size={14} className={`shrink-0 ${isProcessingLocation ? "animate-bounce text-indigo-500" : "text-indigo-600"}`} />
-                                <span>{isProcessingLocation ? "Updating..." : "Refresh Location"}</span>
+                                <MapPin size={13} className={`shrink-0 ${isProcessingLocation ? "animate-bounce text-indigo-500" : "text-indigo-600"}`} />
+                                <span>{isProcessingLocation ? "Locating..." : "Refresh Location"}</span>
                             </button>
                         )}
-                        <div className="text-slate-400 hidden sm:block">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+
+                    {/* Bottom Bar: Timer on Left, Clock Icon on Right */}
+                    <div className="flex justify-between items-center w-full">
+                        <p className="text-3xl font-extrabold tracking-wider text-slate-800 font-sans">
+                            {!isPunchedIn && hasPunchedOut ? formatTime(workedSeconds ?? 0) : formatTime(elapsedTime)}
+                        </p>
+                        <div className="w-9 h-9 rounded-full bg-white border border-slate-200/60 shadow-2xs flex items-center justify-center text-slate-400 shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         </div>
                     </div>
                 </div>
