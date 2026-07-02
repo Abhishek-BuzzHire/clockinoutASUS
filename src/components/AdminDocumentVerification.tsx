@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import axios from "axios";
@@ -14,6 +14,8 @@ import {
   Eye,
   X,
   ExternalLink,
+  Lock,
+  Unlock,
 } from "lucide-react";
 
 interface DocumentTypeDefinition {
@@ -318,29 +320,64 @@ interface AdminDocumentVerificationProps {
 
 const AdminDocumentVerification = ({ employeeId, employeeName }: AdminDocumentVerificationProps) => {
   const [documents, setDocuments] = useState<DocRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  
+  // PIN verification state
+  const [pinVerified, setPinVerified] = useState(false);
+  const [pin, setPin] = useState("");
+  const [pinError, setPinError] = useState("");
+  const [verifyingPin, setVerifyingPin] = useState(false);
 
+  // Reset verification when employee changes
   React.useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        const token = Cookies.get("access");
-        const res = await axios.get(`${apiUrl}/api/documents/admin/${employeeId}/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setDocuments(res.data || []);
-      } catch (err) {
-        console.error("Failed to fetch employee documents:", err);
-        setDocuments([
-          { doc_type: "aadhar_front", status: "PENDING", submitted_at: new Date().toISOString(), file_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Aadhaar_Logo.svg/320px-Aadhaar_Logo.svg.png" },
-          { doc_type: "aadhar_back", status: "PENDING", submitted_at: new Date().toISOString(), file_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Aadhaar_Logo.svg/320px-Aadhaar_Logo.svg.png" },
-          { doc_type: "pan", status: "PENDING", submitted_at: new Date().toISOString(), file_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_of_Income_Tax_Department_India.png/250px-Logo_of_Income_Tax_Department_India.png" },
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDocuments();
+    setPinVerified(false);
+    setPin("");
+    setPinError("");
+    setDocuments([]);
   }, [employeeId]);
+
+  const handleVerifyPin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPinError("");
+    if (pin.length !== 4 || !/^\d+$/.test(pin)) {
+      setPinError("PIN must be exactly 4 digits.");
+      return;
+    }
+    
+    setVerifyingPin(true);
+    try {
+      const token = Cookies.get("access");
+      // 1. Verify PIN
+      await axios.post(
+        `${apiUrl}/api/documents/admin/verify-pin/`,
+        { pin },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      setPinVerified(true);
+      fetchDocuments();
+    } catch (err: any) {
+      setPinError(err.response?.data?.error || "Incorrect PIN or verification failed.");
+    } finally {
+      setVerifyingPin(false);
+    }
+  };
+
+  const fetchDocuments = async () => {
+    setLoading(true);
+    try {
+      const token = Cookies.get("access");
+      const res = await axios.get(`${apiUrl}/api/documents/admin/${employeeId}/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setDocuments(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch employee documents:", err);
+      setDocuments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAction = async (docIds: string[], action: "VERIFIED" | "REJECTED", comment: string) => {
     try {
@@ -353,17 +390,65 @@ const AdminDocumentVerification = ({ employeeId, employeeName }: AdminDocumentVe
           { headers: { Authorization: `Bearer ${token}` } }
         )
       ));
+      // Refresh documents
+      await fetchDocuments();
     } catch (err) {
       console.error("Action failed:", err);
+      alert("Failed to update document status. Please try again.");
     }
-    
-    // Update local state
-    setDocuments((prev) =>
-      prev.map((d) => docIds.includes(d.doc_type) ? { ...d, status: action, admin_comment: comment } : d)
-    );
   };
 
   const getDocRecord = (docId: string) => documents.find((d) => d.doc_type === docId);
+  
+  const sections = ["Identity", "Education", "Employment"];
+
+  // --- PIN VERIFICATION SCREEN ---
+  if (!pinVerified) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-slate-200">
+        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+          <Lock className="text-slate-400" size={32} />
+        </div>
+        <h2 className="text-xl font-bold text-slate-800 mb-2">Secure Document Access</h2>
+        <p className="text-sm text-slate-500 mb-8 max-w-sm text-center">
+          Please enter your 4-digit Admin PIN to view documents for <span className="font-semibold text-slate-700">{employeeName}</span>.
+        </p>
+        
+        <form onSubmit={handleVerifyPin} className="flex flex-col gap-4 w-full max-w-xs">
+          <input
+            type="password"
+            maxLength={4}
+            value={pin}
+            onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+            placeholder="••••"
+            className="text-center text-2xl tracking-[1em] font-bold py-3 px-4 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all"
+            autoFocus
+          />
+          {pinError && <p className="text-red-500 text-xs font-semibold text-center bg-red-50 py-1.5 rounded-lg">{pinError}</p>}
+          <button
+            type="submit"
+            disabled={pin.length !== 4 || verifyingPin}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+          >
+            {verifyingPin ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <Unlock size={18} />
+                Verify PIN
+              </>
+            )}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  // --- DOCUMENT LIST VIEW (Only shown if PIN is verified) ---
+
+  if (loading) {
+    return <div className="p-8 text-center text-slate-500">Loading documents...</div>;
+  }
   
   // Calculate stats based on composite documents
   let verified = 0, pending = 0, rejected = 0;
@@ -374,19 +459,6 @@ const AdminDocumentVerification = ({ employeeId, employeeName }: AdminDocumentVe
     if (status === "REJECTED") rejected++;
   });
   const total = ALL_DOC_TYPES.length;
-  
-  const sections = ["Identity", "Education", "Employment"];
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-400">Loading documents...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-5 pb-8">
