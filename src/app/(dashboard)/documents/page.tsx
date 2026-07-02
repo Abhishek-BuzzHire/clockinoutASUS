@@ -3,9 +3,50 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import Cookies from "js-cookie";
+import Cropper from 'react-easy-crop';
 import { apiUrl } from '@/lib/data';
-import { ArrowLeft, Upload, File, CheckCircle, ShieldCheck, Info, CreditCard, IdCard, GraduationCap, Award, Briefcase, Mail, FileCheck, FileText, Clock, XCircle } from 'lucide-react';
+import { ArrowLeft, Upload, File, CheckCircle, ShieldCheck, Info, CreditCard, IdCard, GraduationCap, Award, Briefcase, Mail, FileCheck, FileText, Clock, XCircle, ZoomIn, ZoomOut, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+
+interface Area {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const createImage = (url: string): Promise<HTMLImageElement> =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener('load', () => resolve(image));
+    image.addEventListener('error', (error) => reject(error));
+    image.setAttribute('crossOrigin', 'anonymous');
+    image.src = url;
+  });
+
+async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  if (!ctx) throw new Error('No 2d context');
+
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+
+  ctx.drawImage(
+    image,
+    pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height,
+    0, 0, pixelCrop.width, pixelCrop.height
+  );
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((file) => {
+      if (file) resolve(file);
+      else reject(new Error('Canvas toBlob failed'));
+    }, 'image/jpeg', 0.95);
+  });
+}
 
 interface DocumentType {
     id: string;
@@ -135,6 +176,13 @@ export default function DocumentsPage() {
     const [docStatuses, setDocStatuses] = useState<{ [key: string]: 'PENDING' | 'VERIFIED' | 'REJECTED' | null }>({});
     const [error, setError] = useState<string | null>(null);
 
+    // Cropper states
+    const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+    const [cropDocId, setCropDocId] = useState<string | null>(null);
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+
     const token = Cookies.get("access");
     const api = axios.create({
         baseURL: apiUrl,
@@ -174,8 +222,35 @@ export default function DocumentsPage() {
             return;
         }
 
-        setSelectedFiles(prev => ({ ...prev, [actualDocId]: file }));
+        if (fileExtension === 'pdf') {
+            setSelectedFiles(prev => ({ ...prev, [actualDocId]: file }));
+        } else {
+            const reader = new FileReader();
+            reader.onload = () => {
+                setCropImageSrc(reader.result as string);
+                setCropDocId(actualDocId);
+                setCrop({ x: 0, y: 0 });
+                setZoom(1);
+            };
+            reader.readAsDataURL(file);
+        }
+        
         setError(null);
+        e.target.value = ''; // Reset input
+    };
+
+    const handleCropSave = async () => {
+        if (!cropImageSrc || !croppedAreaPixels || !cropDocId) return;
+        try {
+            const croppedBlob = await getCroppedImg(cropImageSrc, croppedAreaPixels);
+            const croppedFile = new File([croppedBlob], `${cropDocId}.jpg`, { type: 'image/jpeg' });
+            setSelectedFiles(prev => ({ ...prev, [cropDocId]: croppedFile }));
+            setCropImageSrc(null);
+            setCropDocId(null);
+        } catch (e) {
+            console.error("Error cropping image", e);
+            setError("Failed to crop image.");
+        }
     };
 
     const handleSubmit = async (actualDocId: string, file: File) => {
@@ -404,6 +479,76 @@ export default function DocumentsPage() {
                     </p>
                 </div>
             </div>
+
+            {/* Cropper Modal */}
+            {cropImageSrc && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 flex flex-col transform scale-100 transition-all duration-300">
+                        {/* Modal Header */}
+                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-800">Crop Document</h3>
+                                <p className="text-xs text-slate-500">Adjust the frame to include only the document</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setCropImageSrc(null)}
+                                className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Modal Body (Cropper Area) */}
+                        <div className="relative w-full h-[60vh] min-h-[400px] bg-slate-900">
+                            <Cropper
+                                image={cropImageSrc}
+                                crop={crop}
+                                zoom={zoom}
+                                aspect={undefined} // Allows free rectangle cropping
+                                onCropChange={setCrop}
+                                onCropComplete={(_, croppedAreaPixels) => setCroppedAreaPixels(croppedAreaPixels)}
+                                onZoomChange={setZoom}
+                            />
+                        </div>
+
+                        {/* Controls (Zoom Slider) */}
+                        <div className="px-6 py-4 bg-slate-50/50 flex flex-col items-center border-b border-slate-100">
+                            <div className="flex items-center space-x-4 w-full max-w-sm">
+                                <ZoomOut size={18} className="text-slate-500" />
+                                <input
+                                    type="range"
+                                    min={1}
+                                    max={3}
+                                    step={0.1}
+                                    value={zoom}
+                                    onChange={(e) => setZoom(parseFloat(e.target.value))}
+                                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none"
+                                />
+                                <ZoomIn size={18} className="text-slate-500" />
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="px-6 py-4 bg-white flex justify-end space-x-3">
+                            <button
+                                type="button"
+                                onClick={() => setCropImageSrc(null)}
+                                className="px-5 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-sm font-semibold transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleCropSave}
+                                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-colors"
+                            >
+                                Save Document
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
