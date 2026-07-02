@@ -520,13 +520,13 @@ export default function DocumentsPage() {
                                     alt="Crop me"
                                     style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }}
                                     onLoad={(e) => {
-                                        const { naturalWidth, naturalHeight } = e.currentTarget;
+                                        const { width, height } = e.currentTarget;
                                         setCroppedAreaPixels({
                                             unit: 'px',
-                                            x: naturalWidth * 0.05,
-                                            y: naturalHeight * 0.05,
-                                            width: naturalWidth * 0.9,
-                                            height: naturalHeight * 0.9,
+                                            x: width * 0.05,
+                                            y: height * 0.05,
+                                            width: width * 0.9,
+                                            height: height * 0.9,
                                         });
                                     }}
                                 />
