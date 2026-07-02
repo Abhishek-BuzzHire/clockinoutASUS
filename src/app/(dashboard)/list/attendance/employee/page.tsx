@@ -167,7 +167,7 @@ const PunchCard: React.FC<{
                     
                     <div className="text-right bg-white/90 border border-slate-200/70 px-3 py-1.5 rounded-xl shadow-2xs shrink-0">
                         <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                            {isPunchedIn ? "Punched at" : "Last Punched"}
+                            {isPunchedIn ? "Punched In At" : hasPunchedOut ? "Punched Out At" : "Punched At"}
                         </p>
                         <p className="text-xs sm:text-sm font-bold text-slate-700 mt-0.5">
                             {punchTime || "--:--"}
