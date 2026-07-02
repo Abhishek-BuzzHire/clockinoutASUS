@@ -87,7 +87,7 @@ export default function CorrectionListTable({
                  <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                   <Clock className="w-3 h-3" /> Proposed Time
                 </div>
-                <p className="text-sm font-black text-blue-700 font-mono tracking-tight">{req.requested_time}</p>
+                <p className="text-sm font-black text-blue-700 font-mono tracking-tight">{req.time_only || req.requested_time}</p>
               </div>
             </div>
 

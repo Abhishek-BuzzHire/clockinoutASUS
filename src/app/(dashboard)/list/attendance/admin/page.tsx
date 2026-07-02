@@ -351,6 +351,12 @@ const AdminAttendancePage = () => {
   }, [statusFilter]);
 
   const openDetail = async (token: string) => {
+    const existing = list.find((r: any) => r.approval_token === token);
+    if (existing) {
+      setSelected(token);
+      setDetail(existing);
+      return;
+    }
     try {
       const tkn = Cookies.get("access");
       const res = await axios.get(`${apiUrl}/api/admin/attendance-approval/${token}`, {
@@ -482,6 +488,9 @@ const AdminAttendancePage = () => {
 
   // When month changes via calendar — SWR auto-fetches based on currentDate
   const handleMonthChange = (newMonth: Date) => {
+    if (newMonth.getFullYear() < 2025 || (newMonth.getFullYear() === 2025 && newMonth.getMonth() < 11)) {
+      return;
+    }
     setCurrentDate(newMonth);
     setSelectedDate(newMonth);
     // SWR key changes with currentDate, so it auto-fetches or serves from cache ⚡

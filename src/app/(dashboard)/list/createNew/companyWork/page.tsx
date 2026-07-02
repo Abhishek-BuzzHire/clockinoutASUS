@@ -942,6 +942,7 @@ export function AdminAttendancePivotReport() {
 
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const tableScrollRef = useRef<HTMLDivElement>(null);
   const EXCLUDED_EMP_IDS = new Set<number>([4, 5, 9, 12]);
 
 
@@ -1077,23 +1078,61 @@ export function AdminAttendancePivotReport() {
   };
 
   // Calculate totals per employee
+  // Calculate totals per employee
   const employeeTotals: Record<number, number> = {};
+  const employeeLeaves: Record<number, number> = {};
+  const employeeWfh: Record<number, number> = {};
+  const employeePresent: Record<number, number> = {};
+  const employeeAbsent: Record<number, number> = {};
 
   data.forEach(emp => {
-    let total = 0;
+    let totalMins = 0;
+    let leaves = 0;
+    let wfh = 0;
+    let present = 0;
+    let absent = 0;
+
     emp.attendance.forEach(day => {
-      total += timeToMinutes(day.total_time);
+      totalMins += timeToMinutes(day.total_time);
+      const cell = matrix[day.date]?.[emp.emp_id];
+      const calendarDay = calendarMap[day.date];
+      const weekday = new Date(day.date).getDay();
+
+      const isHolidayOrWeekend = calendarDay?.calendar_type === "HOLIDAY" || weekday === 0 || weekday === 6;
+
+      if (cell?.work_status === "LEAVE") {
+        leaves++;
+      } else if (cell?.work_status === "WFH") {
+        wfh++;
+      } else if (cell?.total_time) {
+        present++;
+      } else if (!isHolidayOrWeekend) {
+        absent++;
+      }
     });
-    employeeTotals[emp.emp_id] = total;
+
+    employeeTotals[emp.emp_id] = totalMins;
+    employeeLeaves[emp.emp_id] = leaves;
+    employeeWfh[emp.emp_id] = wfh;
+    employeePresent[emp.emp_id] = present;
+    employeeAbsent[emp.emp_id] = absent;
   });
+
+  const displayedEmployees = data.length > 0
+    ? data.map(e => ({ id: e.emp_id, name: e.employee_name }))
+    : (selectedIds.length > 0 ? employees.filter(e => selectedIds.includes(e.id)) : employees);
+
+  const scrollTable = (offset: number) => {
+    tableScrollRef.current?.scrollBy({ left: offset, behavior: "smooth" });
+  };
 
   // ---------------- UI ----------------
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 flex flex-col h-full">
 
       {/* FILTERS */}
-      <div className="flex gap-4 items-end">
+      <div className="flex flex-wrap gap-4 items-end shrink-0 bg-slate-50 p-3 rounded-xl border border-slate-200">
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-bold text-slate-500 uppercase tracking-tight">Start Date</label>
           <input
@@ -1115,7 +1154,7 @@ export function AdminAttendancePivotReport() {
         </div>
 
         {/* EMPLOYEE SELECT DROPDOWN (Floating Style) */}
-        <div className="flex flex-col gap-1.5 w-full max-w-xs relative" ref={dropdownRef}>
+        <div className="flex flex-col gap-1.5 w-full sm:w-64 relative" ref={dropdownRef}>
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5" /> Select Employees
@@ -1139,8 +1178,6 @@ export function AdminAttendancePivotReport() {
 
           {isDropdownOpen && (
             <div className="absolute z-50 top-[calc(100%+4px)] left-0 w-full overflow-hidden border border-slate-200 rounded-xl bg-white shadow-xl animate-in fade-in zoom-in-95 duration-100">
-              {/* Search in Dropdown */}
-              {/* List */}
               <div className="max-h-[200px] overflow-y-auto custom-scrollbar p-1">
                 {employees.map(emp => {
                   const checked = selectedIds.includes(emp.id);
@@ -1163,7 +1200,6 @@ export function AdminAttendancePivotReport() {
                   );
                 })}
               </div>
-              {/* Dropdown Footer */}
               <div className="flex justify-between px-3 py-2 border-t border-slate-100 bg-slate-50/30">
                 <button onClick={() => setSelectedIds([])} className="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase px-2 py-1">Clear</button>
                 <button onClick={() => setSelectedIds(employees.map(e => e.id))} className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase px-2 py-1">Select All</button>
@@ -1175,29 +1211,53 @@ export function AdminAttendancePivotReport() {
         <button
           onClick={fetchReport}
           disabled={loading}
-          className="bg-blue-600 text-white p-3 rounded"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2 rounded-lg shadow transition"
         >
           {loading ? "Loading..." : "Generate Data"}
         </button>
       </div>
 
+      {/* TOP SCROLL CONTROLS */}
+      {data.length > 0 && (
+        <div className="flex items-center justify-between shrink-0 bg-white px-2">
+          <span className="text-xs font-bold text-slate-500">
+            Showing {displayedEmployees.length} employee{displayedEmployees.length !== 1 ? 's' : ''} across {dates.length} days
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => scrollTable(-350)}
+              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm transition active:scale-95"
+            >
+              ← Scroll Left
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollTable(350)}
+              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm transition active:scale-95"
+            >
+              Scroll Right →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* TABLE */}
       {data.length > 0 && (
-        <div className="overflow-x-auto border rounded-xl">
+        <div ref={tableScrollRef} className="flex-1 overflow-auto border rounded-xl shadow-inner relative">
 
           <table className="min-w-max border-collapse text-sm">
 
-            <thead className="bg-slate-100">
+            <thead className="bg-slate-100 sticky top-0 z-30 shadow-sm">
               <tr>
-                <th className="sticky left-0 z-20 bg-slate-100 border px-4 py-2 text-left">
+                <th className="sticky left-0 z-40 bg-slate-100 border px-4 py-2.5 text-left font-bold text-slate-700">
                   Date
                 </th>
-                {/* Sticky Day Column - offset by the width of the Date column */}
-                <th className="sticky left-[110px] z-20 bg-slate-100 border px-4 py-2 text-left">
+                <th className="sticky left-[110px] z-40 bg-slate-100 border px-4 py-2.5 text-left font-bold text-slate-700">
                   Day
                 </th>
-                {employees.map(emp => (
-                  <th key={emp.id} className="border px-4 py-2">
+                {displayedEmployees.map(emp => (
+                  <th key={emp.id} className="border px-4 py-2.5 text-center font-bold text-slate-800 min-w-[130px]">
                     {emp.name}
                   </th>
                 ))}
@@ -1207,17 +1267,16 @@ export function AdminAttendancePivotReport() {
             <tbody>
               {/* DATE ROWS */}
               {dates.map(date => (
-                <tr key={date}>
-                  <td className="sticky left-0 z-10 bg-white border px-4 py-2 font-semibold whitespace-nowrap">
+                <tr key={date} className="hover:bg-slate-50/50">
+                  <td className="sticky left-0 z-20 bg-white border px-4 py-2 font-semibold whitespace-nowrap text-slate-700">
                     {format(new Date(date), "dd MMM yyyy")}
                   </td>
 
-                  {/* Sticky Day Cell - adjust left-[px] to match your Date column width */}
-                  <td className="sticky left-[110px] z-10 bg-white border px-4 py-2 font-semibold whitespace-nowrap">
+                  <td className="sticky left-[110px] z-20 bg-white border px-4 py-2 font-semibold whitespace-nowrap text-slate-600">
                     {format(new Date(date), "EEEE")}
                   </td>
 
-                  {employees.map(emp => (
+                  {displayedEmployees.map(emp => (
                     <td key={emp.id} className="border px-4 py-2 text-center bg-white">
                       {(() => {
                         const cell = matrix[date]?.[emp.id];
@@ -1227,34 +1286,34 @@ export function AdminAttendancePivotReport() {
                         // Holiday
                         if (calendarDay?.calendar_type === "HOLIDAY") {
                           return (
-                            <span className="text-blue-800 font-semibold">
+                            <span className="text-blue-800 font-semibold text-xs">
                               {calendarDay.holiday_name}
                             </span>
                           );
                         }
 
-                        // 2️⃣ Leave
+                        // Leave
                         if (cell?.work_status === "LEAVE") {
                           return (
-                            <span className="text-black bg-yellow-200 px-2 py-1 rounded">
+                            <span className="text-amber-900 bg-amber-200/80 px-2.5 py-0.5 rounded text-xs font-bold">
                               Leave
                             </span>
                           );
                         }
 
-                        // 3️⃣ WFH
+                        // WFH
                         if (cell?.work_status === "WFH") {
                           return (
-                            <span className="text-green-600 font-medium">
+                            <span className="text-purple-900 bg-purple-200/80 px-2.5 py-0.5 rounded text-xs font-bold">
                               WFH
                             </span>
                           );
                         }
 
-                        // 4️⃣ Weekend
+                        // Weekend
                         if (weekday === 0) {
                           return (
-                            <span className="text-yellow-400 font-semibold">
+                            <span className="text-yellow-500 font-semibold text-xs">
                               Sunday
                             </span>
                           );
@@ -1262,23 +1321,23 @@ export function AdminAttendancePivotReport() {
 
                         if (weekday === 6) {
                           return (
-                            <span className="text-yellow-400 font-semibold">
+                            <span className="text-yellow-500 font-semibold text-xs">
                               Saturday
                             </span>
                           );
                         }
 
-                        // 5️⃣ Absent
+                        // Absent
                         if (!cell?.total_time) {
                           return (
-                            <span className="text-red-600 font-medium">
+                            <span className="text-red-600 font-bold text-xs">
                               Absent
                             </span>
                           );
                         }
 
                         // Present
-                        return cell.total_time;
+                        return <span className="font-medium text-slate-800">{cell.total_time}</span>;
                       })()}
                     </td>
                   ))}
@@ -1286,33 +1345,99 @@ export function AdminAttendancePivotReport() {
               ))}
 
               {/* TOTAL HOURS ROW */}
-              <tr className="bg-emerald-50 font-bold">
-                <td className="border px-4 py-2 sticky left-0 z-10 bg-slate-50">
+              <tr className="bg-emerald-50 font-bold text-emerald-950 border-t-2 border-slate-300">
+                <td className="border px-4 py-2.5 sticky left-0 z-20 bg-emerald-100">
                   Total Hours Worked
                 </td>
-                <td className="sticky left-[110px] z-10 bg-white border px-4 py-2 font-semibold whitespace-nowrap">
-                    
-                  </td>
-
-                {employees.map(emp => (
-                  <td key={emp.id} className="border px-4 py-2 text-center">
+                <td className="sticky left-[110px] z-20 bg-emerald-50 border px-4 py-2.5 font-semibold whitespace-nowrap text-center">
+                  ⏱️ Hours
+                </td>
+                {displayedEmployees.map(emp => (
+                  <td key={emp.id} className="border px-4 py-2.5 text-center font-black">
                     {minutesToHHMM(employeeTotals[emp.id] || 0)}
                   </td>
                 ))}
               </tr>
 
               {/* EXPECTED HOURS ROW */}
-              <tr className="bg-blue-50 font-bold">
-                <td className="border px-4 py-2 sticky left-0 z-10 bg-slate-50">
+              <tr className="bg-blue-50 font-bold text-blue-950">
+                <td className="border px-4 py-2.5 sticky left-0 z-20 bg-blue-100">
                   Expected Hours
                 </td>
-                <td className="sticky left-[110px] z-10 bg-white border px-4 py-2 font-semibold whitespace-nowrap">
-                    
-                  </td>
-
-                {employees.map(emp => (
-                  <td key={emp.id} className="border px-4 py-2 text-center">
+                <td className="sticky left-[110px] z-20 bg-blue-50 border px-4 py-2.5 font-semibold whitespace-nowrap text-center">
+                  🎯 Expected
+                </td>
+                {displayedEmployees.map(emp => (
+                  <td key={emp.id} className="border px-4 py-2.5 text-center font-black">
                     {expectedHours}
+                  </td>
+                ))}
+              </tr>
+
+              {/* TOTAL PRESENT ROW */}
+              <tr className="bg-green-50 font-bold text-green-950">
+                <td className="border px-4 py-2.5 sticky left-0 z-20 bg-green-100">
+                  Total Present Days
+                </td>
+                <td className="sticky left-[110px] z-20 bg-green-50 border px-4 py-2.5 font-semibold whitespace-nowrap text-center">
+                  ✅ Present
+                </td>
+                {displayedEmployees.map(emp => (
+                  <td key={emp.id} className="border px-4 py-2.5 text-center">
+                    <span className="bg-green-200 text-green-900 px-3 py-1 rounded-full text-xs font-black shadow-sm">
+                      {employeePresent[emp.id] || 0}
+                    </span>
+                  </td>
+                ))}
+              </tr>
+
+              {/* TOTAL WFH ROW */}
+              <tr className="bg-purple-50 font-bold text-purple-950">
+                <td className="border px-4 py-2.5 sticky left-0 z-20 bg-purple-100">
+                  Total WFH Days
+                </td>
+                <td className="sticky left-[110px] z-20 bg-purple-50 border px-4 py-2.5 font-semibold whitespace-nowrap text-center">
+                  💻 WFH
+                </td>
+                {displayedEmployees.map(emp => (
+                  <td key={emp.id} className="border px-4 py-2.5 text-center">
+                    <span className="bg-purple-200 text-purple-900 px-3 py-1 rounded-full text-xs font-black shadow-sm">
+                      {employeeWfh[emp.id] || 0}
+                    </span>
+                  </td>
+                ))}
+              </tr>
+
+              {/* TOTAL LEAVE ROW */}
+              <tr className="bg-amber-50 font-bold text-amber-950">
+                <td className="border px-4 py-2.5 sticky left-0 z-20 bg-amber-100">
+                  Total Leave Days
+                </td>
+                <td className="sticky left-[110px] z-20 bg-amber-50 border px-4 py-2.5 font-semibold whitespace-nowrap text-center">
+                  🏖️ Leave
+                </td>
+                {displayedEmployees.map(emp => (
+                  <td key={emp.id} className="border px-4 py-2.5 text-center">
+                    <span className="bg-amber-200 text-amber-950 px-3 py-1 rounded-full text-xs font-black shadow-sm">
+                      {employeeLeaves[emp.id] || 0}
+                    </span>
+                  </td>
+                ))}
+              </tr>
+
+              {/* TOTAL ABSENT ROW */}
+              <tr className="bg-red-50 font-bold text-red-950">
+                <td className="border px-4 py-2.5 sticky left-0 z-20 bg-red-100">
+                  Total Absent Days
+                </td>
+                <td className="sticky left-[110px] z-20 bg-red-50 border px-4 py-2.5 font-semibold whitespace-nowrap text-center">
+                  ❌ Absent
+                </td>
+                {displayedEmployees.map(emp => (
+                  <td key={emp.id} className="border px-4 py-2.5 text-center">
+                    <span className="bg-red-200 text-red-950 px-3 py-1 rounded-full text-xs font-black shadow-sm">
+                      {employeeAbsent[emp.id] || 0}
+                    </span>
                   </td>
                 ))}
               </tr>
@@ -1324,8 +1449,8 @@ export function AdminAttendancePivotReport() {
       )}
 
       {data.length === 0 && !loading && (
-        <div className="p-10 text-center text-slate-400 border rounded">
-          No report generated yet
+        <div className="p-10 text-center text-slate-400 border rounded-xl bg-slate-50/50">
+          No report generated yet. Select dates and employees, then click Generate Data.
         </div>
       )}
 

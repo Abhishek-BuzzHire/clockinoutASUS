@@ -78,7 +78,13 @@ export default function AttendanceCalendar({
           <Button
             variant="outline"
             size="icon"
-            onClick={() => onMonthChange(subMonths(currentDate, 1))}
+            onClick={() => {
+              const prev = subMonths(currentDate, 1);
+              if (prev.getFullYear() < 2025 || (prev.getFullYear() === 2025 && prev.getMonth() < 11)) return;
+              onMonthChange(prev);
+            }}
+            disabled={currentDate.getFullYear() < 2025 || (currentDate.getFullYear() === 2025 && currentDate.getMonth() <= 11)}
+            className={currentDate.getFullYear() < 2025 || (currentDate.getFullYear() === 2025 && currentDate.getMonth() <= 11) ? "opacity-30 cursor-not-allowed" : ""}
             aria-label="Previous month"
           >
             <ChevronLeft className="h-4 w-4" />
