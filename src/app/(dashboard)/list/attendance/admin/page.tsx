@@ -253,11 +253,12 @@ const AdminAttendancePage = () => {
 
         const calendarDay = calMap[dateKey];
 
-        const isWorkingDay = calendarDay?.is_working_day ?? true;
+        const isWorkingDay = calendarDay?.is_working_day ?? !isWeekend(thisDate);
         const isLeave = day.work_status === "LEAVE";
         const isWFH = day.work_status === "WFH";
         const isWFO = day.work_status === "WFO";
         const hasPunch = !!day.punch_in;
+        const isOffDay = !isWorkingDay || isWeekend(thisDate) || day.work_status === "OFF";
         const isPastDay = isBefore(startOfDay(thisDate), startOfDay(today));
         const isFutureDay = isAfter(startOfDay(thisDate), startOfDay(today));
 
@@ -266,7 +267,7 @@ const AdminAttendancePage = () => {
 
         if (isLeave) {
           attendanceStatus = "leave";
-        } else if (isFutureDay) {
+        } else if (isFutureDay || (isOffDay && !hasPunch)) {
           attendanceStatus = null;
         } else if (isPastDay) {
           if (!hasPunch) {
@@ -295,7 +296,7 @@ const AdminAttendancePage = () => {
               const mins = diff % 60;
               lateBy = `${hrs > 0 ? `${hrs}h ` : ""}${mins}m`;
             }
-          } else {
+          } else if (!isOffDay) {
             attendanceStatus = "absent";
           }
         }

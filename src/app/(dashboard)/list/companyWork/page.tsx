@@ -1310,6 +1310,15 @@ export function AdminAttendancePivotReport() {
                           );
                         }
 
+                        // Off
+                        if (cell?.work_status === "OFF") {
+                          return (
+                            <span className="text-slate-500 font-semibold text-xs">
+                              Off
+                            </span>
+                          );
+                        }
+
                         // Weekend
                         if (weekday === 0) {
                           return (
