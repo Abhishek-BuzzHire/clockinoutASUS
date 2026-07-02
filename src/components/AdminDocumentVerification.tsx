@@ -268,6 +268,15 @@ const DocumentPreviewModal = ({
 
         {canAct && (
           <div className="flex-shrink-0 px-6 py-4 border-t border-slate-200 bg-white space-y-3">
+            {status === "REJECTED" && combinedComment && (
+              <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 flex gap-2">
+                <XCircle size={16} className="mt-0.5 flex-shrink-0" />
+                <div>
+                  <span className="font-bold block mb-0.5">Previous Rejection Reason:</span>
+                  {combinedComment}
+                </div>
+              </div>
+            )}
             <div>
               <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Admin Comment <span className="text-slate-400 font-normal">(optional, shown to employee if rejected)</span></label>
               <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="e.g. Back side is blurry, please re-upload..." rows={2} className="w-full text-sm px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 resize-none transition-all" />
@@ -285,17 +294,14 @@ const DocumentPreviewModal = ({
           </div>
         )}
 
-        {!canAct && status !== "NOT_UPLOADED" && (
-          <div className={`flex-shrink-0 px-6 py-4 border-t ${status === "VERIFIED" ? "bg-emerald-50 border-emerald-100" : "bg-red-50 border-red-100"}`}>
+        {!canAct && status === "VERIFIED" && (
+          <div className="flex-shrink-0 px-6 py-4 border-t bg-emerald-50 border-emerald-100">
             <div className="flex items-center gap-2">
-              {status === "VERIFIED" ? <CheckCircle size={16} className="text-emerald-600" /> : <XCircle size={16} className="text-red-500" />}
-              <p className={`text-sm font-semibold ${status === "VERIFIED" ? "text-emerald-700" : "text-red-600"}`}>
-                {status === "VERIFIED" ? "This document has been verified." : "This document was rejected."}
+              <CheckCircle size={16} className="text-emerald-600" />
+              <p className="text-sm font-semibold text-emerald-700">
+                This document has been verified.
               </p>
             </div>
-            {status === "REJECTED" && combinedComment && (
-              <p className="text-xs text-red-500 mt-1 ml-6">Reason: {combinedComment}</p>
-            )}
           </div>
         )}
       </div>
