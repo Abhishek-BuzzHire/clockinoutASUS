@@ -26,7 +26,7 @@ const MobileMenu = () => {
 
   return (
     <>
-      <div className="w-full bg-white shadow-xs">
+      <div className="w-full bg-white shadow-xs select-none [-webkit-tap-highlight-color:transparent]">
         {/* Top Row: Logo & Logout */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100">
           <Link href={dashboardHref} className="flex items-center gap-2">
@@ -34,7 +34,7 @@ const MobileMenu = () => {
           </Link>
           <button
             onClick={() => setShowLogoutModal(true)}
-            className="flex items-center gap-1.5 bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 bg-red-50 text-red-600 hover:bg-red-100 active:bg-red-200 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95"
           >
             <LogOut className="w-3.5 h-3.5 text-red-500" />
             <span>Logout</span>
@@ -42,17 +42,17 @@ const MobileMenu = () => {
         </div>
 
         {/* Bottom Row: Horizontal Navigation Bar */}
-        <div className="flex items-center justify-around px-2 py-1.5 bg-slate-50/90 overflow-x-auto gap-1.5 border-b border-slate-200/60">
+        <div className="flex items-center justify-start gap-2 px-3 py-2 bg-slate-50/80 backdrop-blur-md overflow-x-auto border-b border-slate-200/60 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (
               <Link
                 key={item.label}
                 href={item.href}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                className={`shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all active:scale-95 ${
                   isActive
-                    ? "bg-indigo-600 text-white shadow-sm"
-                    : "text-slate-600 hover:bg-slate-200/60 hover:text-slate-900"
+                    ? "bg-sky-100 text-blue-700 border border-sky-300/80 shadow-xs"
+                    : "text-slate-600 hover:bg-sky-50/80 active:bg-sky-100/80 active:text-blue-700 border border-transparent"
                 }`}
               >
                 <Image
@@ -60,7 +60,7 @@ const MobileMenu = () => {
                   alt={item.label}
                   width={16}
                   height={16}
-                  className={isActive ? "invert brightness-0" : ""}
+                  className="opacity-80 shrink-0"
                 />
                 <span>{item.label}</span>
               </Link>
