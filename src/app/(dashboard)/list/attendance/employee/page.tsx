@@ -155,17 +155,17 @@ const PunchCard: React.FC<{
             {/* Bottom Half: Details & Controls */}
             <div className="px-5 pb-5 pt-4">
                 {/* Time Elapsed Box */}
-                <div className="bg-[#F5F5F0] rounded-2xl p-3.5 sm:p-4 mb-4 border border-[#E8E8E3] relative flex justify-between items-center shadow-xs">
-                    <div>
+                <div className="bg-[#F5F5F0] rounded-2xl p-3.5 sm:p-4 mb-4 border border-[#E8E8E3] relative flex flex-wrap justify-between items-center gap-3 shadow-xs overflow-hidden">
+                    <div className="flex-1 min-w-[130px]">
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">
                             {!isPunchedIn && hasPunchedOut ? "Today Work Hour" : "Time Elapsed"}
                         </p>
-                        <p className="text-2xl sm:text-3xl font-extrabold tracking-wider text-slate-800 font-sans">
+                        <p className="text-2xl xl:text-3xl font-extrabold tracking-wider text-slate-800 font-sans whitespace-nowrap">
                             {!isPunchedIn && hasPunchedOut ? formatTime(workedSeconds ?? 0) : formatTime(elapsedTime)}
                         </p>
                     </div>
                     
-                    <div className="text-right bg-white/90 border border-slate-200/70 px-3 py-1.5 rounded-xl shadow-2xs shrink-0">
+                    <div className="text-left bg-white border border-slate-200/70 px-3 py-2 rounded-xl shadow-sm shrink-0">
                         <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                             {isPunchedIn ? "Punched In At" : hasPunchedOut ? "Punched Out At" : "Punched At"}
                         </p>
