@@ -276,8 +276,8 @@ export default function DocumentsPage() {
         if (!doc.parts) return docStatuses[doc.id];
         
         const partsStatuses = doc.parts.map(p => docStatuses[p.id]);
-        if (partsStatuses.includes('REJECTED')) return 'REJECTED';
         if (partsStatuses.includes('PENDING')) return 'PENDING';
+        if (partsStatuses.includes('REJECTED')) return 'REJECTED';
         if (partsStatuses.every(s => s === 'VERIFIED')) return 'VERIFIED';
         return null;
     };
@@ -297,16 +297,6 @@ export default function DocumentsPage() {
                 ) : status === 'PENDING' ? (
                     <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-medium text-xs transition-all duration-200 border border-amber-200 bg-amber-50 text-amber-700">
                         <Clock size={14} /> Pending
-                    </div>
-                ) : status === 'REJECTED' ? (
-                    <div className="flex flex-col gap-2">
-                        <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-medium text-xs transition-all duration-200 border border-red-200 bg-red-50 text-red-700">
-                            <XCircle size={14} /> Rejected
-                        </div>
-                        <label className="block w-full cursor-pointer text-center text-xs text-blue-600 hover:underline font-semibold">
-                            Re-upload {label ? label : 'Document'}
-                            <input type="file" className="hidden" onChange={(e) => handleFileChange(e, actualDocId, doc.accepted_formats)} accept={doc.accepted_formats.map(f => `.${f}`).join(',')} />
-                        </label>
                     </div>
                 ) : selectedFile ? (
                     <div className="flex gap-2">
@@ -329,6 +319,16 @@ export default function DocumentsPage() {
                         >
                             <XCircle size={14} />
                         </button>
+                    </div>
+                ) : status === 'REJECTED' ? (
+                    <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-medium text-xs transition-all duration-200 border border-red-200 bg-red-50 text-red-700">
+                            <XCircle size={14} /> Rejected
+                        </div>
+                        <label className="block w-full cursor-pointer text-center text-xs text-blue-600 hover:underline font-semibold">
+                            Re-upload {label ? label : 'Document'}
+                            <input type="file" className="hidden" onChange={(e) => handleFileChange(e, actualDocId, doc.accepted_formats)} accept={doc.accepted_formats.map(f => `.${f}`).join(',')} />
+                        </label>
                     </div>
                 ) : (
                     <label className="block w-full cursor-pointer group/upload">

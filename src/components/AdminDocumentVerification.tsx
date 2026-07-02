@@ -90,8 +90,8 @@ const StatusBadge = ({ status }: { status: DocStatus }) => {
 const getAggregatedStatus = (doc: DocumentTypeDefinition, getRecord: (id: string) => DocRecord | undefined): DocStatus => {
   if (doc.subDocs) {
     const statuses = doc.subDocs.map(sub => getRecord(sub.id)?.status || "NOT_UPLOADED");
-    if (statuses.includes("REJECTED")) return "REJECTED";
     if (statuses.includes("PENDING")) return "PENDING";
+    if (statuses.includes("REJECTED")) return "REJECTED";
     if (statuses.every(s => s === "VERIFIED")) return "VERIFIED";
     if (statuses.every(s => s === "NOT_UPLOADED")) return "NOT_UPLOADED";
     return "PENDING"; // Partial uploads shown as pending
@@ -200,7 +200,7 @@ const DocumentPreviewModal = ({
   
   const status = getAggregatedStatus(doc, getRecord);
   const submittedAt = getEarliestSubmission(doc, getRecord);
-  const canAct = status === "PENDING";
+  const canAct = status === "PENDING" || status === "REJECTED";
 
   // Gather documents to preview
   const previewItems = doc.subDocs 
