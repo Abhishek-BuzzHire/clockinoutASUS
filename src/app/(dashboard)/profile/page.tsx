@@ -7,6 +7,7 @@ import Cookies from "js-cookie";
 import { apiUrl } from '@/lib/data';
 import { X, ZoomIn, ZoomOut, Upload, User, Briefcase, MapPin, Camera, Linkedin, ShieldCheck } from 'lucide-react';
 import { useCurrentEmployee } from '@/hooks/useCurrentEmployee';
+import { useAuth } from '@/context/AuthContext';
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { useRouter } from 'next/navigation';
 
@@ -101,6 +102,7 @@ export default function ProfilePage() {
     const [cropperActive, setCropperActive] = useState(false);
     const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
     const { employee, mutate: mutateCurrentEmployee } = useCurrentEmployee();
+    const { user } = useAuth();
 
     // Admin PIN state
     const [adminPin, setAdminPin] = useState('');
@@ -457,7 +459,7 @@ export default function ProfilePage() {
                         />
                     </section>
 
-                    {employee?.role === "admin" && (
+                    {user?.role === "admin" && (
                         <>
                             <hr className="border-slate-100" />
                             <section>
