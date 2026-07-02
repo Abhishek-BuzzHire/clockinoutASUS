@@ -243,7 +243,7 @@ export default function DocumentsPage() {
         if (!cropImageSrc || !croppedAreaPixels || !cropDocId) return;
         try {
             const croppedBlob = await getCroppedImg(cropImageSrc, croppedAreaPixels);
-            const croppedFile = new File([croppedBlob], `${cropDocId}.jpg`, { type: 'image/jpeg' });
+            const croppedFile = new window.File([croppedBlob], `${cropDocId}.jpg`, { type: 'image/jpeg' });
             setSelectedFiles(prev => ({ ...prev, [cropDocId]: croppedFile }));
             setCropImageSrc(null);
             setCropDocId(null);
