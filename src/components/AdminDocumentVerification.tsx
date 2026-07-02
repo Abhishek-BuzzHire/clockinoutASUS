@@ -154,15 +154,32 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
   }
 
   if (isPdf) {
-    return <iframe src={blobUrl} className="w-full h-full min-h-[350px] rounded-xl border border-slate-200 bg-white shadow-sm" title={label} />;
+    return (
+      <div className="relative group w-full h-full min-h-[350px]">
+        <iframe src={blobUrl} className="w-full h-full rounded-xl border border-slate-200 bg-white shadow-sm" title={label} />
+        <button 
+          onClick={() => window.open(blobUrl, '_blank')}
+          className="absolute top-3 right-8 p-2 bg-slate-800/80 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-slate-900 shadow-md flex items-center gap-2 text-xs font-semibold backdrop-blur-sm"
+        >
+          <ExternalLink size={14} /> Open Full
+        </button>
+      </div>
+    );
   }
   
   return (
-    <img
-      src={blobUrl}
-      alt={label || "Document"}
-      className="w-full h-auto max-h-[400px] object-contain rounded-xl shadow-sm border border-slate-200 bg-white p-1"
-    />
+    <div className="relative group w-full h-full flex justify-center items-center bg-slate-50/50 rounded-xl border border-slate-200 p-2 cursor-pointer overflow-hidden" onClick={() => window.open(blobUrl, '_blank')}>
+      <img
+        src={blobUrl}
+        alt={label || "Document"}
+        className="w-full h-auto max-h-[400px] object-contain rounded-lg shadow-sm"
+      />
+      <div className="absolute inset-0 bg-slate-900/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+        <span className="px-4 py-2 bg-slate-900/80 text-white rounded-full text-sm font-semibold flex items-center gap-2 shadow-lg backdrop-blur-md transform scale-95 group-hover:scale-100 transition-transform">
+          <ExternalLink size={16} /> View Full Image
+        </span>
+      </div>
+    </div>
   );
 };
 
