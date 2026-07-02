@@ -77,7 +77,9 @@ const PunchCard: React.FC<{
     elapsedSeconds: number;
     profileName?: string;
     imgurl?: string;
-}> = ({ isPunchedIn, hasPunchedOut, workedSeconds, handlePunchAction, punchTime, elapsedSeconds, profileName, imgurl }) => {
+    onRefreshLocation?: () => void;
+    isProcessingLocation?: boolean;
+}> = ({ isPunchedIn, hasPunchedOut, workedSeconds, handlePunchAction, punchTime, elapsedSeconds, profileName, imgurl, onRefreshLocation, isProcessingLocation }) => {
     const [elapsedTime, setElapsedTime] = useState<number>(elapsedSeconds ?? 0);
     const intervalRef = useRef<number | null>(null);
 
@@ -130,52 +132,68 @@ const PunchCard: React.FC<{
     const strokeDashoffset = circumference - (Math.min(elapsedTime / maxTime, 1) * circumference);
 
     return (
-        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-0 mb-6">
-            
-            <div className="flex justify-center pt-5 relative z-10">
-                <div className="relative">
-                    <img
-                        src={imgurl || '/avatar.png'}
-                        alt={profileName || "employee"}
-                        className="rounded-full object-cover border-[5px] border-white shadow-sm w-24 h-24 bg-slate-50"
-                        onError={(e) => {
-                            e.currentTarget.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(profileName || "Employee") + "&background=0D8ABC&color=fff";
-                        }}
-                    />
-                    <div className="absolute bottom-2 right-2 w-5 h-5 rounded-full border-2 border-white bg-green-500 shadow-sm"></div>
+        <div className="relative w-full max-w-sm mx-auto bg-white rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.04)] border border-slate-100 mt-0 mb-4 overflow-hidden">
+            {/* Top Row: Photo on Left Corner + Name/Status + Refresh Location right beside it */}
+            <div className="flex justify-between items-center p-3.5 sm:p-4 border-b border-slate-100 bg-slate-50/40">
+                <div className="flex items-center gap-3">
+                    <div className="relative shrink-0">
+                        <img
+                            src={imgurl || '/avatar.png'}
+                            alt={profileName || "employee"}
+                            className="rounded-full object-cover border-2 border-white shadow-xs w-13 h-13 sm:w-14 sm:h-14 bg-slate-50"
+                            onError={(e) => {
+                                e.currentTarget.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(profileName || "Employee") + "&background=0D8ABC&color=fff";
+                            }}
+                        />
+                        <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${isPunchedIn ? "bg-green-500" : "bg-slate-400"}`}></div>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-base sm:text-lg text-slate-800 leading-tight">{profileName ?? "Employee"}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                            <span className={`text-[11px] px-2 py-0.5 rounded-full inline-flex items-center gap-1 font-semibold ${isPunchedIn ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${isPunchedIn ? "bg-green-500" : "bg-slate-400"}`}></span>
+                                {isPunchedIn ? "Clocked in" : "Clocked out"}
+                            </span>
+                        </div>
+                        <p className="text-slate-400 text-[10px] mt-0.5 font-medium">
+                            {isPunchedIn ? `Punched at ${punchTime || "09:29 AM"}` : `Last punched at ${punchTime || "--:--"}`}
+                        </p>
+                    </div>
                 </div>
-            </div>
 
-            <div className="text-center px-4 pb-3 pt-2 border-b border-slate-100">
-                <h3 className="text-lg font-bold text-slate-800">{profileName ?? "Employee"}</h3>
+                {onRefreshLocation && (
+                    <button
+                        onClick={onRefreshLocation}
+                        disabled={isProcessingLocation}
+                        className="flex flex-col items-center justify-center transition active:scale-95 cursor-pointer shrink-0 text-center pl-2"
+                    >
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white shadow-sm border border-slate-200/80 flex items-center justify-center mb-1 text-slate-700 hover:shadow-md transition">
+                            <MapPin size={16} className="text-indigo-600" />
+                        </div>
+                        <span className="text-[9px] font-bold text-slate-600 leading-tight">
+                            {isProcessingLocation ? "Locating..." : "Refresh"}
+                        </span>
+                        <span className="text-[9px] font-bold text-slate-500 leading-tight">
+                            Location
+                        </span>
+                    </button>
+                )}
             </div>
 
             {/* Bottom Half: Details & Controls */}
-            <div className="px-5 pb-5 pt-4">
-                {/* Status & Punched At Row */}
-                <div className="flex justify-between items-center mb-5">
-                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isPunchedIn ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
-                        <div className={`w-1.5 h-1.5 rounded-full ${isPunchedIn ? "bg-green-500" : "bg-slate-400"}`}></div>
-                        {isPunchedIn ? "Clocked in" : "Clocked out"}
-                    </div>
-                    <div className="text-right">
-                        <p className="text-[10px] text-slate-400 font-medium">{isPunchedIn ? "Punched at" : "Last Punched out"}</p>
-                        <p className="text-xs font-semibold text-slate-700">{punchTime || "--:--"}</p>
-                    </div>
-                </div>
-
+            <div className="p-3.5 sm:p-4">
                 {/* Time Elapsed Box */}
-                <div className="bg-[#F5F5F0] rounded-xl p-3 mb-4 border border-[#E8E8E3] relative flex justify-between items-center">
+                <div className="bg-[#F8F9FA] rounded-2xl py-2.5 px-3.5 mb-3 border border-slate-200/60 relative flex justify-between items-center">
                     <div>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">
+                        <p className="text-[9px] text-slate-400 font-extrabold uppercase tracking-widest mb-0.5">
                             {!isPunchedIn && hasPunchedOut ? "Today Work Hour" : "Time Elapsed"}
                         </p>
-                        <p className="text-2xl font-light tracking-tight text-slate-800" style={{ fontFamily: "monospace" }}>
+                        <p className="text-xl sm:text-2xl font-black tracking-wide text-slate-800 font-sans">
                             {!isPunchedIn && hasPunchedOut ? formatTime(workedSeconds ?? 0) : formatTime(elapsedTime)}
                         </p>
                     </div>
-                    <div className="text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <div className="w-8 h-8 rounded-full bg-white border border-slate-100 shadow-2xs flex items-center justify-center text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     </div>
                 </div>
 
@@ -183,14 +201,14 @@ const PunchCard: React.FC<{
                 {!isPunchedIn && hasPunchedOut ? (
                     <button
                         disabled
-                        className="w-full py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-white text-base shadow-md bg-[#22C55E] cursor-not-allowed opacity-80"
+                        className="w-full py-3 rounded-2xl flex items-center justify-center gap-2 font-bold text-white text-sm shadow-sm bg-[#22C55E] cursor-not-allowed opacity-80"
                     >
                         Successfully Punched Out
                     </button>
                 ) : (
                     <button
                         onClick={handlePunchAction}
-                        className={`w-full py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-white text-base shadow-md transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]
+                        className={`w-full py-3 rounded-2xl flex items-center justify-center gap-2 font-bold text-white text-sm shadow-md transform transition-all duration-200 hover:scale-[1.01] active:scale-[0.98] cursor-pointer
                 ${isPunchedIn ? "bg-[#EF4444] shadow-red-200" : "bg-[#22C55E] shadow-green-200"}`}
                     >
                         {isPunchedIn ? "Clock Out" : "Clock In"}
@@ -1353,34 +1371,25 @@ const EmployeeAttendancePage = () => {
                                         elapsedSeconds={initialElapsedSeconds}
                                         profileName={employee?.name ?? "Employee"}
                                         imgurl={avatarSrc}
+                                        onRefreshLocation={() => fetchGeolocation(true)}
+                                        isProcessingLocation={isProcessing}
                                     />
-
-                                    {/* Location display & refresh */}
-                                    <div className="mb-4">
-                                        <button
-                                            onClick={() => fetchGeolocation(true)}
-                                            disabled={isProcessing}
-                                            className={`w-full py-3 px-4 rounded-2xl text-sm font-semibold flex items-center justify-center transition duration-200 shadow-sm ${locationError ? "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50" : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100"}`}
-                                        >
-                                            {isProcessing ? "Updating Location..." : "Refresh Location"}
-                                        </button>
-                                    </div>
 
                                     {/* QUICK ACTIONS FOR ATTENDANCE TAB */}
                                     <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 mb-0 lg:mb-4">
-                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-4">Quick Actions</h3>
+                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-3">Quick Actions</h3>
                                         <div className="grid grid-cols-3 gap-3">
-                                            <button onClick={() => setOpenApplyLeaves(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
-                                                <CalendarPlus className="w-5 h-5" />
-                                                <span className="text-[10px] font-bold">Leave</span>
+                                            <button onClick={() => setOpenApplyLeaves(true)} className="flex items-center justify-center gap-2 sm:gap-2.5 py-3.5 px-3 rounded-2xl bg-[#EFF5FF] text-[#2F5BFF] hover:bg-blue-100 border border-blue-100/80 shadow-2xs active:scale-95 transition cursor-pointer">
+                                                <CalendarPlus className="w-5 h-5 sm:w-5.5 sm:h-5.5 shrink-0" />
+                                                <span className="text-xs sm:text-sm font-bold">Leave</span>
                                             </button>
-                                            <button onClick={() => setOpenApplyWfh(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
-                                                <Laptop className="w-5 h-5" />
-                                                <span className="text-[10px] font-bold">WFH</span>
+                                            <button onClick={() => setOpenApplyWfh(true)} className="flex items-center justify-center gap-2 sm:gap-2.5 py-3.5 px-3 rounded-2xl bg-[#F6F0FF] text-[#8B5CF6] hover:bg-purple-100 border border-purple-100/80 shadow-2xs active:scale-95 transition cursor-pointer">
+                                                <Home className="w-5 h-5 sm:w-5.5 sm:h-5.5 shrink-0" />
+                                                <span className="text-xs sm:text-sm font-bold">WFH</span>
                                             </button>
-                                            <button onClick={() => setOpenRegulize(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors">
-                                                <ClockArrowUp className="w-5 h-5" />
-                                                <span className="text-[10px] font-bold">Regularize</span>
+                                            <button onClick={() => setOpenRegulize(true)} className="flex items-center justify-center gap-2 sm:gap-2.5 py-3.5 px-3 rounded-2xl bg-[#FFF5EE] text-[#F97316] hover:bg-orange-100 border border-orange-100/80 shadow-2xs active:scale-95 transition cursor-pointer">
+                                                <ClockArrowUp className="w-5 h-5 sm:w-5.5 sm:h-5.5 shrink-0" />
+                                                <span className="text-xs sm:text-sm font-bold">Regularize</span>
                                             </button>
                                         </div>
                                     </div>
