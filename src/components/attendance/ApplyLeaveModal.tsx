@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Clock
 } from "lucide-react";
+import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 
 export default function ApplyLeaveModal({
   onClose,
@@ -59,29 +60,23 @@ export default function ApplyLeaveModal({
               <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5" /> Start Date
               </label>
-              <div className="relative group">
-                <input
-                  type="date"
-                  className="w-full border border-slate-200 bg-slate-50/30 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                  value={start}
-                  onChange={e => setStart(e.target.value)}
-                />
-              </div>
+              <CustomDatePicker
+                value={start}
+                onChange={val => setStart(val)}
+                placeholder="Select start date"
+              />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                 <ChevronRight className="w-3.5 h-3.5" /> End Date
               </label>
-              <div className="relative group">
-                <input
-                  type="date"
-                  className="w-full border border-slate-200 bg-slate-50/30 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                  value={end}
-                  min={start}
-                  onChange={e => setEnd(e.target.value)}
-                />
-              </div>
+              <CustomDatePicker
+                value={end}
+                minDate={start}
+                onChange={val => setEnd(val)}
+                placeholder="Select end date"
+              />
             </div>
           </div>
 

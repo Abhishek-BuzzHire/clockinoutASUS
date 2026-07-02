@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { PlusCircle } from "lucide-react";
 import { payrollApi } from "@/lib/payroll-api";
 import { useToast } from "@/hooks/use-toast";
+import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 
 export function CreateCycleDialog({ onCreated }: { onCreated: () => void }) {
   const [open, setOpen] = useState(false);
@@ -31,6 +32,7 @@ export function CreateCycleDialog({ onCreated }: { onCreated: () => void }) {
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1; // 1–12
+  const [cutoffDate, setCutoffDate] = useState(`${currentYear}-${String(currentMonth).padStart(2, "0")}-25`);
 
   // Month config: label for UI, value for backend
   const months = [
@@ -158,15 +160,11 @@ export function CreateCycleDialog({ onCreated }: { onCreated: () => void }) {
             {/* Cutoff Date */}
             <div className="grid gap-2">
               <Label htmlFor="cutoff_date">Payroll Cutoff Date</Label>
-              <Input
-                id="cutoff_date"
-                name="cutoff_date"
-                type="date"
-                required
-                defaultValue={`${currentYear}-${String(currentMonth).padStart(
-                  2,
-                  "0"
-                )}-25`}
+              <input type="hidden" name="cutoff_date" value={cutoffDate} />
+              <CustomDatePicker
+                value={cutoffDate}
+                onChange={val => setCutoffDate(val)}
+                placeholder="Select cutoff date"
               />
             </div>
           </div>

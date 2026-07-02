@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X, Calendar, Send, Home, Info, Laptop, AlertCircle } from "lucide-react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 
 export default function ApplyWFHModal({
   onClose,
@@ -103,14 +104,13 @@ export default function ApplyWFHModal({
             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 px-1">
               <Calendar className="w-3.5 h-3.5" /> Proposed Date
             </label>
-            <div className="relative">
+            <div className="mt-1">
               {dateType === "future" ? (
-                <input
-                  type="date"
-                  className="w-full border border-slate-200 bg-slate-50/30 rounded-xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                <CustomDatePicker
                   value={date}
-                  min={today}
-                  onChange={e => setDate(e.target.value)}
+                  minDate={today}
+                  onChange={val => setDate(val)}
+                  placeholder="Select future WFH date"
                 />
               ) : (
                 <select

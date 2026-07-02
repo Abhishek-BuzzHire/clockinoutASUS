@@ -8,6 +8,7 @@ import { apiUrl } from '@/lib/data';
 import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import { useCurrentEmployee } from '@/hooks/useCurrentEmployee';
 import { format, startOfMonth, endOfMonth } from "date-fns";
+import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 
 interface ProfileData {
     id?: number;
@@ -326,12 +327,10 @@ export default function ProfilePage() {
 
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-500 mb-1">Date of Birth</label>
-                                    <input
-                                        type="date"
-                                        name="date_of_birth"
+                                    <CustomDatePicker
                                         value={profile?.date_of_birth || ''}
-                                        onChange={handleInputChange}
-                                        className="w-full p-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        onChange={val => setProfile(prev => prev ? { ...prev, date_of_birth: val } : null)}
+                                        placeholder="Select date of birth"
                                     />
                                 </div>
 
@@ -362,12 +361,10 @@ export default function ProfilePage() {
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-slate-500 mb-1">Joining Date</label>
-                                <input
-                                    type="date"
-                                    name="joining_date"
+                                <CustomDatePicker
                                     value={profile?.joining_date || ''}
-                                    onChange={handleInputChange}
-                                    className="w-full p-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    onChange={val => setProfile(prev => prev ? { ...prev, joining_date: val } : null)}
+                                    placeholder="Select joining date"
                                 />
                             </div>
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X, Calendar, Clock, FileEdit } from "lucide-react";
+import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 
 interface Props {
   onClose: () => void;
@@ -73,12 +74,11 @@ export default function AttendanceRegularizationPopup({
               <label className="text-xs font-bold uppercase text-slate-600 flex gap-1 items-center">
                 <Calendar className="w-4 h-4" /> Date
               </label>
-              <input
-                type="date"
+              <CustomDatePicker
                 value={date}
-                max={new Date().toISOString().split("T")[0]}
-                onChange={e => setDate(e.target.value)}
-                className="border rounded-lg px-3 py-2 text-sm bg-white"
+                maxDate={new Date().toISOString().split("T")[0]}
+                onChange={val => setDate(val)}
+                placeholder="Select date"
               />
             </div>
 

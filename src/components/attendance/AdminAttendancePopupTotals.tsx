@@ -3,6 +3,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { format } from "date-fns";
 import { FileText, X, Users, ChevronDown, Search, CheckCircle2, Download, Clock } from "lucide-react";
+import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -180,21 +181,19 @@ export default function AdminAttendancePopupTotals({ onClose }: { onClose: () =>
                     <div className="px-6 py-4 flex flex-wrap items-end gap-6 bg-white">
                         <div className="flex flex-col gap-1.5">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-tight">Start Date</label>
-                            <input
-                                type="date"
+                            <CustomDatePicker
                                 value={startDate}
-                                onChange={e => setStartDate(e.target.value)}
-                                className="pl-3 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white"
+                                onChange={val => setStartDate(val)}
+                                placeholder="Select start date"
                             />
                         </div>
 
                         <div className="flex flex-col gap-1.5">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-tight">End Date</label>
-                            <input
-                                type="date"
+                            <CustomDatePicker
                                 value={endDate}
-                                onChange={e => setEndDate(e.target.value)}
-                                className="pl-3 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white"
+                                onChange={val => setEndDate(val)}
+                                placeholder="Select end date"
                             />
                         </div>
 
