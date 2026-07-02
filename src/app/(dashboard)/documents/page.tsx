@@ -3,41 +3,33 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import Cookies from "js-cookie";
-import Cropper from 'react-easy-crop';
+import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 import { apiUrl } from '@/lib/data';
 import { ArrowLeft, Upload, File, CheckCircle, ShieldCheck, Info, CreditCard, IdCard, GraduationCap, Award, Briefcase, Mail, FileCheck, FileText, Clock, XCircle, ZoomIn, ZoomOut, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-interface Area {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-const createImage = (url: string): Promise<HTMLImageElement> =>
-  new Promise((resolve, reject) => {
-    const image = new Image();
-    image.addEventListener('load', () => resolve(image));
-    image.addEventListener('error', (error) => reject(error));
-    image.setAttribute('crossOrigin', 'anonymous');
-    image.src = url;
-  });
-
-async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
-  const image = await createImage(imageSrc);
+async function getCroppedImg(image: HTMLImageElement, crop: PixelCrop): Promise<Blob> {
   const canvas = document.createElement('canvas');
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
+
+  canvas.width = crop.width * scaleX;
+  canvas.height = crop.height * scaleY;
+
   const ctx = canvas.getContext('2d');
-
   if (!ctx) throw new Error('No 2d context');
-
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
 
   ctx.drawImage(
     image,
-    pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height,
-    0, 0, pixelCrop.width, pixelCrop.height
+    crop.x * scaleX,
+    crop.y * scaleY,
+    crop.width * scaleX,
+    crop.height * scaleY,
+    0,
+    0,
+    crop.width * scaleX,
+    crop.height * scaleY
   );
 
   return new Promise((resolve, reject) => {
@@ -179,9 +171,9 @@ export default function DocumentsPage() {
     // Cropper states
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
     const [cropDocId, setCropDocId] = useState<string | null>(null);
-    const [crop, setCrop] = useState({ x: 0, y: 0 });
-    const [zoom, setZoom] = useState(1);
-    const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+    const [crop, setCrop] = useState<Crop>({ unit: '%', width: 90, height: 90, x: 5, y: 5 });
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<PixelCrop | null>(null);
+    const imgRef = React.useRef<HTMLImageElement>(null);
 
     const token = Cookies.get("access");
     const api = axios.create({
@@ -229,8 +221,7 @@ export default function DocumentsPage() {
             reader.onload = () => {
                 setCropImageSrc(reader.result as string);
                 setCropDocId(actualDocId);
-                setCrop({ x: 0, y: 0 });
-                setZoom(1);
+                setCrop({ unit: '%', width: 90, height: 90, x: 5, y: 5 });
             };
             reader.readAsDataURL(file);
         }
@@ -240,9 +231,9 @@ export default function DocumentsPage() {
     };
 
     const handleCropSave = async () => {
-        if (!cropImageSrc || !croppedAreaPixels || !cropDocId) return;
+        if (!imgRef.current || !croppedAreaPixels || !cropDocId) return;
         try {
-            const croppedBlob = await getCroppedImg(cropImageSrc, croppedAreaPixels);
+            const croppedBlob = await getCroppedImg(imgRef.current, croppedAreaPixels);
             const croppedFile = new window.File([croppedBlob], `${cropDocId}.jpg`, { type: 'image/jpeg' });
             setSelectedFiles(prev => ({ ...prev, [cropDocId]: croppedFile }));
             setCropImageSrc(null);
@@ -500,33 +491,20 @@ export default function DocumentsPage() {
                         </div>
 
                         {/* Modal Body (Cropper Area) */}
-                        <div className="relative w-full h-[60vh] min-h-[400px] bg-slate-900">
-                            <Cropper
-                                image={cropImageSrc}
+                        <div className="relative w-full h-[65vh] min-h-[400px] bg-slate-900 flex justify-center items-center overflow-auto p-4 border-b border-slate-100">
+                            <ReactCrop
                                 crop={crop}
-                                zoom={zoom}
-                                aspect={undefined} // Allows free rectangle cropping
-                                onCropChange={setCrop}
-                                onCropComplete={(_, croppedAreaPixels) => setCroppedAreaPixels(croppedAreaPixels)}
-                                onZoomChange={setZoom}
-                            />
-                        </div>
-
-                        {/* Controls (Zoom Slider) */}
-                        <div className="px-6 py-4 bg-slate-50/50 flex flex-col items-center border-b border-slate-100">
-                            <div className="flex items-center space-x-4 w-full max-w-sm">
-                                <ZoomOut size={18} className="text-slate-500" />
-                                <input
-                                    type="range"
-                                    min={1}
-                                    max={3}
-                                    step={0.1}
-                                    value={zoom}
-                                    onChange={(e) => setZoom(parseFloat(e.target.value))}
-                                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none"
+                                onChange={(_, percentCrop) => setCrop(percentCrop)}
+                                onComplete={(c) => setCroppedAreaPixels(c)}
+                                keepSelection
+                            >
+                                <img
+                                    ref={imgRef}
+                                    src={cropImageSrc}
+                                    alt="Crop me"
+                                    style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }}
                                 />
-                                <ZoomIn size={18} className="text-slate-500" />
-                            </div>
+                            </ReactCrop>
                         </div>
 
                         {/* Modal Footer */}
