@@ -133,9 +133,31 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
   const [error, setError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
+    // 1. Strict Mobile & Tablet Detection (Bypasses "Request Desktop Site")
+    const checkMobile = () => {
+      if (typeof window === 'undefined') return false;
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|windows phone/i.test(userAgent);
+      const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
+      const isSmallScreen = window.screen.width < 1024 || window.innerWidth < 1024;
+      const hasTouch = navigator.maxTouchPoints > 0;
+      
+      if (isMobileUA) return true;
+      if (isCoarsePointer && hasTouch && isSmallScreen) return true;
+      if (userAgent.includes('macintosh') && hasTouch) return true; // iPad in Desktop Mode
+      
+      return false;
+    };
+
+    if (checkMobile()) {
+      setIsMobileDevice(true);
+      return; // Do not fetch document, do not setup screenshot hooks
+    }
+
     let objectUrl = "";
     const abortController = new AbortController();
 
@@ -201,6 +223,26 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
       window.removeEventListener('focus', showDoc);
     };
   }, [url]);
+
+  if (isMobileDevice) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[350px] p-6 text-center gap-5 bg-red-50/90 rounded-xl border-2 border-red-200 w-full shadow-sm select-none">
+         <div className="p-4 bg-red-100 rounded-full animate-bounce mt-4">
+           <Lock size={36} className="text-red-600" />
+         </div>
+         <div>
+           <h3 className="text-xl font-bold text-red-700 mb-2">Security Policy Violation</h3>
+           <p className="text-sm font-semibold text-red-600 max-w-sm mx-auto leading-relaxed">
+             Mobile and tablet viewing is strictly prohibited to prevent unauthorized screenshots.
+             Please open this document from a Laptop or Desktop computer.
+           </p>
+         </div>
+         <div className="px-3 py-1 mb-4 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded shadow-md">
+           Desktop Mode Bypass Prevented
+         </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
