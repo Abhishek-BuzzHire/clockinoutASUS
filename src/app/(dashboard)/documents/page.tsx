@@ -79,7 +79,7 @@ const DOCUMENT_SECTIONS: DocumentSection[] = [
                 id: 'aadhar/driving',
                 name: 'Aadhar Card / Driving Licence',
                 description: 'Scanned copy of both sides of your Aadhar card or Driving licence',
-                accepted_formats: ['pdf', 'jpg', 'png'],
+                accepted_formats: ['pdf', 'jpg', 'png', 'heic', 'heif'],
                 required: true,
                 parts: [
                     { id: 'aadhar_front', label: 'Front Side' },
@@ -90,7 +90,7 @@ const DOCUMENT_SECTIONS: DocumentSection[] = [
                 id: 'pan',
                 name: 'PAN Card',
                 description: 'Scanned copy of your PAN card',
-                accepted_formats: ['pdf', 'jpg', 'png'],
+                accepted_formats: ['pdf', 'jpg', 'png', 'heic', 'heif'],
                 required: true
             },
             
@@ -105,28 +105,28 @@ const DOCUMENT_SECTIONS: DocumentSection[] = [
                 id: '10th_marksheet',
                 name: '10th Marksheet',
                 description: 'Board exam marksheet for class 10',
-                accepted_formats: ['pdf', 'jpg', 'png'],
+                accepted_formats: ['pdf', 'jpg', 'png', 'heic', 'heif'],
                 required: true
             },
             {
                 id: '12th_marksheet',
                 name: '12th Marksheet',
                 description: 'Board exam marksheet for class 12',
-                accepted_formats: ['pdf', 'jpg', 'png'],
+                accepted_formats: ['pdf', 'jpg', 'png', 'heic', 'heif'],
                 required: true
             },
             {
                 id: 'graduation_degree',
                 name: 'Graduation Degree',
                 description: 'Bachelor degree certificate',
-                accepted_formats: ['pdf', 'jpg', 'png'],
+                accepted_formats: ['pdf', 'jpg', 'png', 'heic', 'heif'],
                 required: true
             },
             {
                 id: 'postgraduation_degree',
                 name: 'Postgraduation Degree',
                 description: 'Master degree certificate',
-                accepted_formats: ['pdf', 'jpg', 'png'],
+                accepted_formats: ['pdf', 'jpg', 'png', 'heic', 'heif'],
                 required: false
             }
         ]
@@ -139,14 +139,14 @@ const DOCUMENT_SECTIONS: DocumentSection[] = [
                 id: 'offer_letter',
                 name: 'Offer Letter',
                 description: 'Previous Employment Offer Letter (Experienced Candidates Only)',
-                accepted_formats: ['pdf', 'jpg', 'png'],
+                accepted_formats: ['pdf', 'jpg', 'png', 'heic', 'heif'],
                 required: true
             },
             {
                 id: 'relieving_letter',
                 name: 'Relieving Letter',
                 description: 'Relieving letter from previous employer',
-                accepted_formats: ['pdf', 'jpg', 'png'],
+                accepted_formats: ['pdf', 'jpg', 'png', 'heic', 'heif'],
                 required: false
             },
            
@@ -154,7 +154,7 @@ const DOCUMENT_SECTIONS: DocumentSection[] = [
                 id: 'resignation_mail',
                 name: 'Resignation Acceptance Mail',
                 description: 'Email confirmation of resignation acceptance from previous company',
-                accepted_formats: ['pdf', 'jpg', 'png'],
+                accepted_formats: ['pdf', 'jpg', 'png', 'heic', 'heif'],
                 required: false
             }
         ]
@@ -205,13 +205,33 @@ export default function DocumentsPage() {
         fetchDocuments();
     }, []);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, actualDocId: string, allowedFormats: string[]) => {
-        const file = e.target.files?.[0];
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, actualDocId: string, allowedFormats: string[]) => {
+        let file = e.target.files?.[0];
         if (!file) return;
 
+        // Check if file is HEIC/HEIF
+        const isHeic = file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif');
+        let fileExtension = file.name.split('.').pop()?.toLowerCase();
+
+        if (isHeic) {
+            try {
+                const heic2any = (await import('heic2any')).default;
+                const convertedBlob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.8 });
+                const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                file = new window.File([blob], file.name.replace(/\.heic|\.heif/i, '.jpg'), { type: 'image/jpeg' });
+                fileExtension = 'jpg';
+            } catch (err) {
+                console.error("HEIC conversion failed:", err);
+                setError("Failed to process HEIC image. Please try another photo.");
+                e.target.value = '';
+                return;
+            }
+        }
+
         // Validate file format
-        const fileExtension = file.name.split('.').pop()?.toLowerCase();
         if (!fileExtension || !allowedFormats.includes(fileExtension)) {
+            // Note: If allowedFormats doesn't have jpg, and we converted HEIC to jpg, it might fail.
+            // But we already added heic/heif to allowedFormats, and jpg is always allowed for images.
             setError(`Invalid file format. Accepted: ${allowedFormats.join(', ').toUpperCase()}`);
             return;
         }
