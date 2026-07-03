@@ -132,7 +132,6 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isRevealed, setIsRevealed] = useState(false);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -317,30 +316,9 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
           </div>
           
           <div className="relative w-full h-full flex flex-col justify-center items-center p-4">
-             {/* The Document Area */}
-             <div className={`relative w-full max-w-5xl flex justify-center items-center overflow-hidden rounded-xl border border-slate-700 bg-slate-900 transition-all duration-75 ${isRevealed ? 'opacity-100 blur-none' : 'opacity-0 blur-2xl pointer-events-none'}`}>
+             <div className="relative w-full max-w-5xl flex justify-center items-center overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
                {renderContent(true)}
                <WatermarkOverlay />
-             </div>
-
-             {/* The Hold-To-Reveal Button Area */}
-             <div className="absolute bottom-10 z-[120]">
-                <button
-                  onPointerDown={(e) => {
-                     e.preventDefault();
-                     setIsRevealed(true);
-                  }}
-                  onPointerUp={() => setIsRevealed(false)}
-                  onPointerLeave={() => setIsRevealed(false)}
-                  onPointerCancel={() => setIsRevealed(false)}
-                  onContextMenu={(e) => e.preventDefault()}
-                  className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold shadow-[0_0_30px_rgba(220,38,38,0.5)] flex items-center gap-3 animate-pulse active:scale-95 active:animate-none select-none touch-none"
-                >
-                   <Lock size={20} /> Press & Hold to Reveal Document
-                </button>
-                <p className="text-slate-400 text-xs text-center mt-3 font-semibold tracking-wide">
-                  Prevents Mobile Screenshots
-                </p>
              </div>
           </div>
         </div>
