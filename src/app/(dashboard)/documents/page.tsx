@@ -524,22 +524,22 @@ export default function DocumentsPage() {
                         
                         <div className="p-6 space-y-4">
                             <p className="text-slate-700 font-medium leading-relaxed">
-                                Aapke dwara upload kiya gaya koi bhi document <strong className="text-sky-700 font-bold bg-sky-100 px-1.5 py-0.5 rounded">100% Secure</strong> hai. 
-                                Hum top-tier Enterprise DRM Security use karte hain jisse aapka data hamesha safe rahega.
+                                Every document you upload is <strong className="text-sky-700 font-bold bg-sky-100 px-1.5 py-0.5 rounded">100% Secure</strong>. 
+                                We utilize top-tier Enterprise DRM Security to ensure your data remains strictly confidential and protected at all times.
                             </p>
                             
                             <ul className="space-y-3 p-4 bg-white/60 rounded-xl border border-sky-100 shadow-sm">
                                 <li className="flex items-start gap-2.5 text-sm text-slate-700 font-medium">
                                     <XCircle size={18} className="text-red-500 flex-shrink-0 drop-shadow-sm" />
-                                    <span className="leading-tight">Koi bhi Admin in documents ka <strong>Screenshot</strong> nahi le sakta (Screen block ho jayegi).</span>
+                                    <span className="leading-tight"><strong>Screenshots</strong> are strictly prohibited. The system will automatically block and blackout the screen if an admin attempts to capture it.</span>
                                 </li>
                                 <li className="flex items-start gap-2.5 text-sm text-slate-700 font-medium">
                                     <XCircle size={18} className="text-red-500 flex-shrink-0 drop-shadow-sm" />
-                                    <span className="leading-tight">Documents ko <strong>Download, Save ya Share</strong> karna totally blocked hai.</span>
+                                    <span className="leading-tight"><strong>Downloading, Saving, or Sharing</strong> of any document is completely disabled at the system level.</span>
                                 </li>
                                 <li className="flex items-start gap-2.5 text-sm text-slate-700 font-medium">
                                     <XCircle size={18} className="text-red-500 flex-shrink-0 drop-shadow-sm" />
-                                    <span className="leading-tight">Mobile ya Tablet se Admin panel pe in documents ko dekhna strictly prohibited hai.</span>
+                                    <span className="leading-tight">Accessing documents from a <strong>Mobile Device or Tablet</strong> is strictly blocked for all administrators.</span>
                                 </li>
                             </ul>
                             
