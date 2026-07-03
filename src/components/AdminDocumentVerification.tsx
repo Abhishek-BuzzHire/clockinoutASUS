@@ -234,8 +234,8 @@ const DocumentPreviewModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-slate-100 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="relative w-full max-w-4xl max-h-[90vh] bg-slate-100 rounded-2xl shadow-2xl flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className={`p-1.5 rounded-lg ${status === "VERIFIED" ? "bg-emerald-50 border border-emerald-100" : status === "REJECTED" ? "bg-red-50 border border-red-100" : status === "PENDING" ? "bg-amber-50 border border-amber-100" : "bg-slate-50 border border-slate-100"}`}>
