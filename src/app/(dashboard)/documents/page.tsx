@@ -176,18 +176,10 @@ export default function DocumentsPage() {
     const imgRef = React.useRef<HTMLImageElement>(null);
     
     // Security Trust Modal states
-    const [showTrustModal, setShowTrustModal] = useState(false);
+    const [showTrustModal, setShowTrustModal] = useState(true);
     const [showExample, setShowExample] = useState(false);
 
-    useEffect(() => {
-        const hasSeen = localStorage.getItem('hasSeenSecurityTrustModal');
-        if (!hasSeen) {
-            setShowTrustModal(true);
-        }
-    }, []);
-
     const closeTrustModal = () => {
-        localStorage.setItem('hasSeenSecurityTrustModal', 'true');
         setShowTrustModal(false);
     };
 
