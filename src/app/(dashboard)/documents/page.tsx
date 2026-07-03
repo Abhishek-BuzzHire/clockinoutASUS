@@ -534,24 +534,6 @@ export default function DocumentsPage() {
                                     <span className="leading-tight">Accessing documents from a <strong>Mobile Device or Tablet</strong> is strictly blocked for all administrators.</span>
                                 </li>
                             </ul>
-                            
-                            <div className="bg-sky-100/40 border border-sky-200 rounded-xl p-4 mt-2">
-                                <p className="text-xs text-sky-800 font-bold mb-3 uppercase tracking-wide">
-                                    Admin View (Watermarked)
-                                </p>
-                                <button 
-                                    onClick={() => setShowExample(!showExample)}
-                                    className="text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-sm active:scale-95"
-                                >
-                                    <ZoomIn size={16} /> {showExample ? 'Hide Example' : 'See Example'}
-                                </button>
-                                
-                                {showExample && (
-                                    <div className="mt-4 rounded-xl overflow-hidden border-2 border-sky-300 shadow-md relative animate-in fade-in zoom-in duration-200">
-                                        <img src="/secure_example.jpeg" alt="Secure Example" className="w-full h-auto object-cover max-h-[300px]" />
-                                    </div>
-                                )}
-                            </div>
                         </div>
 
                         <div className="px-6 py-4 bg-white/80 border-t border-sky-100 flex justify-end">

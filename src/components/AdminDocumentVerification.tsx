@@ -120,11 +120,11 @@ const WatermarkOverlay = () => {
     <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden select-none flex items-center justify-center">
       {/* Dense Micro-Pattern Watermark */}
       <div 
-        className="absolute w-[200%] h-[200%] flex flex-wrap justify-center items-center gap-x-16 gap-y-20 opacity-35 transform -rotate-[15deg]"
-        style={{ textShadow: "1px 1px 1px rgba(0,0,0,0.7)" }}
+        className="absolute w-[200%] h-[200%] flex flex-wrap justify-center items-center gap-x-28 gap-y-32 opacity-25 transform -rotate-[15deg]"
+        style={{ textShadow: "1px 1px 1px rgba(0,0,0,0.5)" }}
       >
-        {Array.from({ length: 150 }).map((_, i) => (
-          <div key={i} className="text-white/80 font-medium text-sm whitespace-nowrap tracking-wider">
+        {Array.from({ length: 70 }).map((_, i) => (
+          <div key={i} className="text-white/60 font-medium text-sm whitespace-nowrap tracking-wider">
             BUZZHIRE SECURE • {timestamp}
           </div>
         ))}
