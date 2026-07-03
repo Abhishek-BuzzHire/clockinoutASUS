@@ -136,19 +136,26 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
 
   React.useEffect(() => {
     let objectUrl = "";
+    const abortController = new AbortController();
+
     const fetchDoc = async () => {
       try {
         const token = Cookies.get("access");
         const response = await axios.get(`${apiUrl}${url}`, {
           headers: { Authorization: `Bearer ${token}` },
-          responseType: 'blob'
+          responseType: 'blob',
+          signal: abortController.signal
         });
         setBlobData(response.data);
         objectUrl = URL.createObjectURL(response.data);
         setBlobUrl(objectUrl);
       } catch (err) {
-        console.error("Failed to fetch document blob", err);
-        setError(true);
+        if (axios.isCancel(err)) {
+          console.log("Fetch aborted for strict mode cleanup.");
+        } else {
+          console.error("Failed to fetch document blob", err);
+          setError(true);
+        }
       }
     };
     fetchDoc();
@@ -185,6 +192,7 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
     window.addEventListener('focus', showDoc);
     
     return () => {
+      abortController.abort();
       if (objectUrl) URL.revokeObjectURL(objectUrl);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
@@ -203,7 +211,12 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
   }
 
   if (!blobUrl) {
-    return <div className="h-48 flex items-center justify-center text-slate-400 w-full">Loading secure preview...</div>;
+    return (
+      <div className="h-64 flex flex-col items-center justify-center text-slate-500 w-full gap-4 bg-slate-900 rounded-xl border border-slate-700">
+        <div className="w-10 h-10 border-4 border-slate-700 border-t-red-500 rounded-full animate-spin"></div>
+        <p className="text-sm font-bold text-slate-300 animate-pulse">Decrypting Secure Vault...</p>
+      </div>
+    );
   }
 
   const renderContent = (fullScreen: boolean = false) => {
