@@ -205,6 +205,8 @@ export default function DocumentsPage() {
         fetchDocuments();
     }, []);
 
+    const [processingImage, setProcessingImage] = useState(false);
+
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, actualDocId: string, allowedFormats: string[]) => {
         let file = e.target.files?.[0];
         if (!file) return;
@@ -214,6 +216,7 @@ export default function DocumentsPage() {
         let fileExtension = file.name.split('.').pop()?.toLowerCase();
 
         if (isHeic) {
+            setProcessingImage(true);
             try {
                 const heic2any = (await import('heic2any')).default;
                 const convertedBlob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.8 });
@@ -224,14 +227,14 @@ export default function DocumentsPage() {
                 console.error("HEIC conversion failed:", err);
                 setError("Failed to process HEIC image. Please try another photo.");
                 e.target.value = '';
+                setProcessingImage(false);
                 return;
             }
+            setProcessingImage(false);
         }
 
         // Validate file format
         if (!fileExtension || !allowedFormats.includes(fileExtension)) {
-            // Note: If allowedFormats doesn't have jpg, and we converted HEIC to jpg, it might fail.
-            // But we already added heic/heif to allowedFormats, and jpg is always allowed for images.
             setError(`Invalid file format. Accepted: ${allowedFormats.join(', ').toUpperCase()}`);
             return;
         }
@@ -245,13 +248,10 @@ export default function DocumentsPage() {
         if (fileExtension === 'pdf') {
             handleSubmit(actualDocId, file);
         } else {
-            const reader = new FileReader();
-            reader.onload = () => {
-                setCropImageSrc(reader.result as string);
-                setCropDocId(actualDocId);
-                setCrop({ unit: '%', width: 90, height: 90, x: 5, y: 5 });
-            };
-            reader.readAsDataURL(file);
+            // INSTANT 0ms loading
+            setCropImageSrc(URL.createObjectURL(file));
+            setCropDocId(actualDocId);
+            setCrop({ unit: '%', width: 90, height: 90, x: 5, y: 5 });
         }
         
         setError(null);
@@ -402,6 +402,15 @@ export default function DocumentsPage() {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
+
+            {processingImage && (
+                <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-slate-900/70 backdrop-blur-sm">
+                    <div className="w-12 h-12 border-4 border-slate-600 border-t-white rounded-full animate-spin mb-4 shadow-lg"></div>
+                    <p className="text-white font-bold text-lg tracking-wide drop-shadow-sm">Processing Image...</p>
+                    <p className="text-slate-300 text-sm mt-1">Preparing high-quality preview</p>
+                </div>
+            )}
+
             <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-6">
                 
                 {/* Header Section */}

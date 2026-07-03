@@ -194,12 +194,15 @@ export default function ProfilePage() {
         setProfile(prev => prev ? { ...prev, [name]: value } : null);
     };
 
+    const [processingImage, setProcessingImage] = useState(false);
+
     const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             let file = e.target.files[0];
             
             const isHeic = file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif');
             if (isHeic) {
+                setProcessingImage(true);
                 try {
                     const heic2any = (await import('heic2any')).default;
                     const convertedBlob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.8 });
@@ -209,22 +212,18 @@ export default function ProfilePage() {
                     console.error("HEIC conversion failed:", err);
                     alert("Failed to process HEIC image. Please try another photo.");
                     e.target.value = '';
+                    setProcessingImage(false);
                     return;
                 }
+                setProcessingImage(false);
             }
 
             if (e.target.name === 'profile_photo_file') {
-                // Use FileReader data URL instead of createObjectURL
-                // for better compatibility with react-easy-crop on mobile
-                const reader = new FileReader();
-                reader.onload = () => {
-                    setCropImageSrc(reader.result as string);
-                };
-                reader.readAsDataURL(file);
+                // INSTANT 0ms loading
+                setCropImageSrc(URL.createObjectURL(file));
             } else {
                 setFiles({ ...files, [e.target.name]: file });
             }
-            // Reset the value so that selecting the same image again still triggers onChange
             e.target.value = '';
         }
     };
@@ -288,6 +287,15 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-slate-50/50 p-4 md:p-8 text-slate-800 font-sans">
+            
+            {processingImage && (
+                <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-slate-900/70 backdrop-blur-sm">
+                    <div className="w-12 h-12 border-4 border-slate-600 border-t-white rounded-full animate-spin mb-4 shadow-lg"></div>
+                    <p className="text-white font-bold text-lg tracking-wide drop-shadow-sm">Processing Image...</p>
+                    <p className="text-slate-300 text-sm mt-1">Preparing high-quality preview</p>
+                </div>
+            )}
+
             <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 
                 {/* Header */}
