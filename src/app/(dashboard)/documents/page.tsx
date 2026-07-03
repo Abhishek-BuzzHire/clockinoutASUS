@@ -174,6 +174,22 @@ export default function DocumentsPage() {
     const [crop, setCrop] = useState<Crop>({ unit: '%', width: 90, height: 90, x: 5, y: 5 });
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<PixelCrop | null>(null);
     const imgRef = React.useRef<HTMLImageElement>(null);
+    
+    // Security Trust Modal states
+    const [showTrustModal, setShowTrustModal] = useState(false);
+    const [showExample, setShowExample] = useState(false);
+
+    useEffect(() => {
+        const hasSeen = localStorage.getItem('hasSeenSecurityTrustModal');
+        if (!hasSeen) {
+            setShowTrustModal(true);
+        }
+    }, []);
+
+    const closeTrustModal = () => {
+        localStorage.setItem('hasSeenSecurityTrustModal', 'true');
+        setShowTrustModal(false);
+    };
 
     const token = Cookies.get("access");
     const api = axios.create({
@@ -491,6 +507,72 @@ export default function DocumentsPage() {
                     </p>
                 </div>
             </div>
+
+            {/* Security Guarantee Modal */}
+            {showTrustModal && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
+                    <div className="bg-gradient-to-br from-sky-50 to-blue-50 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-sky-200 flex flex-col transform scale-100 transition-all duration-300">
+                        <div className="px-6 py-5 border-b border-sky-100 flex justify-between items-center bg-white/60">
+                            <div className="flex items-center gap-3">
+                                <ShieldCheck size={28} className="text-sky-600 drop-shadow-sm" />
+                                <h3 className="text-xl font-bold text-sky-900 tracking-tight">100% Security Guarantee</h3>
+                            </div>
+                            <button onClick={closeTrustModal} className="p-2 rounded-full hover:bg-sky-100/50 text-sky-500 hover:text-sky-700 transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        
+                        <div className="p-6 space-y-4">
+                            <p className="text-slate-700 font-medium leading-relaxed">
+                                Aapke dwara upload kiya gaya koi bhi document <strong className="text-sky-700 font-bold bg-sky-100 px-1.5 py-0.5 rounded">100% Secure</strong> hai. 
+                                Hum top-tier Enterprise DRM Security use karte hain jisse aapka data hamesha safe rahega.
+                            </p>
+                            
+                            <ul className="space-y-3 p-4 bg-white/60 rounded-xl border border-sky-100 shadow-sm">
+                                <li className="flex items-start gap-2.5 text-sm text-slate-700 font-medium">
+                                    <XCircle size={18} className="text-red-500 flex-shrink-0 drop-shadow-sm" />
+                                    <span className="leading-tight">Koi bhi Admin in documents ka <strong>Screenshot</strong> nahi le sakta (Screen block ho jayegi).</span>
+                                </li>
+                                <li className="flex items-start gap-2.5 text-sm text-slate-700 font-medium">
+                                    <XCircle size={18} className="text-red-500 flex-shrink-0 drop-shadow-sm" />
+                                    <span className="leading-tight">Documents ko <strong>Download, Save ya Share</strong> karna totally blocked hai.</span>
+                                </li>
+                                <li className="flex items-start gap-2.5 text-sm text-slate-700 font-medium">
+                                    <XCircle size={18} className="text-red-500 flex-shrink-0 drop-shadow-sm" />
+                                    <span className="leading-tight">Mobile ya Tablet se Admin panel pe in documents ko dekhna strictly prohibited hai.</span>
+                                </li>
+                            </ul>
+                            
+                            <div className="bg-sky-100/40 border border-sky-200 rounded-xl p-4 mt-2">
+                                <p className="text-xs text-sky-800 font-bold mb-3 uppercase tracking-wide">
+                                    Admin View (Watermarked)
+                                </p>
+                                <button 
+                                    onClick={() => setShowExample(!showExample)}
+                                    className="text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-sm active:scale-95"
+                                >
+                                    <ZoomIn size={16} /> {showExample ? 'Hide Example' : 'See Example'}
+                                </button>
+                                
+                                {showExample && (
+                                    <div className="mt-4 rounded-xl overflow-hidden border-2 border-sky-300 shadow-md relative animate-in fade-in zoom-in duration-200">
+                                        <img src="/secure_example.jpeg" alt="Secure Example" className="w-full h-auto object-cover max-h-[300px]" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="px-6 py-4 bg-white/80 border-t border-sky-100 flex justify-end">
+                            <button
+                                onClick={closeTrustModal}
+                                className="px-8 py-3 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-sky-200 transition-all active:scale-95 flex items-center gap-2"
+                            >
+                                <CheckCircle size={18} /> I Understand
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Cropper Modal */}
             {cropImageSrc && (
