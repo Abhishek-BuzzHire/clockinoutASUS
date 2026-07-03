@@ -211,8 +211,8 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Hide instantly if Windows key, PrintScreen, or Shift is pressed
-      if (e.key === 'Meta' || e.key === 'PrintScreen' || e.key === 'Shift') {
+      // Hide instantly if Windows key or PrintScreen is pressed
+      if (e.key === 'Meta' || e.key === 'PrintScreen') {
         hideDoc();
       }
       if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p' || e.key === 'c')) {
@@ -222,7 +222,7 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === 'Meta' || e.key === 'PrintScreen' || e.key === 'Shift') {
+      if (e.key === 'Meta' || e.key === 'PrintScreen') {
         setTimeout(showDoc, 800); // keep hidden for a short delay
       }
     };
@@ -239,6 +239,9 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', hideDoc);
       window.removeEventListener('focus', showDoc);
+      
+      // CRITICAL: Restore visibility when component unmounts!
+      document.body.style.opacity = '1';
     };
   }, [url]);
 
