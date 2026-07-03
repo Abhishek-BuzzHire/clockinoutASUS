@@ -538,19 +538,7 @@ const AdminDocumentVerification = ({ employeeId, employeeName }: AdminDocumentVe
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-2.5">
-        {[
-          { label: "Total",    value: total,    color: "bg-slate-50 text-slate-700 border-slate-200"        },
-          { label: "Verified", value: verified,  color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-          { label: "Pending",  value: pending,   color: "bg-amber-50 text-amber-700 border-amber-200"       },
-          { label: "Rejected", value: rejected,  color: "bg-red-50 text-red-700 border-red-200"             },
-        ].map((s) => (
-          <div key={s.label} className={`rounded-xl border p-3 text-center ${s.color}`}>
-            <p className="text-xl font-black">{s.value}</p>
-            <p className="text-[10px] font-bold uppercase tracking-wider mt-0.5">{s.label}</p>
-          </div>
-        ))}
-      </div>
+
 
       {pending > 0 && (
         <div className="flex items-center gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm font-medium">
