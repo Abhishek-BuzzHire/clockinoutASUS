@@ -179,8 +179,9 @@ const PunchCard: React.FC<{
                 {!isPunchedIn && hasPunchedOut ? (
                     <button
                         disabled
-                        className="w-full py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-white text-base shadow-md bg-[#22C55E] cursor-not-allowed opacity-80"
+                        className="w-full py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-white text-base shadow-lg shadow-sky-200 bg-gradient-to-r from-sky-600 to-blue-600 cursor-not-allowed opacity-90 transition-all"
                     >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
                         Successfully Punched Out
                     </button>
                 ) : (
