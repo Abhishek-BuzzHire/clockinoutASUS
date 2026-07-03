@@ -131,6 +131,7 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
   const [blobData, setBlobData] = useState<Blob | null>(null);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   React.useEffect(() => {
     let objectUrl = "";
@@ -166,20 +167,6 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
     };
   }, [url]);
 
-  const handleOpenSecureTab = () => {
-    if (!blobData) return;
-    // Create a temporary URL specifically for the new tab
-    const tempUrl = URL.createObjectURL(blobData);
-    window.open(tempUrl, '_blank');
-    
-    // Self-destruct the URL after 7 seconds
-    // It stays loaded in the opened tab memory, but cannot be refreshed or shared.
-    setTimeout(() => {
-      URL.revokeObjectURL(tempUrl);
-      console.log("Secure Blob URL destroyed.");
-    }, 7000);
-  };
-
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-48 gap-3 bg-red-50 rounded-xl border border-dashed border-red-200 w-full">
@@ -193,49 +180,65 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
     return <div className="h-48 flex items-center justify-center text-slate-400 w-full">Loading secure preview...</div>;
   }
 
-  if (isPdf) {
-    return (
-      <div 
-        className="relative group w-full h-full min-h-[350px] overflow-hidden rounded-xl border border-slate-200 bg-slate-900 select-none"
-        onContextMenu={(e) => e.preventDefault()}
-      >
+  const renderContent = (fullScreen: boolean = false) => {
+    if (isPdf) {
+      return (
         <iframe 
           src={`${blobUrl}#toolbar=0&navpanes=0&scrollbar=0`} 
-          className="w-full h-full border-none shadow-sm pointer-events-none" 
+          className={`w-full ${fullScreen ? 'h-[85vh]' : 'h-full'} border-none shadow-sm pointer-events-none`} 
           title={label} 
         />
-        <WatermarkOverlay />
-        <button 
-          onClick={handleOpenSecureTab}
-          className="absolute top-3 right-3 p-2.5 z-[60] bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 shadow-xl flex items-center gap-2 text-xs font-bold"
-        >
-          <ExternalLink size={14} /> Open Secure Tab
-        </button>
-      </div>
-    );
-  }
-  
-  return (
-    <div 
-      className="relative group w-full h-full flex justify-center items-center bg-slate-900 rounded-xl border border-slate-200 p-2 overflow-hidden select-none" 
-      onContextMenu={(e) => e.preventDefault()}
-    >
+      );
+    }
+    return (
       <img
         src={blobUrl}
         alt={label || "Document"}
-        className="w-full h-auto max-h-[400px] object-contain rounded-lg shadow-sm pointer-events-none"
+        className={`w-full h-auto ${fullScreen ? 'max-h-[85vh]' : 'max-h-[400px]'} object-contain rounded-lg shadow-sm pointer-events-none`}
         draggable={false}
       />
-      <WatermarkOverlay />
-      <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-[60]">
-        <button 
-          onClick={handleOpenSecureTab}
-          className="px-5 py-2.5 bg-red-600 text-white rounded-full text-sm font-bold flex items-center gap-2 shadow-2xl transform scale-95 group-hover:scale-100 transition-transform hover:bg-red-700"
-        >
-          <ExternalLink size={16} /> Open Secure Tab
-        </button>
+    );
+  };
+  
+  return (
+    <>
+      <div 
+        className="relative group w-full h-full min-h-[350px] flex justify-center items-center bg-slate-900 rounded-xl border border-slate-200 p-2 overflow-hidden select-none" 
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        {renderContent(false)}
+        <WatermarkOverlay />
+        <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-[60]">
+          <button 
+            onClick={() => setIsFullscreen(true)}
+            className="px-5 py-2.5 bg-red-600 text-white rounded-full text-sm font-bold flex items-center gap-2 shadow-2xl transform scale-95 group-hover:scale-100 transition-transform hover:bg-red-700"
+          >
+            <Eye size={16} /> Open Secure Full View
+          </button>
+        </div>
       </div>
-    </div>
+
+      {isFullscreen && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 select-none"
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <div className="absolute top-6 right-6 z-[110]">
+            <button 
+              onClick={() => setIsFullscreen(false)}
+              className="p-3 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-2xl transition-all"
+              title="Close Secure View"
+            >
+              <X size={24} />
+            </button>
+          </div>
+          <div className="relative w-full max-w-5xl flex justify-center items-center p-4 overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
+            {renderContent(true)}
+            <WatermarkOverlay />
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
