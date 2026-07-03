@@ -117,12 +117,31 @@ const getCombinedComments = (doc: DocumentTypeDefinition, getRecord: (id: string
 const WatermarkOverlay = () => {
   const timestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
   return (
-    <div className="absolute inset-0 pointer-events-none z-50 flex flex-wrap justify-center items-center gap-10 overflow-hidden opacity-[0.15] select-none mix-blend-difference">
-      {Array.from({ length: 24 }).map((_, i) => (
-        <div key={i} className="text-white font-black text-2xl transform -rotate-45 whitespace-nowrap">
-          BUZZHIRE SECURE VAULT • {timestamp}
-        </div>
-      ))}
+    <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden select-none flex items-center justify-center">
+      {/* Dense Micro-Pattern Watermark */}
+      <div 
+        className="absolute w-[200%] h-[200%] flex flex-wrap justify-center items-center gap-x-16 gap-y-20 opacity-35 transform -rotate-[15deg]"
+        style={{ textShadow: "1px 1px 1px rgba(0,0,0,0.7)" }}
+      >
+        {Array.from({ length: 150 }).map((_, i) => (
+          <div key={i} className="text-white/80 font-medium text-sm whitespace-nowrap tracking-wider">
+            BUZZHIRE SECURE • {timestamp}
+          </div>
+        ))}
+      </div>
+      
+      {/* Large Central Authentic Stamp */}
+      <div 
+        className="absolute opacity-25 transform -rotate-[15deg] pointer-events-none" 
+        style={{ textShadow: "2px 2px 6px rgba(0,0,0,0.8)" }}
+      >
+         <h1 className="text-white font-black text-4xl md:text-6xl tracking-widest uppercase text-center">
+           Strictly Confidential
+         </h1>
+         <p className="text-white/90 font-bold text-xl md:text-2xl text-center mt-2 tracking-widest">
+           DO NOT SHARE • {timestamp}
+         </p>
+      </div>
     </div>
   );
 };
