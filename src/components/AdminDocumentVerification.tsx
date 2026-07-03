@@ -114,7 +114,21 @@ const getCombinedComments = (doc: DocumentTypeDefinition, getRecord: (id: string
   return getRecord(doc.id)?.admin_comment;
 };
 
+const WatermarkOverlay = () => {
+  const timestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  return (
+    <div className="absolute inset-0 pointer-events-none z-50 flex flex-wrap justify-center items-center gap-10 overflow-hidden opacity-[0.15] select-none mix-blend-difference">
+      {Array.from({ length: 24 }).map((_, i) => (
+        <div key={i} className="text-white font-black text-2xl transform -rotate-45 whitespace-nowrap">
+          BUZZHIRE SECURE VAULT • {timestamp}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: string; isPdf: boolean }) => {
+  const [blobData, setBlobData] = useState<Blob | null>(null);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [error, setError] = useState(false);
 
@@ -127,6 +141,7 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
           headers: { Authorization: `Bearer ${token}` },
           responseType: 'blob'
         });
+        setBlobData(response.data);
         objectUrl = URL.createObjectURL(response.data);
         setBlobUrl(objectUrl);
       } catch (err) {
@@ -135,10 +150,35 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
       }
     };
     fetchDoc();
+    
+    // Anti-Save Keyboard Shortcuts (Ctrl+S, Ctrl+P)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p' || e.key === 'c')) {
+        e.preventDefault();
+        alert("Security Alert: Saving, printing, and copying are disabled in the Secure Vault.");
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    
     return () => {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [url]);
+
+  const handleOpenSecureTab = () => {
+    if (!blobData) return;
+    // Create a temporary URL specifically for the new tab
+    const tempUrl = URL.createObjectURL(blobData);
+    window.open(tempUrl, '_blank');
+    
+    // Self-destruct the URL after 7 seconds
+    // It stays loaded in the opened tab memory, but cannot be refreshed or shared.
+    setTimeout(() => {
+      URL.revokeObjectURL(tempUrl);
+      console.log("Secure Blob URL destroyed.");
+    }, 7000);
+  };
 
   if (error) {
     return (
@@ -150,34 +190,50 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
   }
 
   if (!blobUrl) {
-    return <div className="h-48 flex items-center justify-center text-slate-400 w-full">Loading preview...</div>;
+    return <div className="h-48 flex items-center justify-center text-slate-400 w-full">Loading secure preview...</div>;
   }
 
   if (isPdf) {
     return (
-      <div className="relative group w-full h-full min-h-[350px]">
-        <iframe src={blobUrl} className="w-full h-full rounded-xl border border-slate-200 bg-white shadow-sm" title={label} />
+      <div 
+        className="relative group w-full h-full min-h-[350px] overflow-hidden rounded-xl border border-slate-200 bg-slate-900 select-none"
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        <iframe 
+          src={`${blobUrl}#toolbar=0&navpanes=0&scrollbar=0`} 
+          className="w-full h-full border-none shadow-sm pointer-events-none" 
+          title={label} 
+        />
+        <WatermarkOverlay />
         <button 
-          onClick={() => window.open(blobUrl, '_blank')}
-          className="absolute top-3 right-8 p-2 bg-slate-800/80 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-slate-900 shadow-md flex items-center gap-2 text-xs font-semibold backdrop-blur-sm"
+          onClick={handleOpenSecureTab}
+          className="absolute top-3 right-3 p-2.5 z-[60] bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 shadow-xl flex items-center gap-2 text-xs font-bold"
         >
-          <ExternalLink size={14} /> Open Full
+          <ExternalLink size={14} /> Open Secure Tab
         </button>
       </div>
     );
   }
   
   return (
-    <div className="relative group w-full h-full flex justify-center items-center bg-slate-50/50 rounded-xl border border-slate-200 p-2 cursor-pointer overflow-hidden" onClick={() => window.open(blobUrl, '_blank')}>
+    <div 
+      className="relative group w-full h-full flex justify-center items-center bg-slate-900 rounded-xl border border-slate-200 p-2 overflow-hidden select-none" 
+      onContextMenu={(e) => e.preventDefault()}
+    >
       <img
         src={blobUrl}
         alt={label || "Document"}
-        className="w-full h-auto max-h-[400px] object-contain rounded-lg shadow-sm"
+        className="w-full h-auto max-h-[400px] object-contain rounded-lg shadow-sm pointer-events-none"
+        draggable={false}
       />
-      <div className="absolute inset-0 bg-slate-900/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-        <span className="px-4 py-2 bg-slate-900/80 text-white rounded-full text-sm font-semibold flex items-center gap-2 shadow-lg backdrop-blur-md transform scale-95 group-hover:scale-100 transition-transform">
-          <ExternalLink size={16} /> View Full Image
-        </span>
+      <WatermarkOverlay />
+      <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-[60]">
+        <button 
+          onClick={handleOpenSecureTab}
+          className="px-5 py-2.5 bg-red-600 text-white rounded-full text-sm font-bold flex items-center gap-2 shadow-2xl transform scale-95 group-hover:scale-100 transition-transform hover:bg-red-700"
+        >
+          <ExternalLink size={16} /> Open Secure Tab
+        </button>
       </div>
     </div>
   );
