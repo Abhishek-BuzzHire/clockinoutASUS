@@ -132,6 +132,7 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     let objectUrl = "";
@@ -152,18 +153,43 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
     };
     fetchDoc();
     
-    // Anti-Save Keyboard Shortcuts (Ctrl+S, Ctrl+P)
+    // HARDCORE ANTI-SCREENSHOT LOGIC
+    const hideDoc = () => {
+      document.body.style.opacity = '0';
+      document.body.style.transition = 'opacity 0.05s';
+    };
+    const showDoc = () => {
+      document.body.style.opacity = '1';
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Hide instantly if Windows key, PrintScreen, or Shift is pressed
+      if (e.key === 'Meta' || e.key === 'PrintScreen' || e.key === 'Shift') {
+        hideDoc();
+      }
       if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p' || e.key === 'c')) {
         e.preventDefault();
         alert("Security Alert: Saving, printing, and copying are disabled in the Secure Vault.");
       }
     };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Meta' || e.key === 'PrintScreen' || e.key === 'Shift') {
+        setTimeout(showDoc, 800); // keep hidden for a short delay
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('blur', hideDoc);
+    window.addEventListener('focus', showDoc);
     
     return () => {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('blur', hideDoc);
+      window.removeEventListener('focus', showDoc);
     };
   }, [url]);
 
@@ -203,7 +229,8 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
   return (
     <>
       <div 
-        className="relative group w-full h-full min-h-[350px] flex justify-center items-center bg-slate-900 rounded-xl border border-slate-200 p-2 overflow-hidden select-none" 
+        ref={containerRef}
+        className="relative group w-full h-full min-h-[350px] flex justify-center items-center bg-slate-900 rounded-xl border border-slate-200 p-2 overflow-hidden select-none transition-opacity duration-150" 
         onContextMenu={(e) => e.preventDefault()}
       >
         {renderContent(false)}
@@ -220,7 +247,8 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
 
       {isFullscreen && (
         <div 
-          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 select-none"
+          ref={containerRef}
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 select-none transition-opacity duration-150"
           onContextMenu={(e) => e.preventDefault()}
         >
           <div className="absolute top-6 right-6 z-[110]">
