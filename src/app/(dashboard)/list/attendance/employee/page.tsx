@@ -796,15 +796,20 @@ const EmployeeAttendancePage = () => {
                         const elapsed = Math.max(0, Math.floor((Date.now() - pIn) / 1000));
                         setInitialElapsedSeconds(elapsed);
                         setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
-                        // console.log("handlePunch Api Punch In", "Raw:", data.data.punch_in_time, "&", "Processed:", punchTime)
                     } else if (type === "out" && data.data.punch_out_time) {
                         setInitialElapsedSeconds(0);
                         setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
-                        // console.log("handlePunch Api Punch Out", "Raw:", data.data.punch_out_time, "&", "Processed:", punchTime)
                     }
                 } else {
                     // fallback: refresh today's attendance
                     await fetchTodayAttendance();
+                }
+
+                // Refresh the timesheet table so it shows immediately
+                if (viewMode === "weekly") {
+                    fetchWeeklyAttendance(currentWeekStart, endOfWeek(currentWeekStart, { weekStartsOn: 0 }));
+                } else {
+                    fetchMonthlyAttendance(currentMonthStart, endOfMonth(currentMonthStart));
                 }
             } else {
                 const lowerMsg = data.message?.toLowerCase() || "";
@@ -1112,9 +1117,6 @@ const EmployeeAttendancePage = () => {
 
     // Punch action used by PunchCard
     const handlePunchAction = async () => {
-        const currentTime = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" });
-        setPunchTime(currentTime);
-        // console.log("CurrentTIme Component", currentTime)
         if (isCheckedIn) {
             // --- USER IS TRYING TO CLOCK OUT ---
             try {
