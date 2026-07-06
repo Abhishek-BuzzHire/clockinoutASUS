@@ -106,11 +106,11 @@ export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: bo
   if (node.is_active === false) return null;
 
   return (
-    <div className={`w-full flex flex-col justify-start transition-all duration-300 ${isOpen && hasChildren ? "col-span-full my-3" : "col-span-1 my-1"}`}>
+    <div className={`w-full flex flex-col justify-start transition-all duration-300 ${isOpen && hasChildren ? "col-span-full my-2 sm:my-3" : "col-span-1 my-0.5 sm:my-1"}`}>
       {/* Main Node Card */}
       <div 
         onClick={() => hasChildren && setIsOpen(!isOpen)} 
-        className={`w-full flex flex-col p-3 sm:p-5 rounded-xl border transition-all duration-200 ${
+        className={`w-full flex flex-col px-3 py-3 sm:p-5 rounded-lg sm:rounded-xl border transition-all duration-200 ${
           isLeader 
             ? "cursor-pointer bg-gradient-to-r from-blue-50/60 via-white to-white border-blue-200 hover:border-blue-300 shadow-sm" 
             : "bg-white border-slate-200/80 hover:border-slate-300 shadow-2xs"
@@ -170,9 +170,9 @@ export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: bo
 
       {/* Expanded Team Box Container */}
       {isOpen && hasChildren && (
-        <div className="mt-3 ml-0 sm:ml-2 md:ml-6 p-2 sm:p-4 md:p-6 bg-slate-100/80 rounded-2xl border border-slate-200/90 relative animate-fadeIn shadow-inner w-full">
+        <div className="mt-2 sm:mt-3 ml-0 sm:ml-2 md:ml-6 p-0 sm:p-4 md:p-6 bg-slate-100/80 rounded-lg sm:rounded-2xl border border-slate-200/90 relative animate-fadeIn shadow-inner w-full">
           {/* Sub-team Header */}
-          <div className="flex items-center gap-2 pb-3 mb-4 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider flex-wrap">
+          <div className="flex items-center gap-2 px-3 sm:px-0 pt-2 sm:pt-0 pb-2 sm:pb-3 mb-2 sm:mb-4 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider flex-wrap">
             <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
             <span className="break-words">Direct Reports of {node.name}</span>
             <span className="bg-white border border-slate-200 px-2 py-0.5 rounded text-[10px] font-bold text-slate-700">
@@ -181,7 +181,7 @@ export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: bo
           </div>
 
           {/* Nested Grid for Child Employees */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-0 sm:gap-4 w-full px-1 sm:px-0">
             {node.team_members.map((child: any) => (
               <HierarchyNode key={child.id} node={child} />
             ))}
@@ -218,9 +218,9 @@ export const EmployeeHierarchyTab = () => {
   const selectedGroup = hierarchy?.find((g: any) => g.department === selectedDept);
 
   return (
-    <div className="p-2 sm:p-4 md:p-8 bg-slate-50 min-h-screen space-y-4 sm:space-y-8 w-full">
+    <div className="p-0 sm:p-4 md:p-8 bg-slate-50 min-h-screen space-y-2 sm:space-y-8 w-full">
       {/* Header */}
-      <div className="bg-white p-3 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3 sm:gap-4 w-full">
+      <div className="bg-white px-3 py-3 sm:p-6 rounded-none sm:rounded-2xl border-b sm:border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3 sm:gap-4 w-full">
         <div className="flex items-center gap-3">
           {selectedDept && (
             <button
@@ -246,7 +246,7 @@ export const EmployeeHierarchyTab = () => {
 
       {/* Department Selection View */}
       {!selectedDept && hierarchy && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-5 w-full px-1 sm:px-0">
           {hierarchy.map((deptGroup: any) => {
             const activeMembers = deptGroup.members?.filter((m: any) => m.is_active !== false) || [];
             const totalEmployees = activeMembers.reduce((sum: number, m: any) => sum + (m.team_members?.length || 0), 0);
@@ -254,7 +254,7 @@ export const EmployeeHierarchyTab = () => {
               <div
                 key={deptGroup.department}
                 onClick={() => setSelectedDept(deptGroup.department)}
-                className="group cursor-pointer bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-300 flex flex-col gap-4"
+                className="group cursor-pointer bg-white border border-slate-200/90 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-300 flex flex-col gap-3 sm:gap-4"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -287,8 +287,8 @@ export const EmployeeHierarchyTab = () => {
 
       {/* Selected Department Hierarchy View */}
       {selectedDept && selectedGroup && (
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-2 sm:p-6 md:p-8 shadow-sm space-y-4 sm:space-y-6 w-full animate-fadeIn">
-          <div className="flex flex-wrap items-center justify-between border-b border-slate-100 pb-4 gap-2">
+        <div className="bg-white border-0 sm:border border-slate-200/90 rounded-none sm:rounded-2xl p-0 sm:p-6 md:p-8 shadow-none sm:shadow-sm space-y-0 sm:space-y-6 w-full animate-fadeIn">
+          <div className="flex flex-wrap items-center justify-between border-b border-slate-100 pb-3 sm:pb-4 px-3 sm:px-0 pt-2 sm:pt-0 gap-2">
             <h3 className="text-base font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2.5">
               <span>🏢 {selectedGroup.department} Department</span>
             </h3>
@@ -297,7 +297,7 @@ export const EmployeeHierarchyTab = () => {
             </span>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-2 sm:gap-5 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-0 sm:gap-5 w-full px-1 sm:px-0">
             {selectedGroup.members && selectedGroup.members.map((member: any) => (
               <HierarchyNode key={member.id} node={member} isRoot={true} />
             ))}
