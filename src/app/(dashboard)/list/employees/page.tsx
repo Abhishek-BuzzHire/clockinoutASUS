@@ -110,7 +110,7 @@ export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: bo
       {/* Main Node Card */}
       <div 
         onClick={() => hasChildren && setIsOpen(!isOpen)} 
-        className={`w-full flex flex-col p-4 sm:p-5 rounded-xl border transition-all duration-200 ${
+        className={`w-full flex flex-col p-3 sm:p-5 rounded-xl border transition-all duration-200 ${
           isLeader 
             ? "cursor-pointer bg-gradient-to-r from-blue-50/60 via-white to-white border-blue-200 hover:border-blue-300 shadow-sm" 
             : "bg-white border-slate-200/80 hover:border-slate-300 shadow-2xs"
@@ -170,7 +170,7 @@ export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: bo
 
       {/* Expanded Team Box Container */}
       {isOpen && hasChildren && (
-        <div className="mt-3 ml-1 sm:ml-2 md:ml-6 p-3 sm:p-4 md:p-6 bg-slate-100/80 rounded-2xl border border-slate-200/90 relative animate-fadeIn shadow-inner w-full">
+        <div className="mt-3 ml-0 sm:ml-2 md:ml-6 p-2 sm:p-4 md:p-6 bg-slate-100/80 rounded-2xl border border-slate-200/90 relative animate-fadeIn shadow-inner w-full">
           {/* Sub-team Header */}
           <div className="flex items-center gap-2 pb-3 mb-4 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider flex-wrap">
             <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
@@ -181,7 +181,7 @@ export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: bo
           </div>
 
           {/* Nested Grid for Child Employees */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 w-full">
             {node.team_members.map((child: any) => (
               <HierarchyNode key={child.id} node={child} />
             ))}
@@ -218,9 +218,9 @@ export const EmployeeHierarchyTab = () => {
   const selectedGroup = hierarchy?.find((g: any) => g.department === selectedDept);
 
   return (
-    <div className="p-4 md:p-8 bg-slate-50 min-h-screen space-y-8 w-full">
+    <div className="p-2 sm:p-4 md:p-8 bg-slate-50 min-h-screen space-y-4 sm:space-y-8 w-full">
       {/* Header */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4 w-full">
+      <div className="bg-white p-3 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3 sm:gap-4 w-full">
         <div className="flex items-center gap-3">
           {selectedDept && (
             <button
@@ -287,7 +287,7 @@ export const EmployeeHierarchyTab = () => {
 
       {/* Selected Department Hierarchy View */}
       {selectedDept && selectedGroup && (
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 md:p-8 shadow-sm space-y-6 w-full animate-fadeIn">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-2 sm:p-6 md:p-8 shadow-sm space-y-4 sm:space-y-6 w-full animate-fadeIn">
           <div className="flex flex-wrap items-center justify-between border-b border-slate-100 pb-4 gap-2">
             <h3 className="text-base font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2.5">
               <span>🏢 {selectedGroup.department} Department</span>
@@ -297,7 +297,7 @@ export const EmployeeHierarchyTab = () => {
             </span>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-5 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-2 sm:gap-5 w-full">
             {selectedGroup.members && selectedGroup.members.map((member: any) => (
               <HierarchyNode key={member.id} node={member} isRoot={true} />
             ))}
