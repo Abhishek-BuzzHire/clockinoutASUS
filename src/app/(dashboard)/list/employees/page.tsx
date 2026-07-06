@@ -110,13 +110,13 @@ export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: bo
       {/* Main Node Card */}
       <div 
         onClick={() => hasChildren && setIsOpen(!isOpen)} 
-        className={`w-full flex items-start justify-between p-4 rounded-xl border transition-all duration-200 ${
+        className={`w-full flex flex-col p-4 sm:p-5 rounded-xl border transition-all duration-200 ${
           isLeader 
             ? "cursor-pointer bg-gradient-to-r from-blue-50/60 via-white to-white border-blue-200 hover:border-blue-300 shadow-sm" 
             : "bg-white border-slate-200/80 hover:border-slate-300 shadow-2xs"
         }`}
       >
-        <div className="flex items-start gap-3 w-full min-w-0">
+        <div className="flex items-start gap-3 w-full">
           {hasChildren ? (
             <div className={`mt-0.5 p-1 rounded-md bg-blue-100 text-blue-600 transition-transform duration-200 flex-shrink-0 ${isOpen ? "rotate-90 bg-blue-600 text-white" : ""}`}>
               <ChevronRight className="w-4 h-4" />
@@ -127,9 +127,9 @@ export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: bo
 
           <div className="space-y-2 flex-1 min-w-0">
             {/* Title & Badge */}
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <h4 className={`truncate tracking-tight ${isLeader ? "text-base font-bold text-slate-900 capitalize" : "text-sm font-semibold text-slate-700"}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className={`break-words tracking-tight ${isLeader ? "text-base font-bold text-slate-900 capitalize" : "text-sm font-semibold text-slate-700"}`}>
                   {node.name}
                 </h4>
                 <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider flex-shrink-0 ${
@@ -140,25 +140,25 @@ export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: bo
               </div>
 
               {hasChildren && (
-                <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200/60 px-2.5 py-0.5 rounded-full flex-shrink-0">
+                <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200/60 px-2.5 py-0.5 rounded-full flex-shrink-0 w-fit">
                   {node.team_members.length} {node.team_members.length === 1 ? 'Team Member' : 'Team Members'}
                 </span>
               )}
             </div>
 
             {/* Designation & Dept */}
-            <p className="text-xs text-slate-500 font-medium truncate">
+            <p className="text-xs text-slate-500 font-medium break-words">
               {node.designation || "No Designation"} {node.department && <span className="text-blue-600 font-semibold"> • {node.department}</span>}
             </p>
 
-            {/* Clean Professional Contact Details */}
+            {/* Contact Details */}
             <div className="pt-2 border-t border-slate-100 flex flex-col gap-1.5 text-xs text-slate-600 font-normal">
-              <div className="flex items-center gap-2 truncate">
-                <Mail className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                <span className="truncate text-slate-700 font-medium">{node.email}</span>
+              <div className="flex items-start gap-2">
+                <Mail className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+                <span className="break-all text-slate-700 font-medium">{node.email}</span>
               </div>
               {node.phone && (
-                <div className="flex items-center gap-2 truncate">
+                <div className="flex items-center gap-2">
                   <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                   <span className="text-slate-700 font-medium">{node.phone}</span>
                 </div>
@@ -170,18 +170,18 @@ export const HierarchyNode = ({ node, isRoot = false }: { node: any, isRoot?: bo
 
       {/* Expanded Team Box Container */}
       {isOpen && hasChildren && (
-        <div className="mt-3 ml-2 md:ml-6 p-4 md:p-6 bg-slate-100/80 rounded-2xl border border-slate-200/90 relative animate-fadeIn shadow-inner w-full">
+        <div className="mt-3 ml-1 sm:ml-2 md:ml-6 p-3 sm:p-4 md:p-6 bg-slate-100/80 rounded-2xl border border-slate-200/90 relative animate-fadeIn shadow-inner w-full">
           {/* Sub-team Header */}
-          <div className="flex items-center gap-2 pb-3 mb-4 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
+          <div className="flex items-center gap-2 pb-3 mb-4 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider flex-wrap">
             <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
-            <span>Direct Reports of {node.name}</span>
+            <span className="break-words">Direct Reports of {node.name}</span>
             <span className="bg-white border border-slate-200 px-2 py-0.5 rounded text-[10px] font-bold text-slate-700">
               {node.team_members.length}
             </span>
           </div>
 
           {/* Nested Grid for Child Employees */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 w-full">
             {node.team_members.map((child: any) => (
               <HierarchyNode key={child.id} node={child} />
             ))}
