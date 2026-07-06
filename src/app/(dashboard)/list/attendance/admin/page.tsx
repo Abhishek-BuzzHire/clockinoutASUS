@@ -255,22 +255,20 @@ const AdminAttendancePage = () => {
 
         const isWorkingDay = calendarDay?.is_working_day ?? true;
         const isLeave = day.work_status === "LEAVE";
-        const isWFH = day.work_status === "WFH";
-        const isWFO = day.work_status === "WFO";
         const hasPunch = !!day.punch_in;
         const isPastDay = isBefore(startOfDay(thisDate), startOfDay(today));
         const isFutureDay = isAfter(startOfDay(thisDate), startOfDay(today));
 
-        let attendanceStatus: "present" | "absent" | "leave" | null = null;
+        let attendanceStatus: "present" | "absent" | "leave" | "off" | "upcoming" = "absent";
         let lateBy: string | null = null;
 
         if (isLeave) {
           attendanceStatus = "leave";
         } else if (isFutureDay) {
-          attendanceStatus = null;
+          attendanceStatus = "upcoming";
         } else if (isPastDay) {
           if (!hasPunch) {
-            attendanceStatus = "absent";
+            attendanceStatus = isWorkingDay ? "absent" : "off";
           } else if (hasPunch && !day.punch_out) {
             attendanceStatus = "absent";
           } else {
@@ -284,7 +282,7 @@ const AdminAttendancePage = () => {
               lateBy = `${hrs > 0 ? `${hrs}h ` : ""}${mins}m`;
             }
           }
-        } else {
+        } else { // TODAY
           if (hasPunch) {
             attendanceStatus = "present";
             const shiftStart = toMinutes(SHIFT_CONFIG.startTime);
@@ -296,16 +294,16 @@ const AdminAttendancePage = () => {
               lateBy = `${hrs > 0 ? `${hrs}h ` : ""}${mins}m`;
             }
           } else {
-            attendanceStatus = "absent";
+            attendanceStatus = isWorkingDay ? "absent" : "off";
           }
         }
 
         if (!mapped[dateKey]) {
-          mapped[dateKey] = { records: [], summary: { present: 0, absent: 0, leave: 0 } };
+          mapped[dateKey] = { records: [], summary: { present: 0, absent: 0, leave: 0, off: 0, upcoming: 0 } as any };
         }
 
         if (attendanceStatus) {
-          mapped[dateKey].summary[attendanceStatus]++;
+          (mapped[dateKey].summary as any)[attendanceStatus]++;
         }
 
         mapped[dateKey].records.push({
@@ -313,7 +311,7 @@ const AdminAttendancePage = () => {
           date: dateKey,
           checkInTime: day.punch_in || undefined,
           checkOutTime: day.punch_out || undefined,
-          status: attendanceStatus || "absent",
+          status: attendanceStatus,
           lateBy: lateBy,
           hoursWorked: day.total_time || undefined,
           workStatus: day.work_status || null,

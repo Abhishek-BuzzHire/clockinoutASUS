@@ -129,8 +129,11 @@ export default function AttendanceSidebar({
 
   const presentEmployees = dailyRecords.filter(r => r.status === 'present')
   const absentEmployees = dailyRecords.filter(r => r.status === 'absent');
-  // const lateEmployees = dailyRecords.filter(r => r.status === 'late');
   const leaveEmployees = dailyRecords.filter(r => r.status === 'leave');
+  const offEmployees = dailyRecords.filter(r => r.status === 'off');
+  
+  const isFutureDate = dailyRecords.every(r => r.status === 'upcoming') && dailyRecords.length > 0;
+  const hasNoRecords = dailyRecords.length === 0;
 
   const getEmployee = (id: string) => employeeMap.get(id);
 
@@ -142,43 +145,59 @@ export default function AttendanceSidebar({
           <CardDescription>{format(selectedDate, 'EEEE, MMMM do, yyyy')}</CardDescription>
         </CardHeader>
         <CardContent>
-          {dailyRecords.length === 0 ? (
+          {hasNoRecords ? (
             <div className="text-center py-8 text-muted-foreground">
               No records for this day.
             </div>
+          ) : isFutureDate ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Clock className="w-8 h-8 mx-auto mb-3 text-slate-300" />
+              <p className="font-semibold text-slate-600">Upcoming Date</p>
+              <p className="text-sm">Attendance will be marked when this day arrives.</p>
+            </div>
           ) : (
             <Tabs defaultValue="present" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="present">
-                  <User className="mr-2 h-4 w-4" /> Present ({presentEmployees.length})
+                   Present ({presentEmployees.length})
                 </TabsTrigger>
                 <TabsTrigger value="absent">
-                  <UserX className="mr-2 h-4 w-4" /> Absent ({absentEmployees.length})
+                   Absent ({absentEmployees.length})
                 </TabsTrigger>
                 <TabsTrigger value="leave">
-                  <FileEdit /> Leave ({leaveEmployees.length})
+                   Leave ({leaveEmployees.length})
+                </TabsTrigger>
+                <TabsTrigger value="off">
+                   Off ({offEmployees.length})
                 </TabsTrigger>
               </TabsList>
               <ScrollArea className="h-96 mt-4">
                 <TabsContent value="present">
                   <div className="space-y-1">
-                    {presentEmployees.map(record => (
+                    {presentEmployees.length > 0 ? presentEmployees.map(record => (
                       <EmployeeListItem key={record.employeeId} record={record} employee={getEmployee(record.employeeId)} onRefresh={onRefresh} />
-                    ))}
+                    )) : <p className="text-center py-4 text-slate-400 text-sm italic">No one present</p>}
                   </div>
                 </TabsContent>
                 <TabsContent value="absent">
                   <div className="space-y-1">
-                    {absentEmployees.map(record => (
+                    {absentEmployees.length > 0 ? absentEmployees.map(record => (
                       <EmployeeListItem key={record.employeeId} record={record} employee={getEmployee(record.employeeId)} onRefresh={onRefresh} />
-                    ))}
+                    )) : <p className="text-center py-4 text-slate-400 text-sm italic">No one absent</p>}
                   </div>
                 </TabsContent>
                 <TabsContent value="leave">
                   <div className="space-y-1">
-                    {leaveEmployees.map(record => (
+                    {leaveEmployees.length > 0 ? leaveEmployees.map(record => (
                       <EmployeeListItem key={record.employeeId} record={record} employee={getEmployee(record.employeeId)} onRefresh={onRefresh} />
-                    ))}
+                    )) : <p className="text-center py-4 text-slate-400 text-sm italic">No one on leave</p>}
+                  </div>
+                </TabsContent>
+                <TabsContent value="off">
+                  <div className="space-y-1">
+                    {offEmployees.length > 0 ? offEmployees.map(record => (
+                      <EmployeeListItem key={record.employeeId} record={record} employee={getEmployee(record.employeeId)} onRefresh={onRefresh} />
+                    )) : <p className="text-center py-4 text-slate-400 text-sm italic">No one is off today</p>}
                   </div>
                 </TabsContent>
               </ScrollArea>
