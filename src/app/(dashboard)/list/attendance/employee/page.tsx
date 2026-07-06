@@ -1466,10 +1466,10 @@ const EmployeeAttendancePage = () => {
                 return (
                     <>
                         {/* Leaves Component */}
-                        <div className="p-6 space-y-8 bg-slate-50/30">
+                        <div className="p-0 sm:p-6 space-y-6 sm:space-y-8 bg-slate-50/30 py-4 sm:py-6">
 
                             {/* HEADER SECTION */}
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="px-4 sm:px-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <div className="space-y-1">
 
                                     <h1 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
@@ -1492,7 +1492,7 @@ const EmployeeAttendancePage = () => {
 
                             {/* METRICS SECTION */}
                             <div className="space-y-3">
-                                <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                                <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest px-4 sm:px-1">
                                     <CalendarDays className="w-3.5 h-3.5" />
                                     Leave Entitlement Overview
                                 </div>
@@ -1521,10 +1521,10 @@ const EmployeeAttendancePage = () => {
                         </div>
 
                         {/* WFH Component */}
-                        <div className="p-6 space-y-8 bg-slate-50/30">
+                        <div className="p-0 sm:p-6 space-y-6 sm:space-y-8 bg-slate-50/30 py-4 sm:py-6">
 
                             {/* HEADER SECTION */}
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="px-4 sm:px-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <div className="space-y-1">
                                     <h1 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
                                         WFH Requests
@@ -1546,7 +1546,7 @@ const EmployeeAttendancePage = () => {
 
                             {/* DATA TABLE SECTION */}
                             <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                                <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest px-4 sm:px-1">
                                     <Laptop className="w-3.5 h-3.5" />
                                     Recent Requests & Status
                                 </div>
@@ -1569,10 +1569,10 @@ const EmployeeAttendancePage = () => {
                         </div>
 
                         {/* Regulize Component */}
-                        <div className="p-6 space-y-8 bg-slate-50/30">
+                        <div className="p-0 sm:p-6 space-y-6 sm:space-y-8 bg-slate-50/30 py-4 sm:py-6">
 
                             {/* HEADER SECTION */}
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="px-4 sm:px-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <div className="space-y-1">
                                     <h1 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
                                         Attendance Correction Requests
@@ -1594,7 +1594,7 @@ const EmployeeAttendancePage = () => {
 
                             {/* DATA TABLE SECTION */}
                             <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                                <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest px-4 sm:px-1">
                                     <Laptop className="w-3.5 h-3.5" />
                                     Recent Requests & Status
                                 </div>

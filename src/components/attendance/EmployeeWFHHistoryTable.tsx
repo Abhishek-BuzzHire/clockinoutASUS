@@ -60,7 +60,51 @@ export default function EmployeeWFHHistoryTable({
 
     return (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="md:hidden flex flex-col divide-y divide-slate-100 border-t border-slate-100">
+                {requests.map(r => {
+                    const config = statusConfig[r.status] || statusConfig.PENDING;
+                    return (
+                        <div key={r.wfh_id} className="p-4 flex flex-col gap-3 bg-white hover:bg-slate-50 transition-colors">
+                            <div className="flex justify-between items-start gap-2">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                                        <Calendar className="w-4 h-4" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold text-slate-700">
+                                            {formatWFHDate(r.date)}
+                                        </span>
+                                        <span className="text-[10px] font-semibold text-slate-400">
+                                            WFH Request
+                                        </span>
+                                    </div>
+                                </div>
+                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider border ${config.style}`}>
+                                    <config.icon className="w-3 h-3" />
+                                    {r.status}
+                                </span>
+                            </div>
+              
+                            <div className="bg-slate-50 rounded-lg p-3 border border-slate-100 flex flex-col gap-2">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[10px] font-bold text-slate-400">APPLIED AT</span>
+                                    <span className="text-[10px] font-semibold text-slate-700 font-mono italic">
+                                        {formatFullDateTime(r.applied_at)}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center pt-2 border-t border-slate-100 border-dashed">
+                                    <span className="text-[10px] font-bold text-slate-400">ACTIONED AT</span>
+                                    <span className="text-[10px] font-semibold text-slate-600 font-mono italic">
+                                        {r.actioned_at ? formatFullDateTime(r.actioned_at) : "-"}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left">
                     <thead>
                         <tr className="bg-slate-50 border-b border-slate-100">

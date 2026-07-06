@@ -42,7 +42,55 @@ export default function EmployeeLeaveHistoryTable({
          </span>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="md:hidden flex flex-col divide-y divide-slate-100 border-t border-slate-100">
+        {requests.map(req => {
+          const config = statusConfig[req.status] || statusConfig.PENDING;
+          return (
+            <div key={req.id} className="p-4 flex flex-col gap-3 bg-white hover:bg-slate-50 transition-colors">
+              <div className="flex justify-between items-start gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-slate-100 rounded-lg text-slate-500">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-slate-700">
+                      {formatWFHDate(req.start_date)}
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-400">
+                      to {formatWFHDate(req.end_date)}
+                    </span>
+                  </div>
+                </div>
+                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider border ${config.style}`}>
+                  <config.icon className="w-3 h-3" />
+                  {req.status}
+                </span>
+              </div>
+              
+              <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Duration</span>
+                  <span className="text-xs font-bold text-slate-700 bg-white px-2 py-0.5 rounded shadow-sm border border-slate-100">
+                    {req.total_days} {req.total_days === 1 ? 'Day' : 'Days'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                  {req.reason}
+                </p>
+              </div>
+              
+              <div className="flex justify-between items-center pt-1 border-t border-slate-100 border-dashed">
+                <span className="text-[10px] font-bold text-slate-400">APPLIED ON</span>
+                <span className="text-[10px] font-semibold text-slate-600 font-mono">
+                  {formatWFHDate(req.applied_on)}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="bg-white">
