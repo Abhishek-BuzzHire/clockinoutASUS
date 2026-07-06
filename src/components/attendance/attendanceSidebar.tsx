@@ -130,9 +130,9 @@ export default function AttendanceSidebar({
   const presentEmployees = dailyRecords.filter(r => r.status === 'present')
   const absentEmployees = dailyRecords.filter(r => r.status === 'absent');
   const leaveEmployees = dailyRecords.filter(r => r.status === 'leave');
-  const offEmployees = dailyRecords.filter(r => r.status === 'off');
   
   const isFutureDate = dailyRecords.every(r => r.status === 'upcoming') && dailyRecords.length > 0;
+  const isWeekendOff = dailyRecords.every(r => r.status === 'off' || r.status === 'upcoming');
   const hasNoRecords = dailyRecords.length === 0;
 
   const getEmployee = (id: string) => employeeMap.get(id);
@@ -155,9 +155,14 @@ export default function AttendanceSidebar({
               <p className="font-semibold text-slate-600">Upcoming Date</p>
               <p className="text-sm">Attendance will be marked when this day arrives.</p>
             </div>
+          ) : isWeekendOff && presentEmployees.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p className="font-semibold text-slate-600 text-lg mb-1">Day Off</p>
+              <p className="text-sm italic">Enjoy the weekend! No attendance today.</p>
+            </div>
           ) : (
             <Tabs defaultValue="present" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="present">
                    Present ({presentEmployees.length})
                 </TabsTrigger>
@@ -166,9 +171,6 @@ export default function AttendanceSidebar({
                 </TabsTrigger>
                 <TabsTrigger value="leave">
                    Leave ({leaveEmployees.length})
-                </TabsTrigger>
-                <TabsTrigger value="off">
-                   Off ({offEmployees.length})
                 </TabsTrigger>
               </TabsList>
               <ScrollArea className="h-96 mt-4">
@@ -191,13 +193,6 @@ export default function AttendanceSidebar({
                     {leaveEmployees.length > 0 ? leaveEmployees.map(record => (
                       <EmployeeListItem key={record.employeeId} record={record} employee={getEmployee(record.employeeId)} onRefresh={onRefresh} />
                     )) : <p className="text-center py-4 text-slate-400 text-sm italic">No one on leave</p>}
-                  </div>
-                </TabsContent>
-                <TabsContent value="off">
-                  <div className="space-y-1">
-                    {offEmployees.length > 0 ? offEmployees.map(record => (
-                      <EmployeeListItem key={record.employeeId} record={record} employee={getEmployee(record.employeeId)} onRefresh={onRefresh} />
-                    )) : <p className="text-center py-4 text-slate-400 text-sm italic">No one is off today</p>}
                   </div>
                 </TabsContent>
               </ScrollArea>
