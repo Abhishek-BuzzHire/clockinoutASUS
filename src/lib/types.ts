@@ -58,6 +58,8 @@ export type AttendanceStatus =
   | 'early'
   | 'missing-punch-out'
   | 'leave'
+  | 'off'
+  | 'upcoming'
   | null;
 
 export type NewEmployee = {

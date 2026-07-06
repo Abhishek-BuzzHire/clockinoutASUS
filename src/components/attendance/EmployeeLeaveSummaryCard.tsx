@@ -46,28 +46,24 @@ export default function EmployeeLeaveSummaryCard({
   ];
 
   return (
-    <div className="flex flex-nowrap md:grid md:grid-cols-3 gap-4 md:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory px-4 md:px-0 -mx-4 md:mx-0 hide-scrollbar w-[calc(100%+2rem)] md:w-full">
+    <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-row divide-x divide-slate-100">
       {stats.map((stat, idx) => (
         <div 
           key={idx} 
-          className={`relative overflow-hidden bg-white border ${stat.borderColor} rounded-2xl p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow group min-w-[260px] md:min-w-0 flex-shrink-0 snap-center sm:snap-start`}
+          className="flex-1 p-3 md:p-5 flex flex-col items-center justify-center text-center relative group bg-white hover:bg-slate-50 transition-colors"
         >
-          {/* Subtle background decoration */}
-          <div className={`absolute -right-4 -bottom-4 opacity-[0.03] transition-transform group-hover:scale-110 duration-500`}>
-            <stat.icon className="w-24 h-24 md:w-32 md:h-32" />
+          {/* Background icon for subtle aesthetic */}
+          <div className="absolute inset-0 opacity-[0.02] flex items-center justify-center pointer-events-none overflow-hidden">
+            <stat.icon className="w-16 h-16 transform group-hover:scale-110 transition-transform duration-500" />
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-xl ${stat.bgColor} ${stat.textColor}`}>
-              <stat.icon className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
-              <div className="flex items-baseline gap-1">
-                <span className={`text-2xl md:text-3xl font-black ${stat.textColor}`}>{stat.value}</span>
-                <span className="text-xs font-semibold text-slate-400">Days</span>
-              </div>
-            </div>
+          <div className={`p-1.5 md:p-2.5 rounded-xl ${stat.bgColor} ${stat.textColor} mb-2`}>
+            <stat.icon className="w-4 h-4 md:w-5 md:h-5" />
+          </div>
+          <p className="text-[9px] md:text-xs font-bold text-slate-400 uppercase tracking-widest line-clamp-1">{stat.label}</p>
+          <div className="flex items-baseline gap-1 mt-0.5">
+            <span className={`text-xl md:text-3xl font-black ${stat.textColor} leading-none`}>{stat.value}</span>
+            <span className="text-[9px] md:text-xs font-semibold text-slate-400">Days</span>
           </div>
         </div>
       ))}
