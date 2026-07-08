@@ -142,6 +142,7 @@ export default function RecentRequests() {
     } else if (req.typeKey === "wfh") {
       setSelectedWFH(req.rawData);
     } else if (req.typeKey === "regularize") {
+      setCorrectionDetail({ employee: req.name, date: req.dates, type: req.type, status: req.status, reason: "Loading details from server...", requested_time: "--:--" });
       try {
         const tkn = Cookies.get("access");
         const res = await axios.get(`${apiUrl}/api/admin/attendance-approval/${req.rawData.approval_token}`, {
@@ -150,40 +151,41 @@ export default function RecentRequests() {
         setCorrectionToken(req.rawData.approval_token);
         setCorrectionDetail(res.data.data);
       } catch (err) {
+        setCorrectionDetail(null);
         alert("Failed to fetch correction detail");
       }
     }
   };
 
   const handleLeaveAction = async (leaveId: number, action: "APPROVE" | "REJECT") => {
+    setSelectedLeave(null);
+    mutate((currentData: any) => currentData?.filter((r: any) => r.id !== `leave-${leaveId}`), false);
     try {
       const token = Cookies.get("access");
-      const res = await axios.post(`${apiUrl}/api/admin/leaves/${leaveId}/action/`, { action }, { headers: { Authorization: `Bearer ${token}` } });
-      alert(res.data.message);
-      setSelectedLeave(null);
+      await axios.post(`${apiUrl}/api/admin/leaves/${leaveId}/action/`, { action }, { headers: { Authorization: `Bearer ${token}` } });
       mutate();
-    } catch (err: any) { alert(err?.response?.data?.error || "Action failed"); }
+    } catch (err: any) { alert(err?.response?.data?.error || "Action failed"); mutate(); }
   };
 
   const handleWFHAction = async (wfhId: number, action: "APPROVE" | "REJECT") => {
+    setSelectedWFH(null);
+    mutate((currentData: any) => currentData?.filter((r: any) => r.id !== `wfh-${wfhId}`), false);
     try {
       const token = Cookies.get("access");
-      const res = await axios.post(`${apiUrl}/wfh/admin/action/${wfhId}/`, { action }, { headers: { Authorization: `Bearer ${token}` } });
-      alert(res.data.message);
-      setSelectedWFH(null);
+      await axios.post(`${apiUrl}/wfh/admin/action/${wfhId}/`, { action }, { headers: { Authorization: `Bearer ${token}` } });
       mutate();
-    } catch (err: any) { alert(err?.response?.data?.error || "Action failed"); }
+    } catch (err: any) { alert(err?.response?.data?.error || "Action failed"); mutate(); }
   };
 
   const handleCorrectionAction = async (action: "APPROVE" | "REJECT", comment: string) => {
+    setCorrectionDetail(null);
+    mutate((currentData: any) => currentData?.filter((r: any) => r.id !== `reg-${correctionToken}`), false);
     try {
       const token = Cookies.get("access");
-      const res = await axios.post(`${apiUrl}/api/admin/attendance-approval/${correctionToken}/action/`, { action, admin_comment: comment }, { headers: { Authorization: `Bearer ${token}` } });
-      alert(res.data.message);
-      setCorrectionDetail(null);
+      await axios.post(`${apiUrl}/api/admin/attendance-approval/${correctionToken}/action/`, { action, admin_comment: comment }, { headers: { Authorization: `Bearer ${token}` } });
       setCorrectionToken(null);
       mutate();
-    } catch (err: any) { alert(err?.response?.data?.message || "Action failed"); }
+    } catch (err: any) { alert(err?.response?.data?.message || "Action failed"); mutate(); }
   };
 
   const getStatusDot = (status: string) => {
