@@ -86,15 +86,15 @@ export default function AdminWFHDetailModal({
         }}
       >
 
-        {/* HEADER — blue gradient like punch out */}
-        <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-sky-600 to-blue-600 rounded-t-2xl">
+        {/* HEADER */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/80">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-sm">
-              <ShieldCheck className="w-5 h-5 text-white" />
+            <div className="p-2.5 bg-indigo-100 border border-indigo-200 rounded-xl">
+              <ShieldCheck className="w-5 h-5 text-indigo-600" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white tracking-tight">WFH Request</h2>
-              <p className="text-[10px] text-white/70 font-mono font-semibold">
+              <h2 className="text-base font-bold text-slate-800 tracking-tight">WFH Request</h2>
+              <p className="text-[10px] text-slate-400 font-mono font-semibold">
                 REQUEST #{wfh.wfh_id || '—'}
               </p>
             </div>
@@ -102,11 +102,12 @@ export default function AdminWFHDetailModal({
 
           <button 
             onClick={onClose} 
-            className="p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-xl transition-all duration-200"
+            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
+
 
 
         {/* CONTENT */}
