@@ -10,7 +10,7 @@ export const formatWFHDate = (dateString: string) => {
     if (!dateString) return "-";
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-GB', {
-        weekday: 'short',
+        weekday: 'long',
         day: '2-digit',
         month: 'short',
         year: 'numeric',
