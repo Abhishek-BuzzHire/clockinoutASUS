@@ -21,7 +21,7 @@ interface RequestData {
   rawData: any;
 }
 
-type FilterType = "all" | "pending" | "approved";
+type FilterType = "all" | "pending";
 
 const fetcher = async () => {
   const token = Cookies.get("access");
@@ -90,7 +90,7 @@ const fetcher = async () => {
 };
 
 export default function RecentRequests() {
-  const [filter, setFilter] = useState<FilterType>("pending");
+  const [filter, setFilter] = useState<FilterType>("all");
 
   const [selectedLeave, setSelectedLeave] = useState<any | null>(null);
   const [selectedWFH, setSelectedWFH] = useState<any | null>(null);
@@ -132,8 +132,10 @@ export default function RecentRequests() {
 
   const filteredRequests = useMemo(() => {
     if (filter === "pending") return effectiveRequests.filter(r => r.status === "PENDING");
-    if (filter === "approved") return effectiveRequests.filter(r => r.status === "APPROVED");
-    return effectiveRequests;
+    // "all" tab: show all pending first, if no pending then recent 10 processed
+    const pending = effectiveRequests.filter(r => r.status === "PENDING");
+    if (pending.length > 0) return pending;
+    return effectiveRequests.filter(r => r.status !== "PENDING").slice(0, 10);
   }, [effectiveRequests, filter]);
 
   const handleRowClick = async (req: RequestData) => {
@@ -203,7 +205,6 @@ export default function RecentRequests() {
   const filterPills: { key: FilterType; label: string }[] = [
     { key: "all", label: "All" },
     { key: "pending", label: "Pending" },
-    { key: "approved", label: "Approved" },
   ];
 
   return (
