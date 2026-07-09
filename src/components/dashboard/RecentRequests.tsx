@@ -86,7 +86,7 @@ const fetcher = async () => {
     return b.createdAt - a.createdAt;
   });
 
-  return combined.slice(0, 10);
+  return combined;
 };
 
 export default function RecentRequests() {
