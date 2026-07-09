@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CRM",
-  description: "",
+  title: "BuzzHire",
+  description: "BuzzHire - Search | Recruitment | Consulting",
 };
 
 import { SwrProvider } from "@/components/providers/SwrProvider";
