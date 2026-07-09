@@ -252,7 +252,7 @@ export default function RecentRequests() {
                     <span className="font-semibold text-gray-900 hover:underline">{req.name}</span>
                   </td>
                   <td className="py-3.5 px-3 border-b border-gray-50">
-                    <span className={`${getTypeBadge(req.type)} text-xs px-2.5 py-1 rounded font-medium`}>{req.type}</span>
+                    <span className={`${getTypeBadge(req.type)} text-xs px-3 py-1 rounded-full font-semibold`}>{req.type}</span>
                   </td>
                   <td className="py-3.5 px-3 border-b border-gray-50 text-gray-500">{req.dates}</td>
                   <td className="py-3.5 px-3 border-b border-gray-50">
