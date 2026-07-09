@@ -90,7 +90,7 @@ const fetcher = async () => {
 };
 
 export default function RecentRequests() {
-  const [filter, setFilter] = useState<FilterType>("all");
+  const [filter, setFilter] = useState<FilterType>("pending");
 
   const [selectedLeave, setSelectedLeave] = useState<any | null>(null);
   const [selectedWFH, setSelectedWFH] = useState<any | null>(null);
