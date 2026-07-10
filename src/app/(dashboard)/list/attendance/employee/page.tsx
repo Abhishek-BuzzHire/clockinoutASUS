@@ -339,20 +339,21 @@ const EmployeeAttendancePage = () => {
 
 
     const applyWFH = async (date: string) => {
+        // ⚡ Optimistic: close modal + show success INSTANTLY
+        setOpenApplyWfh(false);
+        toast({ title: "✅ WFH Request Submitted", description: "Your request has been sent for review." });
+
+        // Fire API in background
         try {
             const token = Cookies.get("access");
-
-            const res = await axios.post(
+            await axios.post(
                 `${apiUrl}/wfh/apply/`,
                 { date, admin_username: adminUsername },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-
-            alert("WFH Request Submitted");
-            setOpenApplyWfh(false);
             loadWFHRequests();
         } catch (err: any) {
-            alert(err?.response?.data?.message || "Failed to apply WFH");
+            toast({ title: "❌ WFH Failed", description: err?.response?.data?.message || "Failed to apply WFH", variant: "destructive" });
         }
     };
 
@@ -386,27 +387,25 @@ const EmployeeAttendancePage = () => {
         end_date: string;
         reason: string;
     }) => {
+        // ⚡ Optimistic: close modal + show success INSTANTLY
+        setOpenApplyLeaves(false);
+        toast({ title: "✅ Leave Applied", description: "Your leave request has been submitted." });
+
+        // Fire API in background
         try {
             const token = Cookies.get("access");
-
             const fianlPayload = {
                 ...payload,
                 admin_username: adminUsername,
             }
-
-            const res = await axios.post(
+            await axios.post(
                 `${apiUrl}/api/employee/leave/apply/`,
                 fianlPayload,
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
+                { headers: { Authorization: `Bearer ${token}` } }
             );
-
-            alert(res.data.message);
-            setOpenApplyLeaves(false);
             loadSummary();
         } catch (err: any) {
-            alert(err?.response?.data?.message || "Failed to apply leave");
+            toast({ title: "❌ Leave Failed", description: err?.response?.data?.message || "Failed to apply leave", variant: "destructive" });
         }
     };
 
@@ -446,33 +445,25 @@ const EmployeeAttendancePage = () => {
     }) => {
         setMessage(null);
 
-        try {
-            setLoadingRegulize(true);
-            const token = Cookies.get("access");
+        // ⚡ Optimistic: close modal + show success INSTANTLY
+        setOpenRegulize(false);
+        toast({ title: "✅ Regularization Submitted", description: "Your correction request has been sent." });
 
+        // Fire API in background
+        try {
+            const token = Cookies.get("access");
             const fianlPayload = {
                 ...payload,
                 admin_username: adminUsername,
             }
-
-            const res = await axios.post(
+            await axios.post(
                 `${apiUrl}/api/attendance-correction/request/`,
                 fianlPayload,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-
-            setMessageRegulize({ type: "success", text: res.data.message });
-
-
-
-            setTimeout(() => setOpenRegulize(false), 1200);
+            loadRegulizeRequests();
         } catch (err: any) {
-            setMessageRegulize({
-                type: "error",
-                text: err?.response?.data?.message || "Submission failed",
-            });
-        } finally {
-            setLoadingRegulize(false);
+            toast({ title: "❌ Regularization Failed", description: err?.response?.data?.message || "Submission failed", variant: "destructive" });
         }
     };
 
