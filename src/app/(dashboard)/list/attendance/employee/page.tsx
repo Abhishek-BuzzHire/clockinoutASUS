@@ -339,11 +339,6 @@ const EmployeeAttendancePage = () => {
 
 
     const applyWFH = async (date: string) => {
-        // ⚡ Optimistic: close modal + show success INSTANTLY
-        setOpenApplyWfh(false);
-        toast({ title: "✅ WFH Request Submitted", description: "Your request has been sent for review." });
-
-        // Fire API in background
         try {
             const token = Cookies.get("access");
             await axios.post(
@@ -351,6 +346,8 @@ const EmployeeAttendancePage = () => {
                 { date, admin_username: adminUsername },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
+            setOpenApplyWfh(false);
+            toast({ title: "✅ WFH Request Submitted", description: "Your request has been sent for review." });
             loadWFHRequests();
         } catch (err: any) {
             toast({ title: "❌ WFH Failed", description: err?.response?.data?.message || "Failed to apply WFH", variant: "destructive" });
@@ -387,11 +384,6 @@ const EmployeeAttendancePage = () => {
         end_date: string;
         reason: string;
     }) => {
-        // ⚡ Optimistic: close modal + show success INSTANTLY
-        setOpenApplyLeaves(false);
-        toast({ title: "✅ Leave Applied", description: "Your leave request has been submitted." });
-
-        // Fire API in background
         try {
             const token = Cookies.get("access");
             const fianlPayload = {
@@ -403,6 +395,8 @@ const EmployeeAttendancePage = () => {
                 fianlPayload,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
+            setOpenApplyLeaves(false);
+            toast({ title: "✅ Leave Applied", description: "Your leave request has been submitted." });
             loadSummary();
         } catch (err: any) {
             toast({ title: "❌ Leave Failed", description: err?.response?.data?.message || "Failed to apply leave", variant: "destructive" });
@@ -445,11 +439,6 @@ const EmployeeAttendancePage = () => {
     }) => {
         setMessage(null);
 
-        // ⚡ Optimistic: close modal + show success INSTANTLY
-        setOpenRegulize(false);
-        toast({ title: "✅ Regularization Submitted", description: "Your correction request has been sent." });
-
-        // Fire API in background
         try {
             const token = Cookies.get("access");
             const fianlPayload = {
@@ -461,6 +450,8 @@ const EmployeeAttendancePage = () => {
                 fianlPayload,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
+            setOpenRegulize(false);
+            toast({ title: "✅ Regularization Submitted", description: "Your correction request has been sent." });
             loadRegulizeRequests();
         } catch (err: any) {
             toast({ title: "❌ Regularization Failed", description: err?.response?.data?.message || "Submission failed", variant: "destructive" });
