@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 import { SwrProvider } from "@/components/providers/SwrProvider";
 import { PusherProvider } from "@/components/providers/PusherProvider";
 import VersionWatcher from "@/components/providers/VersionWatcher";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function RootLayout({
   children,
@@ -46,6 +47,7 @@ export default function RootLayout({
             </SwrProvider>
           </AuthProvider>
         </GoogleOAuthProvider>
+        <Toaster />
       </body>
     </html>
   );
