@@ -21,16 +21,12 @@ export default function VersionWatcher() {
           initialVersion.current = version;
           console.log(`Initial frontend version recorded: ${version}`);
         } else if (initialVersion.current !== version) {
-          console.log(`New frontend version detected (${version} vs ${initialVersion.current}). Showing toast...`);
+          console.log(`New frontend version detected (${version} vs ${initialVersion.current}). Update is completely silent.`);
           
-          // Show a toast instead of forcefully reloading the page
-          toast({
-            title: "Update Available",
-            description: "A new version of the app is available. Please refresh the page when you're ready.",
-            duration: 10000, // Show for 10 seconds
-          });
+          // 100% Silent: No toast, no reload. 
+          // The user will get the new version next time they naturally refresh or reopen the app.
           
-          // Update the ref so we don't keep showing the toast
+          // Update the ref so we know we've seen it
           initialVersion.current = version;
         }
       } catch (err) {
