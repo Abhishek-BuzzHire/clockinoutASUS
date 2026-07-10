@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { toast } from "@/hooks/use-toast";
 
 export default function VersionWatcher() {
   const initialVersion = useRef<string | null>(null);
@@ -20,8 +21,17 @@ export default function VersionWatcher() {
           initialVersion.current = version;
           console.log(`Initial frontend version recorded: ${version}`);
         } else if (initialVersion.current !== version) {
-          console.log(`New frontend version detected (${version} vs ${initialVersion.current}). Reloading page...`);
-          window.location.reload();
+          console.log(`New frontend version detected (${version} vs ${initialVersion.current}). Showing toast...`);
+          
+          // Show a toast instead of forcefully reloading the page
+          toast({
+            title: "Update Available",
+            description: "A new version of the app is available. Please refresh the page when you're ready.",
+            duration: 10000, // Show for 10 seconds
+          });
+          
+          // Update the ref so we don't keep showing the toast
+          initialVersion.current = version;
         }
       } catch (err) {
         console.error("Error checking frontend version:", err);
