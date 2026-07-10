@@ -347,10 +347,10 @@ const EmployeeAttendancePage = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setOpenApplyWfh(false);
-            toast({ title: "✅ WFH Request Submitted", description: "Your request has been sent for review." });
+            toast({ title: "WFH Request Submitted", description: "Your request has been sent for review." });
             loadWFHRequests();
         } catch (err: any) {
-            toast({ title: "❌ WFH Failed", description: err?.response?.data?.message || "Failed to apply WFH", variant: "destructive" });
+            toast({ title: "WFH Failed", description: err?.response?.data?.message || "Failed to apply WFH", variant: "destructive" });
         }
     };
 
@@ -396,10 +396,10 @@ const EmployeeAttendancePage = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setOpenApplyLeaves(false);
-            toast({ title: "✅ Leave Applied", description: "Your leave request has been submitted." });
+            toast({ title: "Leave Applied Successfully", description: "Your leave request has been submitted." });
             loadSummary();
         } catch (err: any) {
-            toast({ title: "❌ Leave Failed", description: err?.response?.data?.message || "Failed to apply leave", variant: "destructive" });
+            toast({ title: "Leave Request Failed", description: err?.response?.data?.message || "Failed to apply leave", variant: "destructive" });
         }
     };
 
@@ -451,10 +451,10 @@ const EmployeeAttendancePage = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setOpenRegulize(false);
-            toast({ title: "✅ Regularization Submitted", description: "Your correction request has been sent." });
+            toast({ title: "Regularization Submitted", description: "Your correction request has been sent." });
             loadRegulizeRequests();
         } catch (err: any) {
-            toast({ title: "❌ Regularization Failed", description: err?.response?.data?.message || "Submission failed", variant: "destructive" });
+            toast({ title: "Regularization Failed", description: err?.response?.data?.message || "Submission failed", variant: "destructive" });
         }
     };
 
