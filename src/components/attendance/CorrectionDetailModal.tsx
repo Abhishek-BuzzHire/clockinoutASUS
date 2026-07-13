@@ -160,10 +160,9 @@ export default function CorrectionDetailModal({
 
           {/* ─── Correction Type + Proposed Time ─── */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Correction Type — with green left accent */}
-            <div className="bg-white rounded-2xl border border-slate-100/80 p-4 relative overflow-hidden">
-              <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full bg-emerald-400" />
-              <div className="flex items-start gap-2.5 pl-2">
+            {/* Correction Type */}
+            <div className="bg-white rounded-2xl border border-slate-100/80 p-4">
+              <div className="flex items-start gap-2.5">
                 <div className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">
                   <RotateCcw className="w-4 h-4 text-slate-500" />
                 </div>
@@ -178,10 +177,9 @@ export default function CorrectionDetailModal({
               </div>
             </div>
 
-            {/* Proposed Time — with green left accent */}
-            <div className="bg-white rounded-2xl border border-emerald-100 p-4 relative overflow-hidden">
-              <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full bg-emerald-400" />
-              <div className="flex items-start gap-2.5 pl-2">
+            {/* Proposed Time */}
+            <div className="bg-white rounded-2xl border border-emerald-100 p-4">
+              <div className="flex items-start gap-2.5">
                 <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
                   <Clock className="w-4 h-4 text-emerald-600" />
                 </div>
