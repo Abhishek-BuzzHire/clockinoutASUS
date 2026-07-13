@@ -50,19 +50,6 @@ const formatSubmittedDate = (iso?: string) => {
   return `${dateStr}, ${timeStr}`;
 };
 
-/* ─── helper: readable subtitle for correction type ─── */
-const getCorrectionLabel = (type?: string) => {
-  if (type === "PUNCH_IN") return "Correction in punch in time";
-  if (type === "PUNCH_OUT") return "Correction in punch out time";
-  return "Correction request";
-};
-
-const getProposedLabel = (type?: string) => {
-  if (type === "PUNCH_IN") return "Proposed punch in time";
-  if (type === "PUNCH_OUT") return "Proposed punch out time";
-  return "Proposed time";
-};
-
 /* ─── helper: format type for display ─── */
 const formatType = (type?: string) => {
   if (!type) return "—";
@@ -188,9 +175,6 @@ export default function CorrectionDetailModal({
                   <p className="text-[14px] font-semibold text-slate-800 leading-snug mt-0.5">
                     {formatType(data.type)}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5 leading-snug">
-                    {getCorrectionLabel(data.type)}
-                  </p>
                 </div>
               </div>
             </div>
@@ -208,9 +192,6 @@ export default function CorrectionDetailModal({
                   </p>
                   <p className="text-[15px] font-bold text-slate-800 leading-snug mt-0.5">
                     {formatProposedTime(data.time_only || data.requested_time)}
-                  </p>
-                  <p className="text-[10px] text-slate-800 mt-0.5 leading-snug">
-                    {getProposedLabel(data.type)}
                   </p>
                 </div>
               </div>
