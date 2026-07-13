@@ -765,7 +765,12 @@ const EmployeeAttendancePage = () => {
 
             const data = response.data;
             if (data.status === "success") {
-                // We don't show a toast here because handleCheckIn/handleCheckOut already show one!
+                // ✅ Show success toast ONLY after API confirms success
+                toast({
+                    title: type === "in" ? "Checked In" : "Checked Out",
+                    description: `You checked ${type === "in" ? "in" : "out"} at ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
+                });
+
                 // update attendance state from returned data if provided
                 if (data.data) {
                     setAttendanceStatus(data.data);
@@ -820,20 +825,13 @@ const EmployeeAttendancePage = () => {
     };
 
     // wrapper used by PunchCard and header buttons
+    // ✅ Toasts removed — success toast now fires inside handlePunch ONLY after API confirms
     const handleCheckIn = (notes?: string) => {
         handlePunch("in");
-        toast({
-            title: "Checked In",
-            description: `You checked in at ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
-        });
     };
 
     const handleCheckOut = () => {
         handlePunch("out");
-        toast({
-            title: "Checked Out",
-            description: `You checked out at ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
-        });
     };
 
     // --- Simple week/navigation stubs to keep UI (these are lightweight because we removed useAttendance) ---
