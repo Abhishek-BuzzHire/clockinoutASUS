@@ -13,6 +13,7 @@ import {
   RotateCcw,
   FileText,
   CalendarClock,
+  Pencil,
 } from "lucide-react";
 import { formatWFHDate } from "./EmployeeWFHHistoryTable";
 import { apiUrl } from "@/lib/data";
@@ -20,7 +21,6 @@ import { apiUrl } from "@/lib/data";
 /* ─── helper: format "2026-07-06 19:25" → "07:25 PM" ─── */
 const formatProposedTime = (raw?: string) => {
   if (!raw) return "—";
-  // raw can be "2026-07-06 19:25" or just "19:25"
   const timePart = raw.includes(" ") ? raw.split(" ")[1] : raw;
   const [h, m] = timePart.split(":").map(Number);
   const ampm = h >= 12 ? "PM" : "AM";
@@ -28,7 +28,7 @@ const formatProposedTime = (raw?: string) => {
   return `${h12.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")} ${ampm}`;
 };
 
-/* ─── helper: format created_at → "Today, 10:43 AM" or "07 Jul, 10:43 AM" ─── */
+/* ─── helper: format created_at → "Today, 10:43 AM" ─── */
 const formatSubmittedDate = (iso?: string) => {
   if (!iso) return "—";
   const d = new Date(iso);
@@ -50,18 +50,23 @@ const formatSubmittedDate = (iso?: string) => {
   return `${dateStr}, ${timeStr}`;
 };
 
-/* ─── helper: readable correction type label ─── */
+/* ─── helper: readable subtitle for correction type ─── */
 const getCorrectionLabel = (type?: string) => {
-  if (!type) return "Correction";
   if (type === "PUNCH_IN") return "Correction in punch in time";
   if (type === "PUNCH_OUT") return "Correction in punch out time";
-  return type.replace(/_/g, " ");
+  return "Correction request";
 };
 
 const getProposedLabel = (type?: string) => {
   if (type === "PUNCH_IN") return "Proposed punch in time";
   if (type === "PUNCH_OUT") return "Proposed punch out time";
   return "Proposed time";
+};
+
+/* ─── helper: format type for display ─── */
+const formatType = (type?: string) => {
+  if (!type) return "—";
+  return type.replace(/_/g, " ");
 };
 
 export default function CorrectionDetailModal({
@@ -83,46 +88,45 @@ export default function CorrectionDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-[150] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
-        className="bg-gradient-to-br from-[#f8faff] to-[#f0f4ff] rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-white/60"
+        className="bg-gradient-to-br from-[#f5f8ff] to-[#eef2ff] rounded-[20px] shadow-2xl w-full max-w-[520px] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ═══════════ HEADER ═══════════ */}
-        <div className="flex justify-between items-center px-6 py-5">
+        <div className="flex justify-between items-start px-6 pt-6 pb-3">
           <div className="flex items-center gap-3">
-            {/* Gradient icon container */}
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center shadow-sm border border-blue-200/50">
-              <ClipboardCheck className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+              <ClipboardCheck className="w-[18px] h-[18px] text-blue-500" />
             </div>
             <div>
-              <h2 className="font-bold text-[15px] text-slate-800 tracking-tight leading-tight">
+              <h2 className="text-[16px] font-semibold text-slate-800 leading-tight">
                 Attendance Correction Request
               </h2>
-              <p className="text-[11px] text-slate-400 font-medium">
+              <p className="text-[12px] text-slate-400 mt-0.5">
                 Review the request and take appropriate action
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all border border-transparent hover:border-red-100"
+            className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all mt-0.5"
           >
-            <X className="w-4 h-4" />
+            <X className="w-[18px] h-[18px]" />
           </button>
         </div>
 
         {/* ═══════════ BODY ═══════════ */}
-        <div className="px-6 pb-6 space-y-4">
+        <div className="px-6 pb-6 space-y-3.5">
 
-          {/* ─── Employee + Requested For Row ─── */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+          {/* ─── Employee + Requested For ─── */}
+          <div className="bg-white rounded-2xl border border-slate-100/80 px-5 py-4">
             <div className="flex items-center justify-between">
-              {/* Left: Employee */}
+              {/* Employee */}
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 border-2 border-white shadow-sm flex items-center justify-center text-slate-400 overflow-hidden">
+                <div className="w-12 h-12 rounded-full bg-slate-100 border-2 border-white shadow-sm flex items-center justify-center overflow-hidden">
                   {data.profile_photo ? (
                     <img
                       src={
@@ -134,76 +138,78 @@ export default function CorrectionDetailModal({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <User className="w-5 h-5" />
+                    <User className="w-5 h-5 text-slate-400" />
                   )}
                 </div>
                 <div>
-                  <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-[0.12em]">
+                  <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">
                     Employee
                   </p>
-                  <p className="text-sm font-bold text-slate-800 leading-tight">
+                  <p className="text-[14px] font-semibold text-slate-800 leading-snug">
                     {data.employee}
                   </p>
                   {data.employee_email && data.employee_email !== data.employee && (
-                    <p className="text-[10px] text-slate-400 font-medium">{data.employee_email}</p>
+                    <p className="text-[11px] text-slate-400">{data.employee_email}</p>
                   )}
                 </div>
               </div>
 
-              {/* Right: Requested For */}
+              {/* Requested For */}
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100">
+                <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
                   <CalendarDays className="w-4 h-4 text-blue-500" />
                 </div>
                 <div className="text-right">
-                  <p className="text-[9px] font-bold text-blue-600 uppercase tracking-[0.12em]">
+                  <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider">
                     Requested For
                   </p>
-                  <p className="text-sm font-bold text-slate-800 leading-tight">
+                  <p className="text-[14px] font-semibold text-slate-800 leading-snug">
                     {formatWFHDate(data.date)}
                   </p>
-                  <p className="text-[10px] text-slate-400 font-medium">Full Day</p>
+                  <p className="text-[11px] text-slate-400">Full Day</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ─── Correction Type + Proposed Time Grid ─── */}
+          {/* ─── Correction Type + Proposed Time ─── */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Correction Type */}
-            <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
-              <div className="flex items-start gap-2.5">
-                <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center border border-indigo-100 shrink-0 mt-0.5">
-                  <RotateCcw className="w-4 h-4 text-indigo-500" />
+            {/* Correction Type — with green left accent */}
+            <div className="bg-white rounded-2xl border border-slate-100/80 p-4 relative overflow-hidden">
+              <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full bg-emerald-400" />
+              <div className="flex items-start gap-2.5 pl-2">
+                <div className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">
+                  <RotateCcw className="w-4 h-4 text-slate-500" />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.12em] mb-1">
+                <div>
+                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                     Correction Type
                   </p>
-                  <p className="text-[13px] font-extrabold text-slate-800 leading-tight">
-                    {data.type?.replace(/_/g, " ")}
+                  <p className="text-[14px] font-semibold text-slate-800 leading-snug mt-0.5">
+                    {formatType(data.type)}
                   </p>
-                  <p className="text-[10px] text-slate-400 font-medium mt-0.5 leading-snug">
+                  <p className="text-[10px] text-slate-400 mt-0.5 leading-snug">
                     {getCorrectionLabel(data.type)}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Proposed Time */}
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 p-4 shadow-sm shadow-emerald-100/30">
-              <div className="flex items-start gap-2.5">
-                <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center border border-emerald-200/60 shrink-0 mt-0.5">
+            {/* Proposed Time — with green left accent */}
+            <div className="bg-white rounded-2xl border border-emerald-100 p-4 relative overflow-hidden">
+              <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full bg-emerald-400" />
+              <div className="flex items-start gap-2.5 pl-2">
+                <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
                   <Clock className="w-4 h-4 text-emerald-600" />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-[9px] font-bold text-emerald-700 uppercase tracking-[0.12em] mb-1">
+                <div>
+                  <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">
                     New Proposed Time
                   </p>
-                  <p className="text-[15px] font-black text-emerald-800 tracking-tight leading-tight">
+                  <p className="text-[15px] font-bold text-slate-800 leading-snug mt-0.5">
                     {formatProposedTime(data.time_only || data.requested_time)}
                   </p>
-                  <p className="text-[10px] text-emerald-600/70 font-medium mt-0.5 leading-snug">
+                  <p className="text-[10px] text-emerald-500 mt-0.5 leading-snug">
                     {getProposedLabel(data.type)}
                   </p>
                 </div>
@@ -212,33 +218,33 @@ export default function CorrectionDetailModal({
           </div>
 
           {/* ─── Employee Justification ─── */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
-            <div className="flex items-start gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center border border-violet-100 shrink-0 mt-0.5">
+          <div className="bg-white rounded-2xl border border-slate-100/80 px-5 py-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
                 <MessageSquare className="w-3.5 h-3.5 text-violet-500" />
               </div>
               <div>
-                <p className="text-[9px] font-bold text-violet-600 uppercase tracking-[0.12em] mb-1.5">
-                  Employee&rsquo;s Justification
+                <p className="text-[10px] font-semibold text-violet-600 uppercase tracking-wider mb-1">
+                  Employee&apos;s Justification
                 </p>
-                <p className="text-sm text-slate-700 font-semibold italic leading-relaxed">
+                <p className="text-[13px] text-slate-700 font-medium italic leading-relaxed">
                   &ldquo;{data.reason}&rdquo;
                 </p>
               </div>
             </div>
           </div>
 
-          {/* ─── Status + Submitted On Row ─── */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+          {/* ─── Status + Submitted On ─── */}
+          <div className="bg-white rounded-2xl border border-slate-100/80 px-5 py-4">
             <div className="flex items-center justify-between">
-              {/* Left: Status */}
+              {/* Status */}
               <div className="flex items-center gap-2.5">
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center border shrink-0 ${
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                   data.status === "APPROVED"
-                    ? "bg-emerald-50 border-emerald-100"
+                    ? "bg-emerald-50"
                     : data.status === "REJECTED"
-                    ? "bg-red-50 border-red-100"
-                    : "bg-amber-50 border-amber-100"
+                    ? "bg-red-50"
+                    : "bg-amber-50"
                 }`}>
                   <FileText className={`w-4 h-4 ${
                     data.status === "APPROVED"
@@ -250,11 +256,11 @@ export default function CorrectionDetailModal({
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">
-                      Status
+                    <p className="text-[12px] font-semibold text-slate-700">
+                      STATUS
                     </p>
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                      className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
                         data.status === "APPROVED"
                           ? "bg-emerald-100 text-emerald-700"
                           : data.status === "REJECTED"
@@ -265,24 +271,24 @@ export default function CorrectionDetailModal({
                       {data.status}
                     </span>
                   </div>
-                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                  <p className="text-[11px] text-slate-400 mt-0.5">
                     {isPending
                       ? "Awaiting your review and decision"
-                      : `Action taken by administrator`}
+                      : "Action taken by administrator"}
                   </p>
                 </div>
               </div>
 
-              {/* Right: Submitted On */}
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center border border-orange-100 shrink-0">
-                  <CalendarClock className="w-4 h-4 text-orange-500" />
+              {/* Submitted On */}
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
+                  <CalendarClock className="w-3.5 h-3.5 text-orange-500" />
                 </div>
                 <div className="text-right">
-                  <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.12em]">
+                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                     Request Submitted On
                   </p>
-                  <p className="text-[13px] font-bold text-slate-800 leading-tight">
+                  <p className="text-[13px] font-semibold text-slate-800 leading-snug">
                     {formatSubmittedDate(data.created_at)}
                   </p>
                 </div>
@@ -292,12 +298,12 @@ export default function CorrectionDetailModal({
 
           {/* ─── Admin Remarks + Actions (PENDING only) ─── */}
           {isPending && (
-            <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-300">
+            <div className="space-y-3.5 pt-1">
               {/* Admin Remarks */}
               <div>
-                <div className="flex items-center gap-2 mb-2 px-0.5">
-                  <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em]">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Pencil className="w-3.5 h-3.5 text-slate-400" />
+                  <label className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
                     Administrator Remarks
                   </label>
                 </div>
@@ -308,10 +314,10 @@ export default function CorrectionDetailModal({
                     onChange={(e) =>
                       setComment(e.target.value.slice(0, maxChars))
                     }
-                    className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm font-medium text-slate-700 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all outline-none resize-none placeholder:text-slate-300"
+                    className="w-full bg-white border border-slate-200 rounded-xl p-4 text-[13px] text-slate-600 focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 transition-all outline-none resize-none placeholder:text-slate-300"
                     rows={3}
                   />
-                  <span className="absolute bottom-3 right-3 text-[10px] font-semibold text-slate-300">
+                  <span className="absolute bottom-3 right-3 text-[10px] text-slate-300">
                     {comment.length}/{maxChars}
                   </span>
                 </div>
@@ -321,7 +327,7 @@ export default function CorrectionDetailModal({
               <div className="flex gap-3">
                 <button
                   onClick={() => onAction("REJECT", comment)}
-                  className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-white border-2 border-rose-200 text-rose-600 font-bold text-xs uppercase tracking-widest rounded-xl hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all duration-200 active:scale-[0.97] shadow-sm"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-red-200 text-red-500 font-semibold text-[12px] rounded-xl hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-200 active:scale-[0.97]"
                 >
                   <XCircle className="w-4 h-4" />
                   Reject Request
@@ -329,7 +335,7 @@ export default function CorrectionDetailModal({
 
                 <button
                   onClick={() => onAction("APPROVE", comment)}
-                  className="flex-[1.3] flex items-center justify-center gap-2 px-5 py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-200 transition-all duration-200 active:scale-[0.97]"
+                  className="flex-[1.3] flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white font-semibold text-[12px] rounded-xl hover:bg-emerald-700 shadow-md shadow-emerald-200 transition-all duration-200 active:scale-[0.97]"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   Approve Request
@@ -343,7 +349,7 @@ export default function CorrectionDetailModal({
             <div className="text-center pt-2">
               <button
                 onClick={onClose}
-                className="px-8 py-2.5 bg-slate-800 text-white font-bold text-sm rounded-xl hover:bg-slate-900 transition-all shadow-sm"
+                className="px-8 py-2.5 bg-slate-800 text-white font-semibold text-sm rounded-xl hover:bg-slate-900 transition-all"
               >
                 Dismiss Record
               </button>
