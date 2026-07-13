@@ -209,7 +209,7 @@ export default function CorrectionDetailModal({
                   <p className="text-[15px] font-bold text-slate-800 leading-snug mt-0.5">
                     {formatProposedTime(data.time_only || data.requested_time)}
                   </p>
-                  <p className="text-[10px] text-emerald-500 mt-0.5 leading-snug">
+                  <p className="text-[10px] text-slate-800 mt-0.5 leading-snug">
                     {getProposedLabel(data.type)}
                   </p>
                 </div>
