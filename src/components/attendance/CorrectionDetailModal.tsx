@@ -153,7 +153,6 @@ export default function CorrectionDetailModal({
                   <p className="text-[14px] font-semibold text-slate-800 leading-snug">
                     {formatWFHDate(data.date)}
                   </p>
-                  <p className="text-[11px] text-slate-400">Full Day</p>
                 </div>
               </div>
             </div>
