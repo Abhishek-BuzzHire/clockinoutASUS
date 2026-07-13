@@ -9,6 +9,8 @@ import { FilterControls, Filters } from "@/components/database/FilterControls";
 import { Button } from "@/components/ui/button";
 import Cookies from "js-cookie";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
+import { DuplicateResolverModal } from "@/components/database/DuplicateResolverModal";
+import { CopyX } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -36,6 +38,8 @@ export default function CandidateDatabasePage() {
     // const [itemsPerPage, setItemsPerPage] = useState(10);
     const [totalProfiles, setTotalProfiles] = useState(0);
     const totalPages = Math.ceil(totalProfiles / itemsPerPage);
+
+    const [showDuplicateResolver, setShowDuplicateResolver] = useState(false);
 
     const fetchEmployees = async () => {
         setLoading(true);
@@ -126,8 +130,16 @@ export default function CandidateDatabasePage() {
             {!loading && !error && employees.length > 0 ? (
                 <>
                     {totalProfiles > 0 && (
-                        <div className="text-lg font-semibold text-blue-700">
-                            {totalProfiles} Results
+                        <div className="flex justify-between items-center mb-4">
+                            <div className="text-lg font-semibold text-blue-700">
+                                {totalProfiles} Results
+                            </div>
+                            <button 
+                                onClick={() => setShowDuplicateResolver(true)} 
+                                className="px-4 py-2 bg-rose-50 text-rose-600 rounded-xl font-bold flex items-center gap-2 hover:bg-rose-100 transition-colors border border-rose-200 shadow-sm"
+                            >
+                                <CopyX className="w-4 h-4" /> Resolve Duplicates
+                            </button>
                         </div>
                     )}
 
@@ -198,6 +210,10 @@ export default function CandidateDatabasePage() {
                     <p className="text-xl text-muted-foreground">No employees found matching your criteria.</p>
                 </div>
             ) : null}
+
+            {showDuplicateResolver && (
+                <DuplicateResolverModal onClose={() => setShowDuplicateResolver(false)} />
+            )}
         </div>
     );
 }
