@@ -70,7 +70,7 @@ export function DuplicateResolverModal({ onClose }: { onClose: () => void }) {
   const handleResolveAll = async () => {
     if (groups.length === 0) return;
     
-    if (!window.confirm("Are you sure you want to delete ALL duplicates? This will keep only the oldest profile for every group shown on this screen.")) {
+    if (!window.confirm("Are you sure you want to delete ALL duplicates? This will keep only the LATEST profile for every group shown on this screen.")) {
       return;
     }
 
@@ -110,7 +110,7 @@ export function DuplicateResolverModal({ onClose }: { onClose: () => void }) {
         <div className="flex justify-between items-center p-6 border-b">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">Resolve Duplicate Resumes</h2>
-            <p className="text-sm text-slate-500 mt-1">Keep the oldest profile and remove the rest automatically.</p>
+            <p className="text-sm text-slate-500 mt-1">Keep the latest (newest) profile and remove the rest automatically.</p>
           </div>
           <div className="flex items-center gap-4">
             {groups.length > 0 && !loading && (
@@ -190,7 +190,7 @@ export function DuplicateResolverModal({ onClose }: { onClose: () => void }) {
                       {resolving === group.identifier ? (
                         <><Loader2 className="w-4 h-4 animate-spin" /> Resolving...</>
                       ) : (
-                        <><Trash2 className="w-4 h-4" /> Keep Oldest & Delete Rest</>
+                        <><Trash2 className="w-4 h-4" /> Keep Latest & Delete Rest</>
                       )}
                     </button>
                   </div>
