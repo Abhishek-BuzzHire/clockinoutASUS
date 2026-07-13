@@ -67,6 +67,42 @@ export function DuplicateResolverModal({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const handleResolveAll = async () => {
+    if (groups.length === 0) return;
+    
+    if (!window.confirm("Are you sure you want to delete ALL duplicates? This will keep only the oldest profile for every group shown on this screen.")) {
+      return;
+    }
+
+    setResolving("ALL");
+    try {
+      let allDeleteIds: number[] = [];
+      
+      groups.forEach(group => {
+        const oldestId = group.duplicates[0].id;
+        const deleteIds = group.duplicates.filter(d => d.id !== oldestId).map(d => d.id);
+        allDeleteIds = [...allDeleteIds, ...deleteIds];
+      });
+      
+      if (allDeleteIds.length === 0) return;
+
+      const token = Cookies.get("access");
+      await axios.post(`${API_URL}/api/candidates/duplicates/`, {
+        delete_ids: allDeleteIds
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Clear all groups from UI
+      setGroups([]);
+    } catch (err) {
+      console.error("Failed to resolve all:", err);
+      alert("Failed to resolve all duplicates. Please try again.");
+    } finally {
+      setResolving(null);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-center p-4">
       <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col h-[90vh] overflow-hidden">
@@ -76,9 +112,24 @@ export function DuplicateResolverModal({ onClose }: { onClose: () => void }) {
             <h2 className="text-2xl font-bold text-slate-800">Resolve Duplicate Resumes</h2>
             <p className="text-sm text-slate-500 mt-1">Keep the oldest profile and remove the rest automatically.</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-            <X className="w-6 h-6 text-slate-500" />
-          </button>
+          <div className="flex items-center gap-4">
+            {groups.length > 0 && !loading && (
+              <button 
+                onClick={handleResolveAll}
+                disabled={resolving === "ALL"}
+                className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition-all shadow-sm disabled:opacity-50"
+              >
+                {resolving === "ALL" ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Deleting All...</>
+                ) : (
+                  <><Trash2 className="w-4 h-4" /> Delete All Duplicates</>
+                )}
+              </button>
+            )}
+            <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+              <X className="w-6 h-6 text-slate-500" />
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
