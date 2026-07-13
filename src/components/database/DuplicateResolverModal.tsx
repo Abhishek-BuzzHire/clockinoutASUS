@@ -163,6 +163,13 @@ export function DuplicateResolverModal({ onClose }: { onClose: () => void }) {
             </div>
           ) : (
             <div className="space-y-6">
+              <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-xl flex items-center justify-between mb-2">
+                <div>
+                  <p className="font-bold text-lg">Found {groups.length} Duplicate Profiles</p>
+                  <p className="text-sm">There are a total of <span className="font-bold">{groups.reduce((acc, g) => acc + (g.count - 1), 0)}</span> extra resumes taking up space.</p>
+                </div>
+              </div>
+              
               {groups.map((group) => (
                 <div key={group.identifier} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex justify-between items-center mb-4 pb-4 border-b">
