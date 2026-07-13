@@ -284,7 +284,7 @@ export default function CorrectionDetailModal({
                 <div className="flex items-center gap-1.5 mb-2">
                   <Pencil className="w-3.5 h-3.5 text-slate-400" />
                   <label className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
-                    Administrator Remarks
+                    Leave your comment
                   </label>
                 </div>
                 <div className="relative">
