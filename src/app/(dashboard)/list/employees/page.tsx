@@ -308,78 +308,6 @@ export const EmployeeHierarchyTab = () => {
   );
 };
 
-const BlockedIPsModal = ({ onClose }: { onClose: () => void }) => {
-  const { data: blockedIPs, error, mutate } = useSWR(`${apiUrl}/api/admin/blocked-ips/`, fetcher);
-  const [unblocking, setUnblocking] = useState<string | null>(null);
-
-  const handleUnblock = async (ip: string) => {
-    setUnblocking(ip);
-    try {
-      const token = Cookies.get("access");
-      await axios.delete(`${apiUrl}/api/admin/blocked-ips/${ip}/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      mutate(); // Refresh the list
-    } catch (err) {
-      console.error("Failed to unblock IP", err);
-      alert("Failed to unblock IP");
-    } finally {
-      setUnblocking(null);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl flex flex-col max-h-[80vh] overflow-hidden">
-        <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-          <div className="flex items-center gap-2 text-rose-600">
-            <Shield className="w-5 h-5" />
-            <h3 className="text-lg font-bold">Blocked IP Addresses</h3>
-          </div>
-          <button onClick={onClose} className="p-1 hover:bg-slate-200 rounded-full transition-colors">
-            <X className="w-5 h-5 text-slate-500" />
-          </button>
-        </div>
-        
-        <div className="p-6 overflow-y-auto flex-1">
-          {!blockedIPs && !error ? (
-            <div className="flex justify-center items-center py-10">
-              <Loader2 className="w-6 h-6 animate-spin text-rose-500" />
-            </div>
-          ) : error ? (
-            <div className="text-center text-rose-500 font-semibold py-10">
-              Failed to load blocked IPs.
-            </div>
-          ) : blockedIPs.length === 0 ? (
-            <div className="text-center text-slate-500 font-medium py-10">
-              No IP addresses are currently blocked.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {blockedIPs.map((item: any) => (
-                <div key={item.ip_address} className="flex items-center justify-between p-4 border border-rose-100 bg-rose-50/30 rounded-xl">
-                  <div>
-                    <p className="font-bold text-slate-800 font-mono">{item.ip_address}</p>
-                    <p className="text-xs text-slate-500 mt-1">{item.reason}</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Blocked on: {new Date(item.blocked_at).toLocaleString()}</p>
-                  </div>
-                  <button 
-                    onClick={() => handleUnblock(item.ip_address)}
-                    disabled={unblocking === item.ip_address}
-                    className="px-3 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors flex items-center gap-1 disabled:opacity-50"
-                  >
-                    {unblocking === item.ip_address ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Unblock"}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const EmployeesListPage = () => {
   // ⚡ Load initial values from localStorage synchronously
   const [localEmployees, setLocalEmployees] = useState<any[] | undefined>(() => {
@@ -417,7 +345,6 @@ const EmployeesListPage = () => {
   );
 
   const [showDeactivated, setShowDeactivated] = useState(false)
-  const [showBlockedIPsModal, setShowBlockedIPsModal] = useState(false)
 
   const { data: usersData, mutate: mutateUsers } = useSWR(
     `${apiUrl}/api/users/?include_inactive=${showDeactivated}`,
@@ -855,21 +782,12 @@ const EmployeesListPage = () => {
                 <div className="flex items-center gap-4">
                   <h2 className="text-xl font-semibold text-slate-800">Employees</h2>
                   {user?.role === 'admin' && (
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => setShowDeactivated(!showDeactivated)}
-                        className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${showDeactivated ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'}`}
-                      >
-                        {showDeactivated ? "Hide Deactivated" : "Show Deactivated"}
-                      </button>
-                      <button 
-                        onClick={() => setShowBlockedIPsModal(true)}
-                        className="text-sm px-3 py-1.5 rounded-full border transition-colors bg-red-50 text-red-600 border-red-200 hover:bg-red-100 font-semibold flex items-center gap-1.5"
-                      >
-                        <Shield className="w-3.5 h-3.5" />
-                        Blocked IPs
-                      </button>
-                    </div>
+                    <button 
+                      onClick={() => setShowDeactivated(!showDeactivated)}
+                      className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${showDeactivated ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                    >
+                      {showDeactivated ? "Hide Deactivated" : "Show Deactivated"}
+                    </button>
                   )}
                 </div>
 
@@ -1008,11 +926,6 @@ const EmployeesListPage = () => {
                   </form>
                 </div>
               </div>
-            )}
-
-            {/* ================= BLOCKED IPS MODAL ================= */}
-            {showBlockedIPsModal && (
-              <BlockedIPsModal onClose={() => setShowBlockedIPsModal(false)} />
             )}
           </>
         )
