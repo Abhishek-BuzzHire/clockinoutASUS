@@ -213,8 +213,8 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key?.toLowerCase() || '';
       
-      // 1. PrintScreen variants (PrtScn, Fn+PrtScn, Alt+PrtScn)
-      if (key === 'printscreen' || key === 'prtscn' || e.keyCode === 44) {
+      // 1. PrintScreen variants (PrtScn, Fn+PrtScn, Alt+PrtScn, Fn key)
+      if (key === 'printscreen' || key === 'prtscn' || e.keyCode === 44 || key === 'fn' || key === 'function' || key === 'clear' || key === 'insert') {
         hideDoc();
         // Sometimes copying to clipboard can be blocked
         navigator.clipboard?.writeText("Security Alert: Screenshots are disabled.").catch(() => {});
@@ -252,7 +252,7 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
 
     const handleKeyUp = (e: KeyboardEvent) => {
       const key = e.key?.toLowerCase() || '';
-      if (key === 'meta' || key === 'os' || key === 'printscreen' || key === 'prtscn' || e.keyCode === 44) {
+      if (key === 'meta' || key === 'os' || key === 'printscreen' || key === 'prtscn' || e.keyCode === 44 || key === 'fn' || key === 'function') {
         setTimeout(showDoc, 1500); // keep hidden for a longer delay
       }
       if (e.metaKey && e.shiftKey && (key === 's' || key === '3' || key === '4' || key === '5')) {
