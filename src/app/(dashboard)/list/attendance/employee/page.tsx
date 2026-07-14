@@ -255,12 +255,15 @@ const EmployeeAttendancePage = () => {
 
     // Geolocation
     const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
+    const locationRef = useRef<{ lat: number; lon: number } | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
     const [showLocationPopup, setShowLocationPopup] = useState(false);
     const [showOutOfRangePopup, setShowOutOfRangePopup] = useState(false);
     const [outOfRangeMessage, setOutOfRangeMessage] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
     const [showRefreshSuccess, setShowRefreshSuccess] = useState(false);
+    const [locationReady, setLocationReady] = useState(false);
+    const retryCountRef = useRef(0);
 
     // Attendance state (backend-driven)
     const [attendanceStatus, setAttendanceStatus] = useState<AttendanceRecord | null>(null);
@@ -470,8 +473,8 @@ const EmployeeAttendancePage = () => {
 
     const { toast } = useToast();
 
-    // --- Geolocation logic (same behavior as your first file) ---
-    const fetchGeolocation = useCallback((showPopup = false) => {
+    // --- Geolocation logic with smart retry ---
+    const fetchGeolocation = useCallback((showPopup = false, retryOnFail = true) => {
         if (!("geolocation" in navigator)) {
             setLocationError("Geolocation is not supported by your browser.");
             if (showPopup) setShowLocationPopup(true);
@@ -484,17 +487,21 @@ const EmployeeAttendancePage = () => {
 
         const options = {
             enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0,
+            timeout: 15000,
+            maximumAge: 30000, // Accept cached position up to 30s old
         };
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                setLocation({
+                const loc = {
                     lat: position.coords.latitude,
                     lon: position.coords.longitude,
-                });
-                setMessage("Location successfully updated. Ready to punch.");
+                };
+                setLocation(loc);
+                locationRef.current = loc;
+                setLocationReady(true);
+                setLocationError(null);
+                retryCountRef.current = 0;
                 setIsProcessing(false);
                 if (showPopup) {
                     setShowRefreshSuccess(true);
@@ -502,6 +509,16 @@ const EmployeeAttendancePage = () => {
                 }
             },
             (error) => {
+                // If this is a silent fetch (not user-triggered) and we can retry, try again
+                if (retryOnFail && !showPopup && retryCountRef.current < 3) {
+                    retryCountRef.current += 1;
+                    const delay = retryCountRef.current * 2000; // 2s, 4s, 6s
+                    setTimeout(() => {
+                        fetchGeolocation(false, retryCountRef.current < 3);
+                    }, delay);
+                    return; // Don't show error yet, still retrying
+                }
+
                 let errorMessage = "Geolocation failed: ";
                 switch (error.code) {
                     case error.PERMISSION_DENIED:
@@ -525,8 +542,9 @@ const EmployeeAttendancePage = () => {
         );
     }, []);
 
-    // --- Fetch today's attendance from backend ---
-    const fetchTodayAttendance = useCallback(async () => {
+    // --- Fetch today's attendance from backend with retry ---
+    const attendanceRetryRef = useRef(0);
+    const fetchTodayAttendance = useCallback(async (retryOnError = true) => {
         const todayStr = format(new Date(), "yyyy-MM-dd");
         try {
             setIsProcessing(true);
@@ -537,9 +555,11 @@ const EmployeeAttendancePage = () => {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
+                timeout: 15000,
             });
 
             const data = response.data;
+            attendanceRetryRef.current = 0; // Reset retry count on success
 
             if (data.status === "success" && data.data) {
                 setAttendanceStatus(data.data);
@@ -552,10 +572,8 @@ const EmployeeAttendancePage = () => {
                     const elapsed = Math.max(0, Math.floor((now - punchIn) / 1000));
                     setInitialElapsedSeconds(elapsed);
                     setPunchTime(new Date(data.data.punch_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
-                    // console.log("FetchToday Api Punch In", "Raw:", data.data.punch_in_time, "&", "Processed:", punchTime)
                 } else if (data.data.punch_out_time) {
                     setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
-                    // console.log("FetchToday Api Punch Out", "Raw:", data.data.punch_out_time, "&", "Processed:", punchTime)
                     setInitialElapsedSeconds(0);
                 } else {
                     setPunchTime("");
@@ -569,8 +587,20 @@ const EmployeeAttendancePage = () => {
         } catch (err) {
             const axiosErr = err as AxiosError<PunchResponse>;
             const errMsg = axiosErr.response?.data?.message ?? axiosErr.message;
-            setMessage(`Error fetching today's attendance: ${errMsg}`);
             console.error("fetchTodayAttendance error:", axiosErr.response?.data ?? axiosErr.message);
+
+            // Auto-retry up to 3 times with backoff on network errors
+            if (retryOnError && attendanceRetryRef.current < 3) {
+                attendanceRetryRef.current += 1;
+                const delay = attendanceRetryRef.current * 2000; // 2s, 4s, 6s
+                console.log(`Retrying fetchTodayAttendance in ${delay}ms (attempt ${attendanceRetryRef.current})`);
+                setTimeout(() => {
+                    fetchTodayAttendance(attendanceRetryRef.current < 3);
+                }, delay);
+                return; // Don't clear processing state yet
+            }
+
+            setMessage(`Error fetching today's attendance: ${errMsg}`);
         } finally {
             setIsProcessing(false);
         }
@@ -733,14 +763,43 @@ const EmployeeAttendancePage = () => {
 
     // --- Punch API calls (in/out) ---
     const handlePunch = async (type: "in" | "out") => {
-        if (!location || !user) {
-            if (!location) {
-                setLocationError("Location is required to punch in or out.");
-                setShowLocationPopup(true);
-            } else {
-                toast({ title: "Error", description: "Please wait for user data to load.", variant: "destructive" });
-            }
+        if (!user) {
+            toast({ title: "Error", description: "Please wait for user data to load.", variant: "destructive" });
             return;
+        }
+
+        // Smart location check: use ref for latest value, try fetching if missing
+        let currentLocation = locationRef.current;
+        if (!currentLocation) {
+            // Try one quick geolocation fetch before showing popup
+            setIsProcessing(true);
+            try {
+                currentLocation = await new Promise<{ lat: number; lon: number } | null>((resolve) => {
+                    if (!("geolocation" in navigator)) {
+                        resolve(null);
+                        return;
+                    }
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+                        () => resolve(null),
+                        { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
+                    );
+                });
+            } catch {
+                currentLocation = null;
+            }
+
+            if (currentLocation) {
+                setLocation(currentLocation);
+                locationRef.current = currentLocation;
+                setLocationReady(true);
+                setLocationError(null);
+            } else {
+                setIsProcessing(false);
+                setLocationError("Location is required to punch in or out. Please turn on GPS and try again.");
+                setShowLocationPopup(true);
+                return;
+            }
         }
 
         const endpoint = type === "in" ? `${apiUrl}/punch-in/` : `${apiUrl}/punch-out/`;
@@ -753,8 +812,8 @@ const EmployeeAttendancePage = () => {
             const response = await axios.post<PunchResponse>(
                 endpoint,
                 {
-                    latitude: location.lat,
-                    longitude: location.lon,
+                    latitude: currentLocation.lat,
+                    longitude: currentLocation.lon,
                 },
                 {
                     headers: {
@@ -1141,11 +1200,31 @@ const EmployeeAttendancePage = () => {
             return;
         }
         if (user) {
+            retryCountRef.current = 0;
+            attendanceRetryRef.current = 0;
             fetchGeolocation(false);
             fetchTodayAttendance();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, loading, router]);
+
+    // Re-fetch attendance when page becomes visible (e.g., user returns to tab)
+    // This fixes the issue where returning in the evening shows stale "Clock In" state
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible" && user) {
+                attendanceRetryRef.current = 0;
+                fetchTodayAttendance();
+                // Also refresh location silently
+                retryCountRef.current = 0;
+                fetchGeolocation(false);
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user]);
 
     // Auto-dismiss location popup after 3 seconds
     useEffect(() => {

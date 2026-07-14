@@ -31,9 +31,32 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+// Helper: Synchronously decode token to user state (runs during useState init)
+function getUserFromCookie(): UserState | null {
+  if (typeof window === "undefined") return null; // SSR safety
+  try {
+    const accessToken = Cookies.get("access");
+    if (!accessToken) return null;
+    const decoded = jwtDecode<TokenPayload>(accessToken);
+    if (!decoded.id || !decoded.username || !decoded.role) return null;
+    return {
+      id: String(decoded.id),
+      username: decoded.username,
+      role: decoded.role,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<UserState | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Initialize user synchronously from cookie — no flash of "Loading user session..."
+  const [user, setUser] = useState<UserState | null>(() => getUserFromCookie());
+  const [loading, setLoading] = useState(() => {
+    // If we already have a user from cookie, no need to show loading
+    if (typeof window === "undefined") return true; // SSR: show loading
+    return false; // Client: we already tried to read cookie above
+  });
 
   const setUserFromToken = (accessToken: string) => {
     try {
@@ -49,10 +72,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Backup useEffect — handles edge cases where cookie wasn't available during init
   useEffect(() => {
-    const accessToken = Cookies.get("access");
-    if (accessToken) {
-      setUserFromToken(accessToken);
+    if (!user) {
+      const accessToken = Cookies.get("access");
+      if (accessToken) {
+        setUserFromToken(accessToken);
+      }
     }
     setLoading(false);
   }, []);
@@ -79,7 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={contextValue}>
-      {loading ? <div>Loading user session...</div> : children}
+      {children}
     </AuthContext.Provider>
   );
 };
