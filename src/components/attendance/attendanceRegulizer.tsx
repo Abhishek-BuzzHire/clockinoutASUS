@@ -22,12 +22,23 @@ export default function AttendanceRegularizationPopup({
 
   const [date, setDate] = useState("");
   const [type, setType] = useState<"PUNCH_IN" | "PUNCH_OUT" | "">("");
-  const [time, setTime] = useState("");
+  const [hour, setHour] = useState("");
+  const [minute, setMinute] = useState("");
+  const [period, setPeriod] = useState<"AM" | "PM">("AM");
   const [reason, setReason] = useState("");
 
+  const convertTo24Hour = (h: string, m: string, p: string) => {
+    if (!h || !m || !p) return "";
+    let hr = parseInt(h);
+    if (p === "PM" && hr < 12) hr += 12;
+    if (p === "AM" && hr === 12) hr = 0;
+    return `${String(hr).padStart(2, "0")}:${m}`;
+  };
+
   const handleSubmit = () => {
-    if (!date || !type || !time || !reason) return;
-    onSubmit({ date, type, time, reason });
+    const formattedTime = convertTo24Hour(hour, minute, period);
+    if (!date || !type || !formattedTime || !reason) return;
+    onSubmit({ date, type, time: formattedTime, reason });
   };
 
   return (
@@ -99,16 +110,72 @@ export default function AttendanceRegularizationPopup({
             </div>
 
             {/* Time */}
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 sm:col-span-2">
               <label className="text-xs font-bold uppercase text-slate-600 flex gap-1 items-center">
-                <Clock className="w-4 h-4" /> Time
+                <Clock className="w-4 h-4 text-blue-600" /> Select Correction Time
               </label>
-              <input
-                type="time"
-                value={time}
-                onChange={e => setTime(e.target.value)}
-                className="border rounded-lg px-3 py-2 text-sm bg-white"
-              />
+              <div className="flex items-center gap-3 bg-slate-100/60 border border-slate-200 rounded-xl p-3.5">
+                {/* Hour Select */}
+                <div className="flex-1 flex flex-col items-center">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 mb-1">Hour</span>
+                  <select
+                    value={hour}
+                    onChange={e => setHour(e.target.value)}
+                    className="w-full text-center font-bold text-lg text-slate-700 bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  >
+                    <option value="">--</option>
+                    {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map(h => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <span className="text-2xl font-bold text-slate-400 mt-4">:</span>
+
+                {/* Minute Select */}
+                <div className="flex-1 flex flex-col items-center">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 mb-1">Minute</span>
+                  <select
+                    value={minute}
+                    onChange={e => setMinute(e.target.value)}
+                    className="w-full text-center font-bold text-lg text-slate-700 bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  >
+                    <option value="">--</option>
+                    {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")).map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* AM/PM toggle */}
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 mb-1">AM/PM</span>
+                  <div className="flex bg-white rounded-lg p-0.5 border border-slate-200 shadow-sm">
+                    <button
+                      type="button"
+                      onClick={() => setPeriod("AM")}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                        period === "AM" 
+                          ? "bg-blue-600 text-white shadow-sm" 
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      AM
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPeriod("PM")}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                        period === "PM" 
+                          ? "bg-blue-600 text-white shadow-sm" 
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      PM
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
           </div>
