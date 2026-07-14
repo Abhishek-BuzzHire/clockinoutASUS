@@ -127,21 +127,7 @@ const WatermarkOverlay = () => {
           <div key={i} className="text-white/60 font-medium text-sm whitespace-nowrap tracking-wider">
             BUZZHIRE SECURE • {timestamp}
           </div>
-        ))}
-      </div>
-      
-      {/* Large Central Authentic Stamp */}
-      <div 
-        className="absolute opacity-10 transform -rotate-[15deg] pointer-events-none" 
-        style={{ textShadow: "1px 1px 4px rgba(0,0,0,0.5)" }}
-      >
-         <h1 className="text-white font-black text-4xl md:text-6xl tracking-widest uppercase text-center">
-           Strictly Confidential
-         </h1>
-         <p className="text-white/90 font-bold text-xl md:text-2xl text-center mt-2 tracking-widest">
-           DO NOT SHARE • {timestamp}
-         </p>
-      </div>
+      {/* Large Central Authentic Stamp Removed per user request */}
     </div>
   );
 };
