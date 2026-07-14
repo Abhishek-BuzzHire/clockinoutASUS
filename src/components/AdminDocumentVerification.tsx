@@ -189,10 +189,16 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
     
     // HARDCORE ANTI-SCREENSHOT LOGIC
     const hideDoc = () => {
+      // Must be INSTANT (no transition) because OS snipping tools freeze the screen in milliseconds
+      document.body.style.transition = 'none';
       document.body.style.opacity = '0';
-      document.body.style.transition = 'opacity 0.05s';
+      document.body.style.visibility = 'hidden';
+      // Fallback: overwrite clipboard just in case
+      navigator.clipboard?.writeText("Security Alert: Screenshots are disabled.").catch(() => {});
     };
     const showDoc = () => {
+      document.body.style.transition = 'opacity 0.3s ease-in';
+      document.body.style.visibility = 'visible';
       document.body.style.opacity = '1';
     };
 
@@ -246,10 +252,19 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
       }
     };
 
+    const handleCopy = (e: ClipboardEvent) => {
+      e.preventDefault();
+      e.clipboardData?.setData('text/plain', 'Security Alert: Copying is disabled in the Secure Vault.');
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('blur', hideDoc);
     window.addEventListener('focus', showDoc);
+    window.addEventListener('copy', handleCopy);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) hideDoc();
+    });
     
     return () => {
       abortController.abort();
@@ -258,8 +273,11 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', hideDoc);
       window.removeEventListener('focus', showDoc);
+      window.removeEventListener('copy', handleCopy);
       
       // CRITICAL: Restore visibility when component unmounts!
+      document.body.style.transition = 'none';
+      document.body.style.visibility = 'visible';
       document.body.style.opacity = '1';
     };
   }, [url]);
