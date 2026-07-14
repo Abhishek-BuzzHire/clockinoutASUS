@@ -117,7 +117,7 @@ const getCombinedComments = (doc: DocumentTypeDefinition, getRecord: (id: string
 
 const WatermarkOverlay = () => {
   const { user } = useAuth();
-  const adminIdentifier = user?.email || user?.username || "ADMIN";
+  const adminIdentifier = (user as any)?.email || (user as any)?.username || "ADMIN";
   const timestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
   return (
     <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden select-none flex items-center justify-center">
