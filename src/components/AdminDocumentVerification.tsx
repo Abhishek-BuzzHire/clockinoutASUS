@@ -127,6 +127,8 @@ const WatermarkOverlay = () => {
           <div key={i} className="text-white/60 font-medium text-sm whitespace-nowrap tracking-wider">
             BUZZHIRE SECURE • {timestamp}
           </div>
+        ))}
+      </div>
       {/* Large Central Authentic Stamp Removed per user request */}
     </div>
   );
