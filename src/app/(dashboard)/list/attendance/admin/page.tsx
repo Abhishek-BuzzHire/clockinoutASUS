@@ -154,38 +154,6 @@ const AdminAttendanceContent = () => {
     setIsMounted(true);
   }, []);
 
-  // --- FORCE SYNC LISTENER (Ctrl+Shift+R) ---
-  useEffect(() => {
-    const handleForceSync = async (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.shiftKey && (event.key === 'r' || event.key === 'R')) {
-        event.preventDefault();
-        
-        console.log("Force Sync Triggered...");
-        try {
-          const token = Cookies.get("access");
-          const response = await axios.post(`${apiUrl}/api/attendance/force-sync/`, {}, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          
-          if (response.status === 200) {
-            console.log("Sync Successful! Reloading page...");
-            window.location.reload();
-          } else {
-            console.error("Force sync failed");
-          }
-        } catch (error) {
-          console.error("API error:", error);
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleForceSync);
-    return () => {
-      window.removeEventListener('keydown', handleForceSync);
-    };
-  }, []);
-
-
   const [localCache, setLocalCache] = useState<any | undefined>(() => {
     if (typeof window !== "undefined") {
       const cacheKey = `attendance_local_cache_${format(new Date(), "yyyy-MM")}`;
@@ -865,6 +833,3 @@ const AdminAttendancePage = () => {
 };
 
 export default AdminAttendancePage;
-
-
-
