@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { format, startOfMonth, endOfMonth, isAfter, isWeekend, isToday, isBefore, startOfDay } from "date-fns";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -50,7 +50,7 @@ export const toMinutes = (time: string) => {
   return h * 60 + m;
 };
 
-const AdminAttendancePage = () => {
+const AdminAttendanceContent = () => {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
 
@@ -817,6 +817,18 @@ const AdminAttendancePage = () => {
         {renderContent()}
       </div>
     </div>
+  );
+};
+
+const AdminAttendancePage = () => {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen bg-sky-50">
+        <p className="text-slate-500">Loading...</p>
+      </div>
+    }>
+      <AdminAttendanceContent />
+    </Suspense>
   );
 };
 

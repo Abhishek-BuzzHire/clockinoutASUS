@@ -5,7 +5,7 @@ import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
@@ -24,7 +24,7 @@ interface TokenPayload {
   role: string;
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const { user, login, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -253,5 +253,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex justify-center items-center bg-white"><p className="text-sm text-gray-400">Loading...</p></div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
