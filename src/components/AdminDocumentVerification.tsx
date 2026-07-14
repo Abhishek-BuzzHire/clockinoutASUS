@@ -120,8 +120,8 @@ const WatermarkOverlay = () => {
     <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden select-none flex items-center justify-center">
       {/* Dense Micro-Pattern Watermark */}
       <div 
-        className="absolute w-[200%] h-[200%] flex flex-wrap justify-center items-center gap-x-28 gap-y-32 opacity-25 transform -rotate-[15deg]"
-        style={{ textShadow: "1px 1px 1px rgba(0,0,0,0.5)" }}
+        className="absolute w-[200%] h-[200%] flex flex-wrap justify-center items-center gap-x-28 gap-y-32 opacity-[0.08] transform -rotate-[15deg]"
+        style={{ textShadow: "1px 1px 1px rgba(0,0,0,0.3)" }}
       >
         {Array.from({ length: 70 }).map((_, i) => (
           <div key={i} className="text-white/60 font-medium text-sm whitespace-nowrap tracking-wider">
@@ -132,8 +132,8 @@ const WatermarkOverlay = () => {
       
       {/* Large Central Authentic Stamp */}
       <div 
-        className="absolute opacity-25 transform -rotate-[15deg] pointer-events-none" 
-        style={{ textShadow: "2px 2px 6px rgba(0,0,0,0.8)" }}
+        className="absolute opacity-10 transform -rotate-[15deg] pointer-events-none" 
+        style={{ textShadow: "1px 1px 4px rgba(0,0,0,0.5)" }}
       >
          <h1 className="text-white font-black text-4xl md:text-6xl tracking-widest uppercase text-center">
            Strictly Confidential
@@ -211,19 +211,52 @@ const SecureDocumentViewer = ({ url, label, isPdf }: { url: string; label?: stri
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Hide instantly if Windows key or PrintScreen is pressed
-      if (e.key === 'Meta' || e.key === 'PrintScreen') {
+      const key = e.key?.toLowerCase() || '';
+      
+      // 1. PrintScreen variants (PrtScn, Fn+PrtScn, Alt+PrtScn)
+      if (key === 'printscreen' || key === 'prtscn' || e.keyCode === 44) {
+        hideDoc();
+        // Sometimes copying to clipboard can be blocked
+        navigator.clipboard?.writeText("Security Alert: Screenshots are disabled.").catch(() => {});
+      }
+      
+      // 2. Windows Snipping tool (Win + Shift + S)
+      if (e.metaKey && e.shiftKey && key === 's') {
+        hideDoc();
+        e.preventDefault();
+      }
+      
+      // 3. Mac Screenshot tools (Cmd + Shift + 3/4/5)
+      if (e.metaKey && e.shiftKey && (key === '3' || key === '4' || key === '5')) {
+        hideDoc();
+        e.preventDefault();
+      }
+      
+      // 4. Windows/Meta key alone (start menu overlay)
+      if (key === 'meta' || key === 'os') {
         hideDoc();
       }
-      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p' || e.key === 'c')) {
+
+      // 5. Block Saving, Printing, Copying, View Source
+      if ((e.ctrlKey || e.metaKey) && (key === 's' || key === 'p' || key === 'c' || key === 'u')) {
         e.preventDefault();
         alert("Security Alert: Saving, printing, and copying are disabled in the Secure Vault.");
+      }
+      
+      // 6. Block DevTools (F12 or Ctrl+Shift+I/J/C)
+      if (key === 'f12' || ((e.ctrlKey || e.metaKey) && e.shiftKey && (key === 'i' || key === 'j' || key === 'c'))) {
+        e.preventDefault();
+        hideDoc();
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === 'Meta' || e.key === 'PrintScreen') {
-        setTimeout(showDoc, 800); // keep hidden for a short delay
+      const key = e.key?.toLowerCase() || '';
+      if (key === 'meta' || key === 'os' || key === 'printscreen' || key === 'prtscn' || e.keyCode === 44) {
+        setTimeout(showDoc, 1500); // keep hidden for a longer delay
+      }
+      if (e.metaKey && e.shiftKey && (key === 's' || key === '3' || key === '4' || key === '5')) {
+        setTimeout(showDoc, 1500);
       }
     };
 
