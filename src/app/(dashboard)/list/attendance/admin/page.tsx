@@ -154,11 +154,10 @@ const AdminAttendanceContent = () => {
     setIsMounted(true);
   }, []);
 
-  // --- FORCE SYNC LISTENER (Ctrl+Shift+S) ---
+  // --- FORCE SYNC LISTENER (Ctrl+Shift+R) ---
   useEffect(() => {
     const handleForceSync = async (event: KeyboardEvent) => {
-      // Browsers override Ctrl+Shift+R, so we use Ctrl+Shift+S (S for Sync)
-      if (event.ctrlKey && event.shiftKey && (event.key === 's' || event.key === 'S')) {
+      if (event.ctrlKey && event.shiftKey && (event.key === 'r' || event.key === 'R')) {
         event.preventDefault();
         
         console.log("Force Sync Triggered...");
