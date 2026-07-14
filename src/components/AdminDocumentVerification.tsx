@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/lib/data";
+import { useAuth } from "@/context/AuthContext";
 import {
   CheckCircle,
   XCircle,
@@ -115,6 +116,8 @@ const getCombinedComments = (doc: DocumentTypeDefinition, getRecord: (id: string
 };
 
 const WatermarkOverlay = () => {
+  const { user } = useAuth();
+  const adminIdentifier = user?.email || user?.username || "ADMIN";
   const timestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
   return (
     <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden select-none flex items-center justify-center">
@@ -125,7 +128,7 @@ const WatermarkOverlay = () => {
       >
         {Array.from({ length: 70 }).map((_, i) => (
           <div key={i} className="text-white/60 font-medium text-sm whitespace-nowrap tracking-wider">
-            BUZZHIRE SECURE • {timestamp}
+            {adminIdentifier} • {timestamp}
           </div>
         ))}
       </div>
