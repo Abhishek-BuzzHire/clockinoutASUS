@@ -5,6 +5,7 @@ import { format, startOfMonth, endOfMonth, isAfter, isWeekend, isToday, isBefore
 import axios from "axios";
 import Cookies from "js-cookie";
 import useSWR from "swr";
+import Pusher from "pusher-js";
 
 import type { AttendanceRecord, CalendarDay, NewEmployee, ShiftConfig } from "@/lib/types";
 import AttendanceCalendar from "@/components/attendance/attendanceCalender";
@@ -150,9 +151,51 @@ const AdminAttendanceContent = () => {
   }, [searchParams, wfhList, list, leaves]);
 
   const [isMounted, setIsMounted] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    // Listen for Pusher event to refresh cache globally
+    const pusher = new Pusher("4dd64d9dc091254c62be", {
+      cluster: "ap2",
+    });
+
+    const channel = pusher.subscribe("dashboard-channel");
+    channel.bind("force_sync", (data: any) => {
+      console.log("Global force sync received!", data);
+      // Clear localStorage cache for attendance
+      const keys = Object.keys(localStorage);
+      for (const k of keys) {
+        if (k.startsWith("attendance_local_cache_")) {
+          localStorage.removeItem(k);
+        }
+      }
+      window.location.reload();
+    });
+
+    return () => {
+      channel.unbind("force_sync");
+      pusher.unsubscribe("dashboard-channel");
+    };
+  }, []);
+
+  const handleForceSync = async () => {
+    try {
+      setSyncing(true);
+      const token = Cookies.get("access");
+      await axios.post(`${apiUrl}/api/attendance/force-sync/`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // The pusher event will trigger window.location.reload()
+    } catch (error) {
+      console.error("Force sync failed:", error);
+      alert("Failed to force sync");
+      setSyncing(false);
+    }
+  };
 
   const [localCache, setLocalCache] = useState<any | undefined>(() => {
     if (typeof window !== "undefined") {
@@ -515,6 +558,15 @@ const AdminAttendanceContent = () => {
                   Attendance Report
                 </Button>
                 {openPopupPivot && <AdminAttendancePivotReportModal onClose={() => setOpenPopupPivot(false)} />}
+
+                <Button 
+                  variant={"destructive"} 
+                  onClick={handleForceSync} 
+                  disabled={syncing}
+                  className="bg-red-600 text-white"
+                >
+                  {syncing ? "Syncing..." : "Force Sync (Global)"}
+                </Button>
               </div>
             </div>
 
