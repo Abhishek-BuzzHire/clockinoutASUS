@@ -830,6 +830,8 @@ const AdminAttendanceContent = () => {
 
   return (
     <div className="w-full bg-sky-50 p-4 relative">
+      {/* 
+      // HIDING THE FORCE SYNC BUTTON FOR NOW - UNCOMMENT TO USE LATER
       <div className="absolute top-4 right-4 z-50">
         <Button 
           variant={"destructive"} 
@@ -840,6 +842,7 @@ const AdminAttendanceContent = () => {
           {syncing ? "Syncing..." : "Force Sync (Global)"}
         </Button>
       </div>
+      */}
       <div className="text-lg">
         <div className="flex space-x-8 text-xs font-bold border-b border-gray-300 mb-12">
           {
