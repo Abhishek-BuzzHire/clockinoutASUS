@@ -558,15 +558,6 @@ const AdminAttendanceContent = () => {
                   Attendance Report
                 </Button>
                 {openPopupPivot && <AdminAttendancePivotReportModal onClose={() => setOpenPopupPivot(false)} />}
-
-                <Button 
-                  variant={"destructive"} 
-                  onClick={handleForceSync} 
-                  disabled={syncing}
-                  className="bg-red-600 text-white"
-                >
-                  {syncing ? "Syncing..." : "Force Sync (Global)"}
-                </Button>
               </div>
             </div>
 
@@ -839,6 +830,16 @@ const AdminAttendanceContent = () => {
 
   return (
     <div className="w-full bg-sky-50 p-4 relative">
+      <div className="absolute top-4 right-4 z-50">
+        <Button 
+          variant={"destructive"} 
+          onClick={handleForceSync} 
+          disabled={syncing}
+          className="bg-red-600 text-white shadow-lg animate-pulse hover:animate-none"
+        >
+          {syncing ? "Syncing..." : "Force Sync (Global)"}
+        </Button>
+      </div>
       <div className="text-lg">
         <div className="flex space-x-8 text-xs font-bold border-b border-gray-300 mb-12">
           {
