@@ -103,14 +103,14 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
         <div className="flex flex-wrap gap-4 mt-2">
            <InfoCard 
              icon={<Briefcase className="h-5 w-5" />} 
-             title="Current Experience" 
+             title="Current Company" 
              subtitle={employee.current_company_name || <span className="text-red-500 font-medium">Not specified</span>}
              bgClass="bg-blue-100" 
              textClass="text-blue-600" 
            />
            <InfoCard 
              icon={<GraduationCap className="h-5 w-5" />} 
-             title="Previous Experience" 
+             title="Previous Companies" 
              subtitle={employee.previous_companies_name && Array.isArray(employee.previous_companies_name) && employee.previous_companies_name.length > 0 ? employee.previous_companies_name.join(", ") : (typeof employee.previous_companies_name === 'string' && employee.previous_companies_name ? employee.previous_companies_name : <span className="text-red-500 font-medium">No previous experience listed.</span>)}
              bgClass="bg-purple-100" 
              textClass="text-purple-600" 
