@@ -65,7 +65,7 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
               {getInitials(employee.name)}
             </div>
             <div className="flex flex-col">
-              <h2 className="text-xl font-bold text-slate-800 uppercase tracking-tight">{employee.name}</h2>
+              <h2 className="text-2xl font-bold text-slate-900 font-serif tracking-tight capitalize">{employee.name}</h2>
               <p className="text-blue-600 font-semibold text-sm">{employee.job_title}</p>
             </div>
           </div>
