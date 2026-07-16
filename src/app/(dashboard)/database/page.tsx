@@ -116,10 +116,10 @@ export default function CandidateDatabasePage() {
     return (
         <div className="mx-2 my-5">
             <div className="mb-4 flex flex-col md:flex-row items-center gap-4">
-                <div className="w-full md:w-1/2">
+                <div className="w-full flex-1">
                     <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
                 </div>
-                <div className="hidden md:flex items-center gap-3 ml-auto">
+                <div className="hidden md:flex items-center gap-3 shrink-0">
                     <Link href="/database/bulk-upload" className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-blue-600 rounded-xl text-sm font-bold transition-all shadow-sm">
                         <Upload className="w-4 h-4" /> Bulk Upload
                     </Link>
