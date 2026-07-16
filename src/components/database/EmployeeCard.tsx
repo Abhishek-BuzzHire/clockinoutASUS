@@ -37,7 +37,6 @@ const InfoCard: React.FC<{ icon: React.ReactNode, title: string, subtitle: React
 )
 
 export function EmployeeCard({ employee }: EmployeeCardProps) {
-  const [showAllSkills, setShowAllSkills] = useState(false);
 
   const getCvUrl = ():string | null => {
     if (!employee.cv_url) return null;
@@ -53,8 +52,6 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   }
 
-  const displayedSkills = showAllSkills ? employee.skills : employee.skills.slice(0, 15);
-
   return (
     <Card className="w-full mt-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col bg-white overflow-hidden hover:shadow-md transition-all">
       <div className="p-6 flex flex-col gap-6">
@@ -65,7 +62,7 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
               {getInitials(employee.name)}
             </div>
             <div className="flex flex-col">
-              <h2 className="text-2xl font-bold text-slate-900 font-serif tracking-tight capitalize">{employee.name}</h2>
+              <h2 className="text-xl font-bold text-slate-800 uppercase tracking-tight">{employee.name}</h2>
               <p className="text-blue-600 font-semibold text-sm">{employee.job_title}</p>
             </div>
           </div>
@@ -138,25 +135,14 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
         <div className="flex flex-col gap-4 mt-2">
            <div className="flex justify-between items-center">
              <h3 className="font-bold text-slate-800 text-sm">Skills ({employee.skills.length})</h3>
-             {employee.skills.length > 15 && (
-               <Button variant="ghost" size="sm" onClick={() => setShowAllSkills(!showAllSkills)} className="text-blue-600 hover:bg-blue-50 hover:text-blue-700 h-8 text-xs font-bold px-3 rounded-lg transition-colors">
-                 {showAllSkills ? "Show Less" : "Show All"}
-                 {showAllSkills ? <ChevronUp className="ml-1 h-3.5 w-3.5" /> : <ChevronDown className="ml-1 h-3.5 w-3.5" />}
-               </Button>
-             )}
            </div>
            <div className="flex flex-wrap gap-2.5">
-             {displayedSkills.map((skill) => (
+             {employee.skills.map((skill) => (
                <div key={skill} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-800 rounded-full text-xs font-semibold border border-slate-200 hover:bg-slate-200 transition-colors cursor-default">
                  <div className="h-1.5 w-1.5 rounded-full bg-slate-600"></div>
                  {skill}
                </div>
              ))}
-             {!showAllSkills && employee.skills.length > 15 && (
-               <div className="flex items-center px-4 py-1.5 bg-slate-800 text-white rounded-full text-xs font-semibold border border-slate-700 cursor-pointer hover:bg-slate-900 transition-colors shadow-sm" onClick={() => setShowAllSkills(true)}>
-                 +{employee.skills.length - 15} More
-               </div>
-             )}
            </div>
         </div>
       </div>
