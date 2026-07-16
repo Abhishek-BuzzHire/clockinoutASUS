@@ -114,14 +114,14 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
            <InfoCard 
              icon={<GraduationCap className="h-5 w-5" />} 
              title="Previous Experience" 
-             subtitle={employee.previous_companies_name && employee.previous_companies_name.length > 0 ? employee.previous_companies_name.join(", ") : <span className="text-red-500 font-medium">No previous experience listed.</span>}
+             subtitle={employee.previous_companies_name && Array.isArray(employee.previous_companies_name) && employee.previous_companies_name.length > 0 ? employee.previous_companies_name.join(", ") : (typeof employee.previous_companies_name === 'string' && employee.previous_companies_name ? employee.previous_companies_name : <span className="text-red-500 font-medium">No previous experience listed.</span>)}
              bgClass="bg-purple-100" 
              textClass="text-purple-600" 
            />
            <InfoCard 
              icon={<GraduationCap className="h-5 w-5" />} 
              title="Education" 
-             subtitle={employee.education && employee.education.length > 0 ? employee.education.join(", ") : <span className="text-red-500 font-medium">No Education listed.</span>}
+             subtitle={employee.education && Array.isArray(employee.education) && employee.education.length > 0 ? employee.education.join(", ") : (typeof employee.education === 'string' && employee.education ? employee.education : <span className="text-red-500 font-medium">No Education listed.</span>)}
              bgClass="bg-green-100" 
              textClass="text-green-600" 
            />
