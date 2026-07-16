@@ -90,21 +90,22 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
           </div>
         </div>
 
-        {/* Quick Info Bar */}
-        <div className="flex flex-wrap items-center gap-x-8 gap-y-3 mt-1">
-           <IconText icon={<MapPin />}>{employee.location}</IconText>
-           <IconText icon={<Briefcase />}>{employee.total_experience_years} Years</IconText>
-           <IconText icon={<IndianRupee />}>{employee.salary} LPA</IconText>
-           <IconText icon={<CalendarDays />}>Notice: {employee.notice} days</IconText>
-           <IconText icon={<File />}>Resume Available</IconText>
-        </div>
-
         {/* 4 Cards Section */}
         <div className="flex flex-wrap gap-4 mt-2">
            <InfoCard 
              icon={<Briefcase className="h-5 w-5" />} 
-             title="Current Company" 
-             subtitle={employee.current_company_name || <span className="text-red-500 font-medium">Not specified</span>}
+             title="Current Profile" 
+             subtitle={
+               <div className="flex flex-wrap items-center gap-1.5">
+                 <span className={!employee.current_company_name ? "text-red-500 font-medium" : ""}>
+                   {employee.current_company_name || "Not specified"}
+                 </span>
+                 <span className="text-slate-300">•</span>
+                 <span className="text-blue-600">{employee.total_experience_years} Yrs</span>
+                 <span className="text-slate-300">•</span>
+                 <span className="text-green-600">{employee.salary} LPA</span>
+               </div>
+             }
              bgClass="bg-blue-100" 
              textClass="text-blue-600" 
            />
@@ -124,8 +125,14 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
            />
            <InfoCard 
              icon={<MapPin className="h-5 w-5" />} 
-             title="Preferred Location" 
-             subtitle={employee.location}
+             title="Location & Availability" 
+             subtitle={
+               <div className="flex flex-wrap items-center gap-1.5">
+                 <span>{employee.location}</span>
+                 <span className="text-slate-300">•</span>
+                 <span className="text-amber-600">Notice: {employee.notice} days</span>
+               </div>
+             }
              bgClass="bg-amber-100" 
              textClass="text-amber-600" 
            />
