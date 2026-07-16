@@ -147,13 +147,13 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
            </div>
            <div className="flex flex-wrap gap-2.5">
              {displayedSkills.map((skill) => (
-               <div key={skill} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50/80 text-blue-700 rounded-full text-xs font-semibold border border-blue-100/50 hover:bg-blue-100 transition-colors cursor-default">
-                 <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
+               <div key={skill} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-800 rounded-full text-xs font-semibold border border-slate-200 hover:bg-slate-200 transition-colors cursor-default">
+                 <div className="h-1.5 w-1.5 rounded-full bg-slate-600"></div>
                  {skill}
                </div>
              ))}
              {!showAllSkills && employee.skills.length > 15 && (
-               <div className="flex items-center px-4 py-1.5 bg-slate-50 text-slate-600 rounded-full text-xs font-semibold border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors shadow-sm" onClick={() => setShowAllSkills(true)}>
+               <div className="flex items-center px-4 py-1.5 bg-slate-800 text-white rounded-full text-xs font-semibold border border-slate-700 cursor-pointer hover:bg-slate-900 transition-colors shadow-sm" onClick={() => setShowAllSkills(true)}>
                  +{employee.skills.length - 15} More
                </div>
              )}
