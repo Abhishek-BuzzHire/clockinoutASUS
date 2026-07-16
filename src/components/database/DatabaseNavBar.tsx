@@ -11,23 +11,7 @@ const DatabaseNavbar: React.FC = () => {
   return (
     <nav className=''>
       <div className="container mx-auto px-4">
-        <div className="flex justify-end items-center h-16">
-
-          <div className="hidden md:flex space-x-4">
-            <NavLink
-              to="/database/bulk-upload"
-              icon={<Users size={18} />}
-              label="Bulk Upload"
-              isActive={pathname === '/database/bulk-upload'}
-            />
-            <NavLink
-              to="/database/add-candidate"
-              icon={<Users size={18} />}
-              label="Add Candidate"
-              isActive={pathname === '/database/add-candidate'}
-            />
-          </div>
-
+        <div className="flex justify-end items-center h-2 md:h-0">
           <div className="md:hidden">
             <button className="flex items-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

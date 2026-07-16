@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import Cookies from "js-cookie";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { DuplicateResolverModal } from "@/components/database/DuplicateResolverModal";
-import { CopyX } from "lucide-react";
-
+import { CopyX, Upload, UserPlus } from "lucide-react";
+import Link from "next/link";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function CandidateDatabasePage() {
@@ -115,8 +115,20 @@ export default function CandidateDatabasePage() {
 
     return (
         <div className="mx-2 my-5">
+            <div className="mb-4 flex flex-col md:flex-row items-center gap-4">
+                <div className="w-full md:w-1/2">
+                    <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+                </div>
+                <div className="hidden md:flex items-center gap-3 ml-auto">
+                    <Link href="/database/bulk-upload" className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-blue-600 rounded-xl text-sm font-bold transition-all shadow-sm">
+                        <Upload className="w-4 h-4" /> Bulk Upload
+                    </Link>
+                    <Link href="/database/add-candidate" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-sm font-bold transition-all shadow-sm">
+                        <UserPlus className="w-4 h-4" /> Add Candidate
+                    </Link>
+                </div>
+            </div>
             <div className="mb-2 space-y-4">
-                <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
                 <FilterControls
                     filters={filters}
                     setFilters={setFilters}
