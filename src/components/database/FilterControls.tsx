@@ -61,7 +61,7 @@ export function FilterControls({ filters, setFilters }: FilterControlProps) {
                     <CardHeader>
                         <CardTitle className='text-lg flex justify-between items-center pl-3'>
                             Advance Filters
-                            <Button variant="ghost" size="icon" onClick={resetFilters} title="Reset Filters">
+                            <Button variant="ghost" size="icon" onClick={() => setShowFilters(false)} title="Close Filters">
                                 <X className='h-4 w-4' />
                             </Button>
                         </CardTitle>
