@@ -16,7 +16,7 @@ const Navbar = () => {
   const navLinks = [
     { name: "Dashboard", href: `/${role === "admin" ? "admin" : "employee"}` },
     { name: "AI Assistance", href: "/ai-assist" },
-    { name: "Candidate Search", href: "/database" },
+    { name: "Candidate Resume Data", href: "/database" },
   ];
 
   return (
