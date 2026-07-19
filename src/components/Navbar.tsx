@@ -39,6 +39,7 @@ const Navbar = () => {
           })}
         </ul>
       </div>
+      <div className="flex items-center gap-4 justify-end w-full"></div>
 
     </div>
   );
