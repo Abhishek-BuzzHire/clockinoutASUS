@@ -120,11 +120,8 @@ export default function CandidateDatabasePage() {
                     <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
                 </div>
                 <div className="hidden md:flex items-center gap-3 shrink-0">
-                    <Link href="/database/bulk-upload" className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-blue-600 rounded-xl text-sm font-bold transition-all shadow-sm">
-                        <Upload className="w-4 h-4" /> Bulk Upload
-                    </Link>
-                    <Link href="/database/add-candidate" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-sm font-bold transition-all shadow-sm">
-                        <UserPlus className="w-4 h-4" /> Add Candidate
+                    <Link href="/database/bulk-upload" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-sm font-bold transition-all shadow-sm">
+                        <Upload className="w-4 h-4" /> Upload Resume
                     </Link>
                 </div>
             </div>
