@@ -33,7 +33,7 @@ const Navbar = () => {
               <li key={link.name}>
                 <Link
                   href={link.href}
-                  className={`font-semibold text-md transition-colors rounded-md p-2 ${isActive ? "text-white bg-indigo-600 " : "text-gray-600 hover:text-gray-800"}`}
+                  className={`font-semibold text-md transition-colors rounded-md p-2 ${isActive ? "text-indigo-600" : "text-gray-600 hover:text-gray-800"}`}
                 >
                   {link.name}
                 </Link>
