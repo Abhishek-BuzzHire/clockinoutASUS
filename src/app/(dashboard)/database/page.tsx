@@ -120,7 +120,7 @@ export default function CandidateDatabasePage() {
                     <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
                 </div>
                 <div className="hidden md:flex items-center gap-3 shrink-0">
-                    <Link href="/database/bulk-upload" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-sm font-bold transition-all shadow-sm">
+                    <Link href="/database/bulk-upload" className="flex items-center gap-2 px-4 py-2 text-black hover:bg-slate-100 rounded-xl text-sm font-bold transition-all">
                         <Upload className="w-4 h-4" /> Upload Resume
                     </Link>
                 </div>
