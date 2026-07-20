@@ -76,7 +76,7 @@ export function EmployeeCard({ employee, onDelete }: EmployeeCardProps) {
   };
 
   return (
-    <Card className="w-full mt-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col bg-white overflow-hidden hover:shadow-md transition-all">
+    <Card className="w-full mt-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col bg-white overflow-hidden hover:shadow-md transition-all group">
       <div className="p-6 flex flex-col gap-6">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -84,18 +84,9 @@ export function EmployeeCard({ employee, onDelete }: EmployeeCardProps) {
             <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl shrink-0 border-2 border-blue-50">
               {getInitials(employee.name)}
             </div>
-            <div className="flex flex-col relative group">
+            <div className="flex flex-col">
               <h2 className="text-xl font-bold text-slate-800 uppercase tracking-tight flex items-center gap-2">
                 {employee.name}
-                <Button 
-                   variant="ghost" 
-                   size="icon" 
-                   className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full"
-                   onClick={handleDelete}
-                   disabled={isDeleting}
-                >
-                  {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                </Button>
               </h2>
               <p className="text-blue-600 font-semibold text-sm">{employee.job_title}</p>
             </div>
@@ -110,17 +101,29 @@ export function EmployeeCard({ employee, onDelete }: EmployeeCardProps) {
                  <Mail className="h-4 w-4 text-blue-600" /> {employee.email}
                </div>
             </div>
-            {cvDownloadUrl ? (
-              <Button asChild variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl px-5 font-semibold h-10 ml-2 shadow-sm">
-                <a href={cvDownloadUrl} target='_blank' rel="noopener noreferrer">
-                  <Eye className='mr-2 h-4 w-4' /> Preview CV
-                </a>
+            
+            <div className="flex items-center gap-2 ml-2">
+              <Button 
+                variant="outline" 
+                className="opacity-0 group-hover:opacity-100 transition-opacity border-red-200 text-red-600 hover:bg-red-50 rounded-xl px-5 font-semibold h-10 shadow-sm"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />} Delete
               </Button>
-            ) : (
-               <Button variant="outline" className="border-slate-200 text-slate-400 rounded-xl px-5 font-semibold h-10 ml-2" disabled>
-                 <Eye className='mr-2 h-4 w-4' /> CV Not Available
-               </Button>
-            )}
+
+              {cvDownloadUrl ? (
+                <Button asChild variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl px-5 font-semibold h-10 shadow-sm">
+                  <a href={cvDownloadUrl} target='_blank' rel="noopener noreferrer">
+                    <Eye className='mr-2 h-4 w-4' /> Preview CV
+                  </a>
+                </Button>
+              ) : (
+                 <Button variant="outline" className="border-slate-200 text-slate-400 rounded-xl px-5 font-semibold h-10" disabled>
+                   <Eye className='mr-2 h-4 w-4' /> CV Not Available
+                 </Button>
+              )}
+            </div>
           </div>
         </div>
 
