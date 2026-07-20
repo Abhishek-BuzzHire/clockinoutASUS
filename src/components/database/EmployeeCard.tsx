@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 
 interface EmployeeCardProps {
   employee: CandidateRec;
-  onDelete?: (id: number) => void;
+  onDelete?: (id: string | number) => void;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;

@@ -33,7 +33,7 @@ export const apiService = {
             throw error;
         }
     },
-    async deleteCandidate(id: number): Promise<void> {
+    async deleteCandidate(id: string | number): Promise<void> {
         try {
             await axios.delete(`${API_URL}/api/candidates/${id}/`, { headers: { Authorization: `Bearer ${token}` } });
         } catch (error) {
