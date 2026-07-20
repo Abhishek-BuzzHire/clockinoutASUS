@@ -10,7 +10,6 @@ import toast from 'react-hot-toast';
 
 interface EmployeeCardProps {
   employee: CandidateRec;
-  onDelete?: (id: string | number) => void;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -39,7 +38,7 @@ const InfoCard: React.FC<{ icon: React.ReactNode, title: string, subtitle: React
   </div>
 )
 
-export function EmployeeCard({ employee, onDelete }: EmployeeCardProps) {
+export function EmployeeCard({ employee }: EmployeeCardProps) {
   const [showAllSkills, setShowAllSkills] = useState(false);
   const getCvUrl = ():string | null => {
     if (!employee.cv_url) return null;
@@ -53,31 +52,6 @@ export function EmployeeCard({ employee, onDelete }: EmployeeCardProps) {
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-  }
-
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isDeleted, setIsDeleted] = useState(false);
-
-  const handleDelete = async () => {
-    if (confirm(`Are you sure you want to delete ${employee.name}?`)) {
-      setIsDeleting(true);
-      try {
-        await apiService.deleteCandidate(employee.id);
-        toast.success("Resume deleted successfully");
-        if (onDelete) {
-          onDelete(employee.id);
-        } else {
-          setIsDeleted(true);
-        }
-      } catch (err) {
-        toast.error("Failed to delete resume");
-        setIsDeleting(false);
-      }
-    }
-  };
-
-  if (isDeleted) {
-    return null;
   }
 
   return (
@@ -108,15 +82,6 @@ export function EmployeeCard({ employee, onDelete }: EmployeeCardProps) {
             </div>
             
             <div className="flex items-center gap-2 ml-2">
-              <Button 
-                variant="outline" 
-                className="opacity-0 group-hover:opacity-100 transition-opacity border-red-200 text-red-600 hover:bg-red-50 rounded-xl px-5 font-semibold h-10 shadow-sm"
-                onClick={handleDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />} Delete
-              </Button>
-
               {cvDownloadUrl ? (
                 <Button asChild variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl px-5 font-semibold h-10 shadow-sm">
                   <a href={cvDownloadUrl} target='_blank' rel="noopener noreferrer">

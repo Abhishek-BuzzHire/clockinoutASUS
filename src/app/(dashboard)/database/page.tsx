@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import axios from 'axios'
+import useSWR from 'swr';
 import type { CandidateRec } from "@/lib/types";
 import { EmployeeCard } from "@/components/database/EmployeeCard";
 import { SearchBar } from "@/components/database/SearchBar";
@@ -15,7 +16,6 @@ import Link from "next/link";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function CandidateDatabasePage() {
-    const [employees, setEmployees] = useState<CandidateRec[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filters, setFilters] = useState<Filters>({
         skills: '',
@@ -30,77 +30,54 @@ export default function CandidateDatabasePage() {
         jobTitle: '',
     });
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
-    // const [itemsPerPage, setItemsPerPage] = useState(10);
-    const [totalProfiles, setTotalProfiles] = useState(0);
-    const totalPages = Math.ceil(totalProfiles / itemsPerPage);
-
-    const [showDuplicateResolver, setShowDuplicateResolver] = useState(false);
-
-    const fetchEmployees = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const queryParams = new URLSearchParams();
-            if (searchTerm) queryParams.append('searchTerm', searchTerm);
-            if (filters.skills) queryParams.append('skills', filters.skills);
-            if (filters.minExperience > 0) queryParams.append('minExperience', filters.minExperience.toString());
-            if (filters.maxExperience !== null) queryParams.append('maxExperience', filters.maxExperience.toString());
-            if (filters.location) queryParams.append('location', filters.location);
-            if (filters.jobTitle) queryParams.append('jobTitle', filters.jobTitle);
-            if (filters.minSalary > 0) queryParams.append('minSalary', filters.minSalary.toString());
-            if (filters.maxSalary !== null) queryParams.append('maxSalary', filters.maxSalary.toString());
-            if (filters.notice !== null) queryParams.append('notice', filters.notice.toString());
-            if (filters.company) queryParams.append('company', filters.company);
-            if (filters.education) queryParams.append('education', filters.education);
-
-            queryParams.append('page', currentPage.toString());
-            queryParams.append('limit', itemsPerPage.toString());
-            
-            // const getCookie = (name: string): string | null => {
-            //     const value = `; ${document.cookie}`;
-            //     const parts = value.split(`; ${name}=`);
-            //     if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-            //     return null;
-            // };
-
-            const apiUrl = `${API_URL}/api/candidates?${queryParams.toString()}`;
-            const token = Cookies.get("access");
-            
-            const response = await axios.get(apiUrl, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            const data = response.data;
-            setEmployees(data.employees);  
-            // console.log("Fetched Employees: ", data.employees);
-            setTotalProfiles(data.totalProfiles);
-
-        } catch (err) {
-            console.error("Failed to fetch Employees: ", err);
-            setError("Failed to load employees. Please try again later.");
-            setEmployees([]);                                   //New Line
-            setTotalProfiles(0);                               //New Line
-        } finally {
-            setLoading(false);
-        }
-    };
+    const [debouncedUrl, setDebouncedUrl] = useState('');
 
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, filters, itemsPerPage]);
 
     useEffect(() => {
+        const queryParams = new URLSearchParams();
+        if (searchTerm) queryParams.append('searchTerm', searchTerm);
+        if (filters.skills) queryParams.append('skills', filters.skills);
+        if (filters.minExperience > 0) queryParams.append('minExperience', filters.minExperience.toString());
+        if (filters.maxExperience !== null) queryParams.append('maxExperience', filters.maxExperience.toString());
+        if (filters.location) queryParams.append('location', filters.location);
+        if (filters.jobTitle) queryParams.append('jobTitle', filters.jobTitle);
+        if (filters.minSalary > 0) queryParams.append('minSalary', filters.minSalary.toString());
+        if (filters.maxSalary !== null) queryParams.append('maxSalary', filters.maxSalary.toString());
+        if (filters.notice !== null) queryParams.append('notice', filters.notice.toString());
+        if (filters.company) queryParams.append('company', filters.company);
+        if (filters.education) queryParams.append('education', filters.education);
+
+        queryParams.append('page', currentPage.toString());
+        queryParams.append('limit', itemsPerPage.toString());
+
+        const url = `${API_URL}/api/candidates?${queryParams.toString()}`;
+        
         const timeoutId = setTimeout(() => {
-            fetchEmployees();
-        }, 500)
+            setDebouncedUrl(url);
+        }, 500);
 
         return () => clearTimeout(timeoutId);
     }, [currentPage, itemsPerPage, searchTerm, filters]);
+
+    const fetcher = async (url: string) => {
+        const token = Cookies.get("access");
+        const response = await axios.get(url, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.data;
+    };
+
+    const { data, error, isLoading } = useSWR(debouncedUrl || null, fetcher, { 
+        keepPreviousData: true,
+        revalidateOnFocus: false 
+    });
+
+    const employees: CandidateRec[] = data?.employees || [];
+    const totalProfiles = data?.totalProfiles || 0;
+    const totalPages = Math.ceil(totalProfiles / itemsPerPage);
 
     const handlePageChange = (page: number) => {
         if (page >= 1 && page <= totalPages) {
@@ -135,9 +112,9 @@ export default function CandidateDatabasePage() {
                 />
             </div>
 
-            {loading && <div className="text-center py-10"><p className="text-xl">Loading Employees...</p></div>}
-            {error && <div className="text-center py-10 text-red-500"><p className="text-xl">{error}</p></div>}
-            {!loading && !error && employees.length > 0 ? (
+            {isLoading && employees.length === 0 && <div className="text-center py-10"><p className="text-xl">Loading Employees...</p></div>}
+            {error && <div className="text-center py-10 text-red-500"><p className="text-xl">Failed to load employees. Please try again later.</p></div>}
+            {(!isLoading || employees.length > 0) && !error && employees.length > 0 ? (
                 <>
                     {totalProfiles > 0 && (
                         <div className="flex justify-between items-center mb-4">
@@ -206,7 +183,7 @@ export default function CandidateDatabasePage() {
                         </Pagination>
                     )}
                 </>
-            ) : (!loading && !error && employees.length === 0 && totalProfiles > 0) ? (
+            ) : ((!isLoading || employees.length > 0) && !error && employees.length === 0 && totalProfiles > 0) ? (
                 // This case is for when a filter yields no results on the current page,
                 // but there are total profiles matching criteria on other pages.
                 <div className="text-center py-10">
@@ -215,7 +192,7 @@ export default function CandidateDatabasePage() {
                         <Button variant="link" onClick={() => handlePageChange(1)}>Go to first page</Button>
                     )}
                 </div>
-            ) : (!loading && !error && employees.length === 0 && totalProfiles === 0) ? (
+            ) : ((!isLoading || employees.length > 0) && !error && employees.length === 0 && totalProfiles === 0) ? (
                 <div className="text-center py-10">
                     <p className="text-xl text-muted-foreground">No employees found matching your criteria.</p>
                 </div>
