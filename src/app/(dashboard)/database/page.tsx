@@ -17,6 +17,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function CandidateDatabasePage() {
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [filters, setFilters] = useState<Filters>({
         skills: '',
         minExperience: 0,
@@ -30,37 +31,34 @@ export default function CandidateDatabasePage() {
         jobTitle: '',
     });
 
-    const [debouncedUrl, setDebouncedUrl] = useState('');
-
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, filters, itemsPerPage]);
+    }, [debouncedSearchTerm, filters, itemsPerPage]);
 
     useEffect(() => {
-        const queryParams = new URLSearchParams();
-        if (searchTerm) queryParams.append('searchTerm', searchTerm);
-        if (filters.skills) queryParams.append('skills', filters.skills);
-        if (filters.minExperience > 0) queryParams.append('minExperience', filters.minExperience.toString());
-        if (filters.maxExperience !== null) queryParams.append('maxExperience', filters.maxExperience.toString());
-        if (filters.location) queryParams.append('location', filters.location);
-        if (filters.jobTitle) queryParams.append('jobTitle', filters.jobTitle);
-        if (filters.minSalary > 0) queryParams.append('minSalary', filters.minSalary.toString());
-        if (filters.maxSalary !== null) queryParams.append('maxSalary', filters.maxSalary.toString());
-        if (filters.notice !== null) queryParams.append('notice', filters.notice.toString());
-        if (filters.company) queryParams.append('company', filters.company);
-        if (filters.education) queryParams.append('education', filters.education);
-
-        queryParams.append('page', currentPage.toString());
-        queryParams.append('limit', itemsPerPage.toString());
-
-        const url = `${API_URL}/api/candidates?${queryParams.toString()}`;
-        
         const timeoutId = setTimeout(() => {
-            setDebouncedUrl(url);
+            setDebouncedSearchTerm(searchTerm);
         }, 500);
-
         return () => clearTimeout(timeoutId);
-    }, [currentPage, itemsPerPage, searchTerm, filters]);
+    }, [searchTerm]);
+
+    const queryParams = new URLSearchParams();
+    if (debouncedSearchTerm) queryParams.append('searchTerm', debouncedSearchTerm);
+    if (filters.skills) queryParams.append('skills', filters.skills);
+    if (filters.minExperience > 0) queryParams.append('minExperience', filters.minExperience.toString());
+    if (filters.maxExperience !== null) queryParams.append('maxExperience', filters.maxExperience.toString());
+    if (filters.location) queryParams.append('location', filters.location);
+    if (filters.jobTitle) queryParams.append('jobTitle', filters.jobTitle);
+    if (filters.minSalary > 0) queryParams.append('minSalary', filters.minSalary.toString());
+    if (filters.maxSalary !== null) queryParams.append('maxSalary', filters.maxSalary.toString());
+    if (filters.notice !== null) queryParams.append('notice', filters.notice.toString());
+    if (filters.company) queryParams.append('company', filters.company);
+    if (filters.education) queryParams.append('education', filters.education);
+
+    queryParams.append('page', currentPage.toString());
+    queryParams.append('limit', itemsPerPage.toString());
+
+    const apiUrl = `${API_URL}/api/candidates?${queryParams.toString()}`;
 
     const fetcher = async (url: string) => {
         const token = Cookies.get("access");
@@ -70,7 +68,7 @@ export default function CandidateDatabasePage() {
         return response.data;
     };
 
-    const { data, error, isLoading } = useSWR(debouncedUrl || null, fetcher, { 
+    const { data, error, isLoading } = useSWR(apiUrl, fetcher, { 
         keepPreviousData: true,
         revalidateOnFocus: false 
     });
