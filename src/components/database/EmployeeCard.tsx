@@ -90,31 +90,32 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
           </div>
         </div>
 
-        {/* 4 Cards Section */}
+        {/* Info Cards Section */}
         <div className="flex flex-wrap gap-4 mt-2">
            <InfoCard 
              icon={<Briefcase className="h-5 w-5" />} 
              title="Current Profile" 
              subtitle={
-               <div className="flex flex-wrap items-center gap-1.5">
-                 <span className={!employee.current_company_name ? "text-red-500 font-medium" : ""}>
-                   {employee.current_company_name || "Not specified"}
-                 </span>
-                 <span className="text-slate-300">•</span>
-                 <span className="text-blue-600">{employee.total_experience_years} Yrs</span>
-                 <span className="text-slate-300">•</span>
-                 <span className="text-green-600">{employee.salary} LPA</span>
-               </div>
+               <span className={!employee.current_company_name ? "text-red-500 font-medium" : ""}>
+                 {employee.current_company_name || "Not specified"}
+               </span>
              }
              bgClass="bg-blue-100" 
              textClass="text-blue-600" 
            />
            <InfoCard 
-             icon={<GraduationCap className="h-5 w-5" />} 
+             icon={<Briefcase className="h-5 w-5" />} 
              title="Previous Companies" 
              subtitle={employee.previous_companies_name && Array.isArray(employee.previous_companies_name) && employee.previous_companies_name.length > 0 ? employee.previous_companies_name.join(", ") : (typeof employee.previous_companies_name === 'string' && employee.previous_companies_name ? employee.previous_companies_name : <span className="text-red-500 font-medium">No previous experience listed.</span>)}
              bgClass="bg-purple-100" 
              textClass="text-purple-600" 
+           />
+           <InfoCard 
+             icon={<CalendarDays className="h-5 w-5" />} 
+             title="Total Experience" 
+             subtitle={<span className="text-blue-600 font-bold">{employee.total_experience_years || 0} Yrs</span>}
+             bgClass="bg-sky-100" 
+             textClass="text-sky-600" 
            />
            <InfoCard 
              icon={<GraduationCap className="h-5 w-5" />} 
@@ -122,6 +123,17 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
              subtitle={employee.education && Array.isArray(employee.education) && employee.education.length > 0 ? employee.education.join(", ") : (typeof employee.education === 'string' && employee.education ? employee.education : <span className="text-red-500 font-medium">No Education listed.</span>)}
              bgClass="bg-green-100" 
              textClass="text-green-600" 
+           />
+           <InfoCard 
+             icon={<IndianRupee className="h-5 w-5" />} 
+             title="Current CTC" 
+             subtitle={
+               <span className={!employee.salary || (employee.salary as any) === "None" ? "text-red-500 font-medium" : "text-green-600 font-bold"}>
+                 {!employee.salary || (employee.salary as any) === "None" ? "Not submit by HR" : `${employee.salary} LPA`}
+               </span>
+             }
+             bgClass="bg-emerald-100" 
+             textClass="text-emerald-600" 
            />
            <InfoCard 
              icon={<MapPin className="h-5 w-5" />} 
