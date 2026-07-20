@@ -25,13 +25,13 @@ const IconText: React.FC<{
 }
 
 const InfoCard: React.FC<{ icon: React.ReactNode, title: string, subtitle: React.ReactNode, bgClass: string, textClass: string }> = ({ icon, title, subtitle, bgClass, textClass }) => (
-  <div className="flex items-center p-4 rounded-2xl border border-slate-100 bg-slate-50/80 flex-1 min-w-[200px] hover:bg-slate-100 transition-colors">
-    <div className={`p-3 rounded-full ${bgClass} ${textClass} mr-4`}>
+  <div className="flex items-start flex-1 min-w-[180px] p-2 hover:bg-slate-50 rounded-xl transition-colors">
+    <div className={`p-2 rounded-lg ${bgClass} ${textClass} mr-3 shrink-0`}>
       {icon}
     </div>
     <div className="flex flex-col">
-      <span className="text-xs font-bold text-slate-800 mb-1">{title}</span>
-      <span className="text-sm font-bold text-slate-600 line-clamp-2 leading-tight">{subtitle}</span>
+      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{title}</span>
+      <span className="text-[14px] font-bold text-slate-800 leading-snug">{subtitle}</span>
     </div>
   </div>
 )
