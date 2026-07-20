@@ -132,7 +132,7 @@ const PunchCard: React.FC<{
     const strokeDashoffset = circumference - (Math.min(elapsedTime / maxTime, 1) * circumference);
 
     return (
-        <div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-0 mb-6">
+        <div className="relative w-full max-w-xs mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-0 mb-6">
             
             <div className="flex justify-center pt-5 relative z-10">
                 <div className="relative">
@@ -155,21 +155,21 @@ const PunchCard: React.FC<{
             {/* Bottom Half: Details & Controls */}
             <div className="px-5 pb-5 pt-4">
                 {/* Time Elapsed Box */}
-                <div className="bg-[#F5F5F0] rounded-2xl p-3.5 sm:p-4 mb-4 border border-[#E8E8E3] relative flex flex-wrap justify-between items-center gap-3 shadow-xs overflow-hidden">
+                <div className="bg-[#F5F5F0] rounded-2xl p-3 sm:p-3.5 mb-4 border border-[#E8E8E3] relative flex flex-wrap justify-between items-center gap-3 shadow-xs overflow-hidden">
                     <div className="flex-1 min-w-[130px]">
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">
                             {!isPunchedIn && hasPunchedOut ? "Today Work Hour" : "Time Elapsed"}
                         </p>
-                        <p className="text-2xl xl:text-3xl font-extrabold tracking-wider text-slate-800 font-sans whitespace-nowrap">
+                        <p className="text-xl xl:text-2xl font-extrabold tracking-wider text-slate-800 font-sans whitespace-nowrap">
                             {!isPunchedIn && hasPunchedOut ? formatTime(workedSeconds ?? 0) : formatTime(elapsedTime)}
                         </p>
                     </div>
                     
-                    <div className="text-left bg-white border border-slate-200/70 px-3 py-2 rounded-xl shadow-sm shrink-0">
+                    <div className="text-left bg-white border border-slate-200/70 px-2.5 py-1.5 rounded-xl shadow-sm shrink-0">
                         <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                             {isPunchedIn ? "Punched In At" : hasPunchedOut ? "Punched Out At" : "Punched At"}
                         </p>
-                        <p className="text-xs sm:text-sm font-bold text-slate-700 mt-0.5">
+                        <p className="text-xs font-bold text-slate-700 mt-0.5">
                             {punchTime || "--:--"}
                         </p>
                     </div>
