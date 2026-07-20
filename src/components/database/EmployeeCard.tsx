@@ -56,6 +56,7 @@ export function EmployeeCard({ employee, onDelete }: EmployeeCardProps) {
   }
 
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(false);
 
   const handleDelete = async () => {
     if (confirm(`Are you sure you want to delete ${employee.name}?`)) {
@@ -66,7 +67,7 @@ export function EmployeeCard({ employee, onDelete }: EmployeeCardProps) {
         if (onDelete) {
           onDelete(employee.id);
         } else {
-          window.location.reload();
+          setIsDeleted(true);
         }
       } catch (err) {
         toast.error("Failed to delete resume");
@@ -74,6 +75,10 @@ export function EmployeeCard({ employee, onDelete }: EmployeeCardProps) {
       }
     }
   };
+
+  if (isDeleted) {
+    return null;
+  }
 
   return (
     <Card className="w-full mt-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col bg-white overflow-hidden hover:shadow-md transition-all group">
