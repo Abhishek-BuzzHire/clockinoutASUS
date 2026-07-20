@@ -94,7 +94,7 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
         <div className="flex flex-wrap gap-4 mt-2">
            <InfoCard 
              icon={<Briefcase className="h-5 w-5" />} 
-             title="Current Profile" 
+             title="Current Company" 
              subtitle={
                <span className={!employee.current_company_name ? "text-red-500 font-medium" : ""}>
                  {employee.current_company_name || "Not specified"}
@@ -102,13 +102,6 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
              }
              bgClass="bg-blue-100" 
              textClass="text-blue-600" 
-           />
-           <InfoCard 
-             icon={<Briefcase className="h-5 w-5" />} 
-             title="Previous Companies" 
-             subtitle={employee.previous_companies_name && Array.isArray(employee.previous_companies_name) && employee.previous_companies_name.length > 0 ? employee.previous_companies_name.join(", ") : (typeof employee.previous_companies_name === 'string' && employee.previous_companies_name ? employee.previous_companies_name : <span className="text-red-500 font-medium">No previous experience listed.</span>)}
-             bgClass="bg-purple-100" 
-             textClass="text-purple-600" 
            />
            <InfoCard 
              icon={<CalendarDays className="h-5 w-5" />} 
