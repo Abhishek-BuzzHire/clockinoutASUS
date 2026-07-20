@@ -130,14 +130,8 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
            />
            <InfoCard 
              icon={<MapPin className="h-5 w-5" />} 
-             title="Location & Availability" 
-             subtitle={
-               <div className="flex flex-wrap items-center gap-1.5">
-                 <span>{employee.location}</span>
-                 <span className="text-slate-300">•</span>
-                 <span className="text-amber-600">Notice: {employee.notice} days</span>
-               </div>
-             }
+             title="Location" 
+             subtitle={employee.location || "Not specified"}
              bgClass="bg-amber-100" 
              textClass="text-amber-600" 
            />
