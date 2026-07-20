@@ -1,13 +1,16 @@
 import type { CandidateRec } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Briefcase, MapPin, IndianRupee, CalendarDays, File, Eye, Phone, Mail, GraduationCap, ChevronDown, ChevronUp } from 'lucide-react';
+import { Briefcase, MapPin, IndianRupee, CalendarDays, File, Eye, Phone, Mail, GraduationCap, ChevronDown, ChevronUp, Trash2, Loader2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
+import { apiService } from '@/utils/apiService';
+import toast from 'react-hot-toast';
 
 interface EmployeeCardProps {
   employee: CandidateRec;
+  onDelete?: (id: number) => void;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -52,6 +55,26 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   }
 
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (confirm(`Are you sure you want to delete ${employee.name}?`)) {
+      setIsDeleting(true);
+      try {
+        await apiService.deleteCandidate(employee.id);
+        toast.success("Resume deleted successfully");
+        if (onDelete) {
+          onDelete(employee.id);
+        } else {
+          window.location.reload();
+        }
+      } catch (err) {
+        toast.error("Failed to delete resume");
+        setIsDeleting(false);
+      }
+    }
+  };
+
   return (
     <Card className="w-full mt-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col bg-white overflow-hidden hover:shadow-md transition-all">
       <div className="p-6 flex flex-col gap-6">
@@ -61,8 +84,19 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
             <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl shrink-0 border-2 border-blue-50">
               {getInitials(employee.name)}
             </div>
-            <div className="flex flex-col">
-              <h2 className="text-xl font-bold text-slate-800 uppercase tracking-tight">{employee.name}</h2>
+            <div className="flex flex-col relative group">
+              <h2 className="text-xl font-bold text-slate-800 uppercase tracking-tight flex items-center gap-2">
+                {employee.name}
+                <Button 
+                   variant="ghost" 
+                   size="icon" 
+                   className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full"
+                   onClick={handleDelete}
+                   disabled={isDeleting}
+                >
+                  {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                </Button>
+              </h2>
               <p className="text-blue-600 font-semibold text-sm">{employee.job_title}</p>
             </div>
           </div>

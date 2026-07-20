@@ -33,6 +33,14 @@ export const apiService = {
             throw error;
         }
     },
+    async deleteCandidate(id: number): Promise<void> {
+        try {
+            await axios.delete(`${API_URL}/api/candidates/${id}/`, { headers: { Authorization: `Bearer ${token}` } });
+        } catch (error) {
+            console.error('Error deleting Candidate:', error);
+            throw error;
+        }
+    },
 }
 
 const token = Cookies.get("access");
