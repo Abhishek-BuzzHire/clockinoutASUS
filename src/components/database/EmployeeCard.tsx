@@ -183,14 +183,6 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
               </div>
             </div>
 
-            <div className="flex items-start gap-2.5">
-              <div className="flex flex-col">
-                <span className="text-[11px] font-semibold text-slate-500 mb-0.5">Candidate ID</span>
-                <span className="text-[13px] font-bold text-slate-800">
-                  {employee.id ? `BZC-2026-${String(employee.id).padStart(6, '0')}` : "N/A"}
-                </span>
-              </div>
-            </div>
           </div>
 
         </div>
