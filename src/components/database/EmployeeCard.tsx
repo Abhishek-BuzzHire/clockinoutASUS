@@ -39,7 +39,7 @@ const InfoCard: React.FC<{ icon: React.ReactNode, title: string, subtitle: React
   </div>
 )
 
-export function EmployeeCard({ employee }: EmployeeCardProps) {
+export function EmployeeCard({ employee, onDelete }: EmployeeCardProps) {
   const [showAllSkills, setShowAllSkills] = useState(false);
   const getCvUrl = ():string | null => {
     if (!employee.cv_url) return null;
