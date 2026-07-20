@@ -78,27 +78,24 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
              </div>
           </div>
           
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold h-11">
-            View Full Profile {'>'}
-          </Button>
+          {cvDownloadUrl ? (
+            <Button asChild className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold h-11">
+              <a href={cvDownloadUrl} target='_blank' rel="noopener noreferrer">
+                <Eye className='mr-2 h-4 w-4' /> Preview CV
+              </a>
+            </Button>
+          ) : (
+            <Button className="w-full bg-slate-100 hover:bg-slate-200 text-slate-400 rounded-full font-semibold h-11 cursor-not-allowed" disabled>
+              <Eye className='mr-2 h-4 w-4' /> CV Not Available
+            </Button>
+          )}
         </div>
 
         {/* Right Column */}
         <div className="flex-1 flex flex-col min-w-0">
           
           {/* Top Actions Row */}
-          <div className="flex justify-end items-center gap-2 mb-4">
-             {cvDownloadUrl ? (
-                <Button asChild variant="outline" className="rounded-full border-blue-200 text-blue-600 hover:bg-blue-50 font-semibold h-9 px-4 text-xs">
-                  <a href={cvDownloadUrl} target='_blank' rel="noopener noreferrer">
-                    <Eye className='mr-1.5 h-3.5 w-3.5' /> Preview CV
-                  </a>
-                </Button>
-              ) : (
-                 <Button variant="outline" className="rounded-full border-slate-200 text-slate-400 font-semibold h-9 px-4 text-xs" disabled>
-                   <Eye className='mr-1.5 h-3.5 w-3.5' /> CV Not Available
-                 </Button>
-              )}
+          <div className="flex justify-end items-center mb-4">
               <Button variant="ghost" size="icon" className="rounded-full h-9 w-9 text-slate-500 hover:bg-slate-100">
                 <MoreVertical className="h-4 w-4" />
               </Button>
