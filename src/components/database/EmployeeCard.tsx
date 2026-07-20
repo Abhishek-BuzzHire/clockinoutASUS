@@ -37,7 +37,7 @@ const InfoCard: React.FC<{ icon: React.ReactNode, title: string, subtitle: React
 )
 
 export function EmployeeCard({ employee }: EmployeeCardProps) {
-
+  const [showAllSkills, setShowAllSkills] = useState(false);
   const getCvUrl = ():string | null => {
     if (!employee.cv_url) return null;
     if(/^https?:\/\//i.test(employee.cv_url)) {
@@ -143,12 +143,28 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
              <h3 className="font-bold text-slate-800 text-sm">Skills ({employee.skills.length})</h3>
            </div>
            <div className="flex flex-wrap gap-2.5">
-             {employee.skills.map((skill) => (
+             {(showAllSkills ? employee.skills : employee.skills.slice(0, 8)).map((skill) => (
                <div key={skill} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-800 rounded-full text-xs font-semibold border border-slate-200 hover:bg-slate-200 transition-colors cursor-default">
                  <div className="h-1.5 w-1.5 rounded-full bg-slate-600"></div>
                  {skill}
                </div>
              ))}
+             {!showAllSkills && employee.skills.length > 8 && (
+               <button 
+                 onClick={() => setShowAllSkills(true)}
+                 className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
+               >
+                 + {employee.skills.length - 8} more...
+               </button>
+             )}
+             {showAllSkills && employee.skills.length > 8 && (
+               <button 
+                 onClick={() => setShowAllSkills(false)}
+                 className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
+               >
+                 Show less
+               </button>
+             )}
            </div>
         </div>
       </div>
