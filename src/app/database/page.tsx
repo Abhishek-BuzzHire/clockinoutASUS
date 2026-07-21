@@ -110,15 +110,15 @@ export default function CandidateDatabasePage() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4 flex justify-between items-center">
-                    <div className="text-[15px] text-gray-700">
-                        <span className="font-bold text-blue-600">✨ AI found</span> <span className="font-bold text-gray-800">{totalProfiles} profiles</span> {searchTerm ? `for ${searchTerm}` : ''}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4 flex justify-between items-center h-16">
+                    <div className="text-[14px] text-gray-700">
+                        <span className="font-bold text-blue-600 mr-1">✨ AI found</span> <span className="font-bold text-gray-900">{totalProfiles} profiles</span> {searchTerm ? `for ${searchTerm}` : ''}
                     </div>
                     <button 
                         onClick={() => setShowDuplicateResolver(true)} 
-                        className="px-3 py-1.5 text-sm border border-gray-300 rounded-md font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm"
+                        className="px-4 py-2 text-[14px] border border-blue-200 bg-blue-50 text-blue-700 rounded-lg font-semibold hover:bg-blue-100 hover:border-blue-300 transition-all flex items-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
                     >
-                        <CopyX className="w-4 h-4" /> Resolve Duplicates
+                        <CopyX className="w-[18px] h-[18px]" /> Resolve Duplicates
                     </button>
                 </div>
 

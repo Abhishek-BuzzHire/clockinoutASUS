@@ -45,28 +45,37 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
         setFilters(prev => ({ ...prev, [name]: value === '' ? null : Number(value) }));
     };
 
+    const clearFilters = () => {
+        setFilters({ skills: '', minExperience: 0, maxExperience: null, education: '', minSalary: 0, maxSalary: null, company: '', notice: null, location: '', jobTitle: '' });
+    };
+
     return (
-        <div className="w-[300px] bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden shrink-0 hidden lg:block sticky top-20 h-[calc(100vh-100px)] overflow-y-auto custom-scrollbar">
+        <div className="w-[300px] bg-white rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-gray-200 overflow-hidden shrink-0 hidden lg:flex flex-col sticky top-20 h-[calc(100vh-100px)]">
             {/* Top Checkboxes */}
-            <div className="p-4 border-b border-gray-100 flex items-center gap-3">
+            <div className="p-4 border-b border-gray-100 flex items-center gap-3 shrink-0">
                 <input type="checkbox" id="hideProfiles" className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
-                <label htmlFor="hideProfiles" className="text-[15px] text-slate-700 cursor-pointer select-none">Hide Profiles</label>
+                <label htmlFor="hideProfiles" className="text-[14px] text-slate-700 cursor-pointer select-none">Hide Profiles</label>
             </div>
 
             {/* Filter Header */}
-            <div className="p-4 border-b border-gray-100 flex items-center gap-2 text-slate-800 font-bold text-lg">
-                <Filter size={18} className="text-slate-500" />
-                Filters
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2 text-slate-800 font-bold text-[17px]">
+                    <Filter size={18} className="text-slate-500" />
+                    Filters
+                </div>
+                <button onClick={clearFilters} className="text-[13px] font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                    Clear all
+                </button>
             </div>
 
             {/* Premium Institute Checkbox */}
-            <div className="p-4 border-b border-gray-100 flex items-center gap-3">
+            <div className="p-4 border-b border-gray-100 flex items-center gap-3 shrink-0">
                 <input type="checkbox" id="premiumInstitute" className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
-                <label htmlFor="premiumInstitute" className="text-[15px] text-slate-700 cursor-pointer select-none">Premium Institute Candidates</label>
+                <label htmlFor="premiumInstitute" className="text-[14px] text-slate-700 cursor-pointer select-none">Premium Institute Candidates</label>
             </div>
 
-            {/* Accordions */}
-            <div className="flex flex-col">
+            {/* Accordions Container */}
+            <div className="flex flex-col flex-1 overflow-y-auto custom-scrollbar">
                 <AccordionItem title="Keywords" defaultOpen>
                     <input
                         type="text"
@@ -74,7 +83,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                         value={filters.skills}
                         onChange={handleInputChange}
                         placeholder="e.g. React, Java, Sales"
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                     />
                 </AccordionItem>
 
@@ -85,7 +94,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                         value={filters.company}
                         onChange={handleInputChange}
                         placeholder="e.g. Amazon, Google"
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                     />
                 </AccordionItem>
 
@@ -96,50 +105,50 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                         value={filters.location}
                         onChange={handleInputChange}
                         placeholder="e.g. Mumbai, Delhi"
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                     />
                 </AccordionItem>
 
                 <AccordionItem title="Experience (Years)" defaultOpen>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         <input
                             type="number"
                             name="minExperience"
                             value={filters.minExperience === 0 ? '' : filters.minExperience}
                             onChange={(e) => setFilters(p => ({...p, minExperience: Number(e.target.value)}))}
                             placeholder="Min"
-                            className="w-full border border-gray-300 rounded-md px-2 py-2 text-sm text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full border border-gray-300 rounded-md px-2 py-2 text-[13px] text-slate-700 text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                         />
-                        <span className="text-gray-400 text-sm">to</span>
+                        <span className="text-slate-400 text-xs font-medium">to</span>
                         <input
                             type="number"
                             name="maxExperience"
                             value={filters.maxExperience ?? ''}
                             onChange={handleNumberChange}
                             placeholder="Max"
-                            className="w-full border border-gray-300 rounded-md px-2 py-2 text-sm text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full border border-gray-300 rounded-md px-2 py-2 text-[13px] text-slate-700 text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                         />
                     </div>
                 </AccordionItem>
 
                 <AccordionItem title="Salary (INR-Lacs)">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         <input
                             type="number"
                             name="minSalary"
                             value={filters.minSalary === 0 ? '' : filters.minSalary}
                             onChange={(e) => setFilters(p => ({...p, minSalary: Number(e.target.value)}))}
                             placeholder="Min"
-                            className="w-full border border-gray-300 rounded-md px-2 py-2 text-sm text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full border border-gray-300 rounded-md px-2 py-2 text-[13px] text-slate-700 text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                         />
-                        <span className="text-gray-400 text-sm">to</span>
+                        <span className="text-slate-400 text-xs font-medium">to</span>
                         <input
                             type="number"
                             name="maxSalary"
                             value={filters.maxSalary ?? ''}
                             onChange={handleNumberChange}
                             placeholder="Max"
-                            className="w-full border border-gray-300 rounded-md px-2 py-2 text-sm text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full border border-gray-300 rounded-md px-2 py-2 text-[13px] text-slate-700 text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                         />
                     </div>
                 </AccordionItem>
@@ -151,42 +160,8 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                         value={filters.jobTitle}
                         onChange={handleInputChange}
                         placeholder="e.g. Software Engineer"
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                     />
-                </AccordionItem>
-
-                <AccordionItem title="Department and Role">
-                    <div className="text-sm text-gray-500 py-2">Select department...</div>
-                </AccordionItem>
-
-                <AccordionItem title="Industry">
-                    <div className="text-sm text-gray-500 py-2">Select industry...</div>
-                </AccordionItem>
-
-                <AccordionItem 
-                    title="Diversity hiring" 
-                    badge={<span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">New Add-on</span>}
-                >
-                    <div className="text-sm text-gray-500 py-2">Select diversity filters...</div>
-                </AccordionItem>
-
-                <AccordionItem title="Notice period">
-                    <select
-                        name="notice"
-                        value={filters.notice ?? ''}
-                        onChange={(e) => setFilters(p => ({...p, notice: e.target.value ? Number(e.target.value) : null}))}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                        <option value="">Any</option>
-                        <option value="15">15 Days or less</option>
-                        <option value="30">1 Month</option>
-                        <option value="60">2 Months</option>
-                        <option value="90">3 Months</option>
-                    </select>
-                </AccordionItem>
-
-                <AccordionItem title="Age">
-                    <div className="text-sm text-gray-500 py-2">Select age range...</div>
                 </AccordionItem>
 
                 <AccordionItem title="Degree/Course">
@@ -196,22 +171,9 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                         value={filters.education}
                         onChange={handleInputChange}
                         placeholder="e.g. B.Tech, MBA"
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                     />
                 </AccordionItem>
-                
-                <AccordionItem title="College name">
-                    <div className="text-sm text-gray-500 py-2">Enter college name...</div>
-                </AccordionItem>
-
-                <AccordionItem title="Year of degree completion">
-                    <div className="text-sm text-gray-500 py-2">Select year...</div>
-                </AccordionItem>
-                
-                <AccordionItem title="Employment type">
-                    <div className="text-sm text-gray-500 py-2">Select type...</div>
-                </AccordionItem>
-
             </div>
         </div>
     );
