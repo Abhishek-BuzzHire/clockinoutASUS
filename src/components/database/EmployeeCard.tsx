@@ -45,7 +45,7 @@ export function EmployeeCard({ employee, searchKeywords = [] }: EmployeeCardProp
     if (!text) return text;
     if (!searchKeywords.length) return text;
     const escapedKeywords = searchKeywords.map(kw => kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-    const regex = new RegExp(\`(\${escapedKeywords.join('|')})\`, 'gi');
+    const regex = new RegExp(`(${escapedKeywords.join('|')})`, 'gi');
     const parts = text.split(regex);
     return parts.map((part, i) => 
       regex.test(part) ? <mark key={i} className="bg-yellow-200 text-yellow-900 rounded-[2px] px-0.5 font-medium bg-opacity-80">{part}</mark> : part
@@ -54,10 +54,10 @@ export function EmployeeCard({ employee, searchKeywords = [] }: EmployeeCardProp
 
   return (
     <Card className="w-full mt-4 rounded-2xl shadow-sm border border-slate-200 bg-white overflow-hidden p-5 pb-0 transition-all hover:shadow-md">
-      <style dangerouslySetInnerHTML={{__html: \`
+      <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
         .font-outfit { font-family: 'Outfit', sans-serif; }
-      \`}} />
+      `}} />
       <div className="flex flex-col md:flex-row gap-6 mb-4">
         
         {/* Left Column */}
