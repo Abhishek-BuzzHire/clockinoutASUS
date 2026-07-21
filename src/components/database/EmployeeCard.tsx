@@ -73,7 +73,7 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
               </div>
               <div className="flex items-center gap-2.5 text-[12px] text-slate-500 font-medium">
                 <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
-                Added: <span className="text-slate-800 font-semibold">{format(new Date(employee.created_at), "dd MMM yyyy")}</span>
+                Added: <span className="text-slate-800 font-semibold">{format(new Date(employee.created_at), "dd MMM yyyy, hh:mm a")}</span>
               </div>
             </div>
           </div>
