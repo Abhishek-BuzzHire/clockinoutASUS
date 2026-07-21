@@ -41,12 +41,23 @@ export function EmployeeCard({ employee, searchKeywords = [] }: EmployeeCardProp
     return searchKeywords.some(keyword => lowerSkill.includes(keyword.toLowerCase()));
   };
 
+  const highlightMatch = (text: string | undefined | null) => {
+    if (!text) return text;
+    if (!searchKeywords.length) return text;
+    const escapedKeywords = searchKeywords.map(kw => kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const regex = new RegExp(\`(\${escapedKeywords.join('|')})\`, 'gi');
+    const parts = text.split(regex);
+    return parts.map((part, i) => 
+      regex.test(part) ? <mark key={i} className="bg-yellow-200 text-yellow-900 rounded-[2px] px-0.5 font-medium bg-opacity-80">{part}</mark> : part
+    );
+  };
+
   return (
     <Card className="w-full mt-4 rounded-2xl shadow-sm border border-slate-200 bg-white overflow-hidden p-5 pb-0 transition-all hover:shadow-md">
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{__html: \`
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
         .font-outfit { font-family: 'Outfit', sans-serif; }
-      `}} />
+      \`}} />
       <div className="flex flex-col md:flex-row gap-6 mb-4">
         
         {/* Left Column */}
@@ -54,9 +65,9 @@ export function EmployeeCard({ employee, searchKeywords = [] }: EmployeeCardProp
           <div className="flex flex-col w-full">
 
             <h2 className="text-2xl font-semibold text-slate-900 tracking-tight leading-tight mb-1 truncate font-outfit" title={employee.name}>
-              {employee.name}
+              {highlightMatch(employee.name)}
             </h2>
-            <p className="text-blue-600 font-bold text-sm mb-5 truncate" title={employee.job_title}>{employee.job_title}</p>
+            <p className="text-blue-600 font-bold text-sm mb-5 truncate" title={employee.job_title}>{highlightMatch(employee.job_title)}</p>
             
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-3 text-slate-600 text-[13px] font-medium">
