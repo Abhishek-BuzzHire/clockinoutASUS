@@ -79,7 +79,12 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
   });
 }
 
-import api from '@/lib/api';
+const token = Cookies.get("access");
+
+const api = axios.create({
+    baseURL: apiUrl,
+    headers: { Authorization: `Bearer ${token}` }
+});
 
 export default function ProfilePage() {
     const [profile, setProfile] = useState<ProfileData | null>(null);
