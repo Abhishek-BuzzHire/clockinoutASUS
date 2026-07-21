@@ -1234,13 +1234,7 @@ const EmployeeAttendancePage = () => {
         }
     }, [showLocationPopup]);
 
-    // Auto-dismiss out of range popup after 400ms
-    useEffect(() => {
-        if (showOutOfRangePopup) {
-            const timer = setTimeout(() => setShowOutOfRangePopup(false), 400);
-            return () => clearTimeout(timer);
-        }
-    }, [showOutOfRangePopup]);
+    // Removed auto-dismiss out of range popup as per user request (must be manually closed)
 
     // set initial elapsed seconds when attendanceStatus changes
     useEffect(() => {
@@ -1748,27 +1742,31 @@ const EmployeeAttendancePage = () => {
                 </div>
             )}
 
-            {/* FULLSCREEN OUT OF RANGE POPUP - tap anywhere to dismiss, auto-dismiss in 400ms */}
+            {/* FULLSCREEN OUT OF RANGE POPUP - Zepto Style */}
             {showOutOfRangePopup && (
                 <div
-                    className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50"
-                    onClick={() => setShowOutOfRangePopup(false)}
+                    className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-sm"
                 >
-                    <div className="bg-white rounded-3xl p-8 mx-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center relative">
-                        {/* Cross button */}
-                        <button
-                            onClick={(e) => { e.stopPropagation(); setShowOutOfRangePopup(false); }}
-                            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </button>
-                        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-5">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                        </div>
-                        <h2 className="text-xl font-bold text-slate-800 mb-2">Out of Range</h2>
-                        <p className="text-sm text-slate-500 leading-relaxed">
-                            {outOfRangeMessage || "You are outside the allowed punch-in range. Please move closer to the office."}
-                        </p>
+                    {/* Top Right Screen Close Button (Zepto style) */}
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setShowOutOfRangePopup(false); }}
+                        className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-black/80 hover:bg-black text-white transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+
+                    <div className="bg-[#FFF6F0] rounded-[28px] p-8 mx-6 max-w-[280px] w-full shadow-[0_10px_40px_rgba(240,130,80,0.6)] border-[4px] border-[#F28C54] flex flex-col items-center text-center relative animate-in zoom-in-95 duration-200">
+                        {/* Bunny Image */}
+                        <img 
+                            src="/out-of-range-bunny.png" 
+                            alt="Out of Range" 
+                            className="w-[140px] h-[140px] object-contain mb-4 mt-2"
+                        />
+                        
+                        {/* Custom Message */}
+                        <h2 className="text-[20px] font-bold text-[#4A2B23] leading-snug">
+                            Oh dear! Better<br/>luck next time.
+                        </h2>
                     </div>
                 </div>
             )}
