@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import Cookies from "js-cookie";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { DuplicateResolverModal } from "@/components/database/DuplicateResolverModal";
-import { CopyX, Upload, UserPlus } from "lucide-react";
+import { CopyX, Upload, UserPlus, MoreVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -97,29 +98,41 @@ export default function CandidateDatabasePage() {
         <div className="flex w-full bg-[#F7F8FA] p-0 md:p-4 gap-4 pb-20">
             <SidebarFilters filters={filters} setFilters={setFilters} />
             <div className="flex-1 flex flex-col min-w-0">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div className="flex-1 w-full max-w-xl">
-                        <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-5 overflow-hidden">
+                    <div className="p-4 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div className="flex-1 w-full max-w-2xl">
+                            <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                            <span className="text-gray-500 hidden lg:inline text-[13px] mr-2">Want to reach candidates using bulk mails?</span>
+                            <Link href="/database/bulk-upload" className="group flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-all shadow-sm text-[14px]">
+                                <Upload className="w-[18px] h-[18px]" />
+                                <span>Upload Resume</span>
+                            </Link>
+                            
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button className="p-2.5 text-gray-500 hover:bg-gray-100 rounded-full transition-colors focus:outline-none">
+                                        <MoreVertical className="w-5 h-5" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48 bg-white rounded-lg shadow-lg border border-gray-100">
+                                    <DropdownMenuItem onClick={() => setShowDuplicateResolver(true)} className="cursor-pointer gap-2 py-2.5 px-3 hover:bg-gray-50">
+                                        <CopyX className="w-4 h-4 text-blue-600" />
+                                        <span className="font-medium text-gray-700">Resolve Duplicates</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0 text-sm">
-                        <span className="text-gray-500 hidden lg:inline">Want to reach candidates using bulk mails?</span>
-                        <Link href="/database/bulk-upload" className="group flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors shadow-sm">
-                            <Upload className="w-4 h-4" />
-                            <span>Upload Resume</span>
-                        </Link>
-                    </div>
-                </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4 flex justify-between items-center h-16">
-                    <div className="text-[14px] text-gray-700">
-                        <span className="font-bold text-blue-600 mr-1">✨ AI found</span> <span className="font-bold text-gray-900">{totalProfiles} profiles</span> {searchTerm ? `for ${searchTerm}` : ''}
+                    <div className="px-5 py-3 bg-gray-50/40 flex items-center h-12">
+                        <div className="text-[13px] text-gray-700">
+                            <span className="font-bold text-blue-600 mr-1.5">✨ AI found</span> 
+                            <span className="font-bold text-gray-900">{totalProfiles} profiles</span> 
+                            {searchTerm ? <span className="text-gray-500 ml-1">for &quot;{searchTerm}&quot;</span> : ''}
+                        </div>
                     </div>
-                    <button 
-                        onClick={() => setShowDuplicateResolver(true)} 
-                        className="px-4 py-2 text-[14px] border border-blue-200 bg-blue-50 text-blue-700 rounded-lg font-semibold hover:bg-blue-100 hover:border-blue-300 transition-all flex items-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
-                    >
-                        <CopyX className="w-[18px] h-[18px]" /> Resolve Duplicates
-                    </button>
                 </div>
 
             {isLoading && employees.length === 0 && <div className="text-center py-10"><p className="text-xl">Loading Employees...</p></div>}
