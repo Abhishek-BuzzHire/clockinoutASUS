@@ -1746,6 +1746,7 @@ const EmployeeAttendancePage = () => {
             {showOutOfRangePopup && (
                 <div
                     className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                    onClick={() => setShowOutOfRangePopup(false)}
                 >
                     {/* Top Right Screen Close Button (Zepto style) */}
                     <button
@@ -1755,7 +1756,10 @@ const EmployeeAttendancePage = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
 
-                    <div className="rounded-[28px] mx-6 max-w-[240px] w-full shadow-[0_10px_40px_rgba(240,130,80,0.6)] border-[4px] border-[#F28C54] flex flex-col items-center overflow-hidden relative animate-in zoom-in-95 duration-200 bg-white">
+                    <div 
+                        className="rounded-[28px] mx-6 max-w-[240px] w-full shadow-[0_10px_40px_rgba(240,130,80,0.6)] border-[4px] border-[#F28C54] flex flex-col items-center overflow-hidden relative animate-in zoom-in-95 duration-200 bg-white"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         {/* Bunny Image filling the popup */}
                         <img 
                             src="/out-of-range-bunny.png" 
