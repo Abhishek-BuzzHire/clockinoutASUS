@@ -75,17 +75,28 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
                 <span className="truncate" title={employee.email}>{employee.email}</span>
               </div>
             </div>
+            
+            <div className="mt-5 pt-4 border-t border-slate-100 w-full flex flex-col gap-2.5">
+              <div className="flex items-center gap-2.5 text-[12px] text-slate-500 font-medium">
+                <UserCircle2 className="h-3.5 w-3.5 text-slate-400" />
+                Source: <span className="text-slate-800 font-bold">{employee.source}</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-[12px] text-slate-500 font-medium">
+                <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
+                Added: <span className="text-slate-800 font-semibold">{format(new Date(employee.created_at), "dd MMM yyyy")}</span>
+              </div>
+            </div>
           </div>
           
-          <div className="mt-6 w-full pt-1">
+          <div className="mt-6 w-full">
             {cvDownloadUrl ? (
-              <Button asChild className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold h-10 transition-colors shadow-sm">
+              <Button asChild variant="outline" className="w-full bg-blue-50/50 hover:bg-blue-100 border border-blue-100 text-blue-700 hover:text-blue-800 rounded-xl font-semibold h-10 transition-all shadow-sm">
                 <a href={cvDownloadUrl} target='_blank' rel="noopener noreferrer">
                   <Eye className='mr-2 h-4 w-4' /> Preview CV
                 </a>
               </Button>
             ) : (
-              <Button className="w-full bg-slate-100 hover:bg-slate-200 text-slate-400 rounded-xl font-semibold h-10 cursor-not-allowed" disabled>
+              <Button variant="outline" className="w-full bg-slate-50 text-slate-400 border border-slate-200 rounded-xl font-semibold h-10 cursor-not-allowed" disabled>
                 <Eye className='mr-2 h-4 w-4' /> CV Not Available
               </Button>
             )}
@@ -158,24 +169,6 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
              </div>
           </div>
 
-        </div>
-      </div>
-
-      {/* Footer Section */}
-      <div className="pt-3 pb-3 border-t border-slate-100 flex flex-wrap gap-4 items-center justify-between -mx-1">
-        <div className="flex items-center gap-2">
-          <div className="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
-            <UserCircle2 className="h-3.5 w-3.5 text-slate-500" />
-          </div>
-          <div className="text-[12px]">
-            <span className="text-slate-500 font-medium mr-1">Source by</span>
-            <span className="text-slate-800 font-bold">{employee.source}</span>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-1.5 text-slate-500 text-[11px] font-semibold bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
-          <CalendarDays className="h-3.5 w-3.5" />
-          <span>{format(new Date(employee.created_at), "dd MMM yyyy, hh:mm a")}</span>
         </div>
       </div>
     </Card>
