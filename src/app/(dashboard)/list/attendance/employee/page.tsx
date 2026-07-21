@@ -1755,18 +1755,13 @@ const EmployeeAttendancePage = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
 
-                    <div className="bg-[#FFF6F0] rounded-[28px] p-8 mx-6 max-w-[280px] w-full shadow-[0_10px_40px_rgba(240,130,80,0.6)] border-[4px] border-[#F28C54] flex flex-col items-center text-center relative animate-in zoom-in-95 duration-200">
-                        {/* Bunny Image */}
+                    <div className="rounded-[28px] mx-6 max-w-[280px] w-full shadow-[0_10px_40px_rgba(240,130,80,0.6)] border-[4px] border-[#F28C54] flex flex-col items-center overflow-hidden relative animate-in zoom-in-95 duration-200 bg-white">
+                        {/* Bunny Image filling the popup */}
                         <img 
                             src="/out-of-range-bunny.png" 
                             alt="Out of Range" 
-                            className="w-[140px] h-[140px] object-contain mb-4 mt-2"
+                            className="w-full h-auto object-cover"
                         />
-                        
-                        {/* Custom Message */}
-                        <h2 className="text-[20px] font-bold text-[#4A2B23] leading-snug">
-                            Oh dear! Better<br/>luck next time.
-                        </h2>
                     </div>
                 </div>
             )}
