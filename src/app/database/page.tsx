@@ -117,9 +117,8 @@ export default function CandidateDatabasePage() {
                                     </button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-48 bg-white rounded-lg shadow-lg border border-gray-100">
-                                    <DropdownMenuItem onClick={() => setShowDuplicateResolver(true)} className="cursor-pointer gap-2 py-2.5 px-3 hover:bg-gray-50">
-                                        <CopyX className="w-4 h-4 text-blue-600" />
-                                        <span className="font-medium text-gray-700">Resolve Duplicates</span>
+                                    <DropdownMenuItem onClick={() => setShowDuplicateResolver(true)} className="cursor-pointer py-2.5 px-3 hover:bg-gray-50">
+                                        <span className="font-medium text-gray-700">Find Duplicate</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -128,7 +127,7 @@ export default function CandidateDatabasePage() {
 
                     <div className="px-5 py-3 bg-gray-50/40 flex items-center h-12">
                         <div className="text-[13px] text-gray-700">
-                            <span className="font-bold text-blue-600 mr-1.5">✨ AI found</span> 
+                            <span className="font-bold text-blue-600 mr-1.5">AI found</span> 
                             <span className="font-bold text-gray-900">{totalProfiles} profiles</span> 
                             {searchTerm ? <span className="text-gray-500 ml-1">for &quot;{searchTerm}&quot;</span> : ''}
                         </div>
