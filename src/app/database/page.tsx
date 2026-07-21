@@ -124,11 +124,13 @@ export default function CandidateDatabasePage() {
                         </div>
                     </div>
 
-                    <div className="px-5 py-3 bg-gray-50/40 flex items-center h-12">
-                        <div className="text-[13px] text-gray-700">
-                            <span className="font-bold text-blue-600 mr-1.5">AI found</span> 
-                            <span className="font-bold text-gray-900">{totalProfiles} profiles</span> 
-                            {searchTerm ? <span className="text-gray-500 ml-1">for &quot;{searchTerm}&quot;</span> : ''}
+                    <div className="px-5 py-3 bg-gray-50/40 flex items-center border-t border-gray-100">
+                        <div className="flex items-center text-[13px]">
+                            <span className="font-semibold text-gray-600 mr-2">Total Candidates:</span> 
+                            <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                {totalProfiles.toLocaleString()}
+                            </span>
+                            {searchTerm ? <span className="text-gray-500 ml-2">matching &quot;{searchTerm}&quot;</span> : ''}
                         </div>
                     </div>
                 </div>
