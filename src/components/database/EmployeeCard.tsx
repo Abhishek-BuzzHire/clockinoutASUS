@@ -24,7 +24,6 @@ const InfoCard: React.FC<{ icon: React.ReactNode, title: string, subtitle: React
 );
 
 export function EmployeeCard({ employee }: EmployeeCardProps) {
-  const [showAllSkills, setShowAllSkills] = useState(false);
   const getCvUrl = ():string | null => {
     if (!employee.cv_url) return null;
     if(/^https?:\/\//i.test(employee.cv_url)) {
@@ -145,27 +144,11 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
           <div className="flex flex-col gap-2.5 mb-5 flex-1">
              <span className="text-[12px] font-bold text-slate-900 tracking-wide">Skills</span>
              <div className="flex flex-wrap gap-2">
-               {(showAllSkills ? employee.skills : employee.skills.slice(0, 8)).map((skill) => (
+               {employee.skills.map((skill) => (
                  <div key={skill} className="px-3.5 py-1.5 bg-[#F8FAFC] text-slate-700 border border-slate-200 rounded-lg text-[12px] font-semibold hover:bg-slate-100 transition-colors cursor-default">
                    {skill}
                  </div>
                ))}
-               {!showAllSkills && employee.skills.length > 8 && (
-                 <button 
-                   onClick={() => setShowAllSkills(true)}
-                   className="px-3.5 py-1.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg text-[12px] font-bold hover:bg-blue-100 transition-colors cursor-pointer"
-                 >
-                   + {employee.skills.length - 8} more
-                 </button>
-               )}
-               {showAllSkills && employee.skills.length > 8 && (
-                 <button 
-                   onClick={() => setShowAllSkills(false)}
-                   className="px-3.5 py-1.5 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg text-[12px] font-bold hover:bg-slate-100 transition-colors cursor-pointer"
-                 >
-                   Show less
-                 </button>
-               )}
              </div>
           </div>
 
