@@ -45,16 +45,7 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
         {/* Left Column */}
         <div className="w-full md:w-[280px] shrink-0 flex flex-col items-start border-b md:border-b-0 md:border-r border-slate-100 pb-5 md:pb-0 md:pr-6">
           <div className="flex flex-col w-full">
-            <div className="flex items-center justify-between w-full mb-3">
-              <div className="flex items-center gap-1.5">
-                <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Available</span>
-              </div>
-              <Button variant="ghost" size="icon" className="md:hidden rounded-full h-8 w-8 text-slate-400 hover:text-slate-600 hover:bg-slate-100">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </div>
-            
+
             <h2 className="text-2xl font-semibold text-slate-900 tracking-tight leading-tight mb-1 truncate font-outfit" title={employee.name}>
               {employee.name}
             </h2>
@@ -105,12 +96,6 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
         {/* Right Column */}
         <div className="flex-1 flex flex-col min-w-0">
           
-          {/* Top Actions Row - Desktop Only */}
-          <div className="hidden md:flex justify-end items-center mb-2 -mt-2">
-              <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-slate-400 hover:text-slate-600 hover:bg-slate-100">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-          </div>
 
           {/* Info Cards Row */}
           <div className="flex flex-wrap xl:flex-nowrap gap-3 mb-5 mt-1">
