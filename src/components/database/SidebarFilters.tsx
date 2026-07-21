@@ -35,20 +35,31 @@ const AccordionItem = ({ title, children, defaultOpen = false, badge = null }: {
 };
 
 export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
+    const [localFilters, setLocalFilters] = React.useState<Filters>(filters);
+
+    React.useEffect(() => {
+        setLocalFilters(filters);
+    }, [filters]);
+
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFilters(prev => ({ ...prev, [name]: value }));
+        setLocalFilters(prev => ({ ...prev, [name]: value }));
     };
 
     const handleNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFilters(prev => ({ ...prev, [name]: value === '' ? null : Number(value) }));
+        setLocalFilters(prev => ({ ...prev, [name]: value === '' ? null : Number(value) }));
     };
 
     const clearFilters = () => {
-        setFilters({ skills: '', minExperience: 0, maxExperience: null, education: '', minSalary: 0, maxSalary: null, company: '', notice: null, location: '', jobTitle: '' });
+        const empty = { skills: '', minExperience: 0, maxExperience: null, education: '', minSalary: 0, maxSalary: null, company: '', notice: null, location: '', jobTitle: '' };
+        setLocalFilters(empty);
+        setFilters(empty);
     };
 
+    const applySearch = () => {
+        setFilters(localFilters);
+    };
     return (
         <div className="w-[300px] bg-white rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-gray-200 overflow-hidden shrink-0 hidden lg:flex flex-col sticky top-20 h-[calc(100vh-100px)]">
             {/* Top Checkboxes */}
@@ -63,8 +74,18 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                     <Filter size={18} className="text-slate-500" />
                     Filters
                 </div>
-                <button onClick={clearFilters} className="text-[13px] font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                <button onClick={clearFilters} className="text-[13px] font-semibold text-gray-500 hover:text-gray-700 transition-colors">
                     Clear all
+                </button>
+            </div>
+
+            {/* Search / Apply Button */}
+            <div className="p-4 border-b border-gray-100 shrink-0 bg-blue-50/50">
+                <button 
+                    onClick={applySearch} 
+                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-[14px] shadow-[0_2px_4px_rgba(37,99,235,0.2)] transition-all flex justify-center items-center gap-2"
+                >
+                    Apply & Search
                 </button>
             </div>
 
@@ -80,7 +101,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                     <input
                         type="text"
                         name="skills"
-                        value={filters.skills}
+                        value={localFilters.skills}
                         onChange={handleInputChange}
                         placeholder="e.g. React, Java, Sales"
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
@@ -91,7 +112,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                     <input
                         type="text"
                         name="company"
-                        value={filters.company}
+                        value={localFilters.company}
                         onChange={handleInputChange}
                         placeholder="e.g. Amazon, Google"
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
@@ -102,7 +123,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                     <input
                         type="text"
                         name="location"
-                        value={filters.location}
+                        value={localFilters.location}
                         onChange={handleInputChange}
                         placeholder="e.g. Mumbai, Delhi"
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
@@ -114,8 +135,8 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                         <input
                             type="number"
                             name="minExperience"
-                            value={filters.minExperience === 0 ? '' : filters.minExperience}
-                            onChange={(e) => setFilters(p => ({...p, minExperience: Number(e.target.value)}))}
+                            value={localFilters.minExperience === 0 ? '' : localFilters.minExperience}
+                            onChange={(e) => setLocalFilters(p => ({...p, minExperience: Number(e.target.value)}))}
                             placeholder="Min"
                             className="w-full border border-gray-300 rounded-md px-2 py-2 text-[13px] text-slate-700 text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                         />
@@ -123,7 +144,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                         <input
                             type="number"
                             name="maxExperience"
-                            value={filters.maxExperience ?? ''}
+                            value={localFilters.maxExperience ?? ''}
                             onChange={handleNumberChange}
                             placeholder="Max"
                             className="w-full border border-gray-300 rounded-md px-2 py-2 text-[13px] text-slate-700 text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
@@ -136,8 +157,8 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                         <input
                             type="number"
                             name="minSalary"
-                            value={filters.minSalary === 0 ? '' : filters.minSalary}
-                            onChange={(e) => setFilters(p => ({...p, minSalary: Number(e.target.value)}))}
+                            value={localFilters.minSalary === 0 ? '' : localFilters.minSalary}
+                            onChange={(e) => setLocalFilters(p => ({...p, minSalary: Number(e.target.value)}))}
                             placeholder="Min"
                             className="w-full border border-gray-300 rounded-md px-2 py-2 text-[13px] text-slate-700 text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                         />
@@ -145,7 +166,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                         <input
                             type="number"
                             name="maxSalary"
-                            value={filters.maxSalary ?? ''}
+                            value={localFilters.maxSalary ?? ''}
                             onChange={handleNumberChange}
                             placeholder="Max"
                             className="w-full border border-gray-300 rounded-md px-2 py-2 text-[13px] text-slate-700 text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
@@ -157,7 +178,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                     <input
                         type="text"
                         name="jobTitle"
-                        value={filters.jobTitle}
+                        value={localFilters.jobTitle}
                         onChange={handleInputChange}
                         placeholder="e.g. Software Engineer"
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
@@ -168,7 +189,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                     <input
                         type="text"
                         name="education"
-                        value={filters.education}
+                        value={localFilters.education}
                         onChange={handleInputChange}
                         placeholder="e.g. B.Tech, MBA"
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
