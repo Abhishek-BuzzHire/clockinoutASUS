@@ -175,7 +175,7 @@ export default function ProfilePage() {
     // Use SWR cached data for instant 0ms load
     useEffect(() => {
         if (employee) {
-            setProfile(employee as ProfileData);
+            setProfile(employee as unknown as ProfileData);
             setLoading(false);
         } else if (!isEmployeeLoading) {
             // If SWR finished and there is no employee
