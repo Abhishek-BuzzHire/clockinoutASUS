@@ -30,11 +30,7 @@ export default function DatabaseLayout({
           <span className="sm:hidden">Back</span>
         </Link>
         
-        <h1 className="absolute left-1/2 -translate-x-1/2 text-lg md:text-xl font-bold text-gray-800 truncate px-4">
-          Candidate Resume Data
-        </h1>
-        
-        <div className="w-24"></div> {/* Spacer to keep title centered */}
+
       </header>
       
       <DatabaseNavbar />
