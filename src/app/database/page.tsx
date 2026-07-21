@@ -104,7 +104,6 @@ export default function CandidateDatabasePage() {
                             <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
-                            <span className="text-gray-500 hidden lg:inline text-[13px] mr-2">Want to reach candidates using bulk mails?</span>
                             <Link href="/database/bulk-upload" className="group flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-all shadow-sm text-[14px]">
                                 <Upload className="w-[18px] h-[18px]" />
                                 <span>Upload Resume</span>
