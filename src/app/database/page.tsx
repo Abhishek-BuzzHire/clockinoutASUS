@@ -6,7 +6,8 @@ import useSWR from 'swr';
 import type { CandidateRec } from "@/lib/types";
 import { EmployeeCard } from "@/components/database/EmployeeCard";
 import { SearchBar } from "@/components/database/SearchBar";
-import { FilterControls, Filters } from "@/components/database/FilterControls";
+import { Filters } from "@/components/database/FilterControls";
+import { SidebarFilters } from "@/components/database/SidebarFilters";
 import { Button } from "@/components/ui/button";
 import Cookies from "js-cookie";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
@@ -93,46 +94,39 @@ export default function CandidateDatabasePage() {
     //    New Code to --> here
 
     return (
-        <div className="mx-2 my-5">
-            <div className="mb-4 flex flex-col md:flex-row items-center gap-4">
-                <div className="w-full flex-1">
-                    <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+        <div className="flex w-full bg-[#F7F8FA] p-0 md:p-4 gap-4 pb-20">
+            <SidebarFilters filters={filters} setFilters={setFilters} />
+            <div className="flex-1 flex flex-col min-w-0">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="flex-1 w-full max-w-xl">
+                        <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0 text-sm">
+                        <span className="text-gray-500 hidden lg:inline">Want to reach candidates using bulk mails?</span>
+                        <Link href="/database/bulk-upload" className="group flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors shadow-sm">
+                            <Upload className="w-4 h-4" />
+                            <span>Upload Resume</span>
+                        </Link>
+                    </div>
                 </div>
-                <div className="hidden md:flex items-center gap-3 shrink-0">
-                    <Link href="/database/bulk-upload" className="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-sky-400 to-sky-500 text-white rounded-xl text-sm font-bold shadow-md shadow-sky-500/20 hover:shadow-lg hover:shadow-sky-500/40 hover:-translate-y-0.5 transition-all duration-300 ring-1 ring-sky-400/50">
-                        <Upload className="w-4 h-4 transition-transform duration-300 group-hover:-translate-y-0.5" />
-                        <span>Upload Resume</span>
-                    </Link>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4 flex justify-between items-center">
+                    <div className="text-[15px] text-gray-700">
+                        <span className="font-bold text-blue-600">✨ AI found</span> <span className="font-bold text-gray-800">{totalProfiles} profiles</span> {searchTerm ? `for ${searchTerm}` : ''}
+                    </div>
+                    <button 
+                        onClick={() => setShowDuplicateResolver(true)} 
+                        className="px-3 py-1.5 text-sm border border-gray-300 rounded-md font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm"
+                    >
+                        <CopyX className="w-4 h-4" /> Resolve Duplicates
+                    </button>
                 </div>
-            </div>
-            <div className="mb-2 space-y-4">
-                <FilterControls
-                    filters={filters}
-                    setFilters={setFilters}
-                // allJobTitle={allJobTitle}
-                // allLocations={allLocations}
-                />
-            </div>
 
             {isLoading && employees.length === 0 && <div className="text-center py-10"><p className="text-xl">Loading Employees...</p></div>}
             {error && <div className="text-center py-10 text-red-500"><p className="text-xl">Failed to load employees. Please try again later.</p></div>}
             {(!isLoading || employees.length > 0) && !error && employees.length > 0 ? (
                 <>
-                    {totalProfiles > 0 && (
-                        <div className="flex justify-between items-center mb-4">
-                            <div className="text-lg font-semibold text-blue-700">
-                                {totalProfiles} Results
-                            </div>
-                            <button 
-                                onClick={() => setShowDuplicateResolver(true)} 
-                                className="px-4 py-2 bg-rose-50 text-rose-600 rounded-xl font-bold flex items-center gap-2 hover:bg-rose-100 transition-colors border border-rose-200 shadow-sm"
-                            >
-                                <CopyX className="w-4 h-4" /> Resolve Duplicates
-                            </button>
-                        </div>
-                    )}
-
-                    <div>
+                    <div className="space-y-4">
                         {employees.map(employee => (
                             <EmployeeCard key={employee.id} employee={employee} />
                         ))}
@@ -203,6 +197,7 @@ export default function CandidateDatabasePage() {
             {showDuplicateResolver && (
                 <DuplicateResolverModal onClose={() => setShowDuplicateResolver(false)} />
             )}
+            </div>
         </div>
     );
 }
