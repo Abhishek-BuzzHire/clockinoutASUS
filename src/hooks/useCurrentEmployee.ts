@@ -20,7 +20,7 @@ export interface CurrentEmployee {
   [key: string]: unknown;
 }
 
-const EMPLOYEE_API = "/api/profile/me"; // or "/api/employee/me" if you have that
+const EMPLOYEE_API = "/api/profile/me/"; // or "/api/employee/me" if you have that
 
 async function fetcher(url: string): Promise<CurrentEmployee | null> {
   const token = Cookies.get("access");

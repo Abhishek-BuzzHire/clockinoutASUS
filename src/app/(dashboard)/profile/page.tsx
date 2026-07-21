@@ -79,12 +79,7 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
   });
 }
 
-const token = Cookies.get("access");
-
-const api = axios.create({
-    baseURL: apiUrl,
-    headers: { Authorization: `Bearer ${token}` }
-});
+import api from '@/lib/api';
 
 export default function ProfilePage() {
     const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -178,7 +173,7 @@ export default function ProfilePage() {
 
     const fetchProfile = async () => {
         try {
-            const response = await api.get('/api/profile/me');
+            const response = await api.get('/api/profile/me/');
             // Assuming get_queryset returns a list, we take the first item
             const data = Array.isArray(response.data) ? response.data[0] : response.data;
             setProfile(data);
