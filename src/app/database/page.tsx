@@ -140,9 +140,16 @@ export default function CandidateDatabasePage() {
             {(!isLoading || employees.length > 0) && !error && employees.length > 0 ? (
                 <>
                     <div className="space-y-4">
-                        {employees.map(employee => (
-                            <EmployeeCard key={employee.id} employee={employee} />
-                        ))}
+                        {employees.map(employee => {
+                            const searchKeywords = [
+                                ...debouncedSearchTerm.replace(/,/g, ' ').split(/\s+/),
+                                ...filters.skills.replace(/,/g, ' ').split(/\s+/)
+                            ].filter(word => word.trim().length > 0);
+
+                            return (
+                                <EmployeeCard key={employee.id} employee={employee} searchKeywords={searchKeywords} />
+                            )
+                        })}
                     </div>
 
                     {totalPages > 1 && (

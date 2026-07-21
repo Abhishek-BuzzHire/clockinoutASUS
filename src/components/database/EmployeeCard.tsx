@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 
 interface EmployeeCardProps {
   employee: CandidateRec;
+  searchKeywords?: string[];
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -23,7 +24,7 @@ const InfoCard: React.FC<{ icon: React.ReactNode, title: string, subtitle: React
   </div>
 );
 
-export function EmployeeCard({ employee }: EmployeeCardProps) {
+export function EmployeeCard({ employee, searchKeywords = [] }: EmployeeCardProps) {
   const getCvUrl = ():string | null => {
     if (!employee.cv_url) return null;
     if(/^https?:\/\//i.test(employee.cv_url)) {
@@ -33,6 +34,12 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
   };
 
   const cvDownloadUrl = getCvUrl();
+
+  const isSkillMatched = (skill: string) => {
+    if (!searchKeywords.length) return false;
+    const lowerSkill = skill.toLowerCase();
+    return searchKeywords.some(keyword => lowerSkill.includes(keyword.toLowerCase()));
+  };
 
   return (
     <Card className="w-full mt-4 rounded-2xl shadow-sm border border-slate-200 bg-white overflow-hidden p-5 pb-0 transition-all hover:shadow-md">
@@ -130,7 +137,7 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
              <span className="text-[12px] font-bold text-slate-900 tracking-wide">Skills</span>
              <div className="flex flex-wrap gap-2">
                {employee.skills.map((skill) => (
-                 <div key={skill} className="px-3.5 py-1.5 bg-[#F8FAFC] text-slate-700 border border-slate-200 rounded-lg text-[12px] font-semibold hover:bg-slate-100 transition-colors cursor-default">
+                 <div key={skill} className={`px-3.5 py-1.5 border rounded-lg text-[12px] font-semibold cursor-default transition-colors ${isSkillMatched(skill) ? "bg-yellow-100 text-yellow-900 border-yellow-300 shadow-sm" : "bg-[#F8FAFC] text-slate-700 border-slate-200 hover:bg-slate-100"}`}>
                    {skill}
                  </div>
                ))}
