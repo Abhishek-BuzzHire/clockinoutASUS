@@ -125,9 +125,9 @@ export default function CandidateDatabasePage() {
                     </div>
 
                     <div className="px-5 py-3 bg-gray-50/40 flex items-center border-t border-gray-100">
-                        <div className="flex items-center text-[13px]">
-                            <span className="font-semibold text-gray-700 mr-2">Total Candidates:</span> 
-                            <span className="inline-flex items-center justify-center px-2.5 py-1 rounded text-sm font-bold bg-gray-100 text-black border border-gray-200">
+                        <div className="flex items-center text-[13px] text-gray-700">
+                            <span className="font-medium mr-1.5">Total Candidates:</span> 
+                            <span className="font-bold">
                                 {totalProfiles}
                             </span>
                             {searchTerm ? <span className="text-gray-500 ml-2">matching &quot;{searchTerm}&quot;</span> : ''}
