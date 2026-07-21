@@ -101,7 +101,7 @@ export default function ProfilePage() {
 
     const [cropperActive, setCropperActive] = useState(false);
     const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
-    const { employee, mutate: mutateCurrentEmployee } = useCurrentEmployee();
+    const { employee, isLoading: isEmployeeLoading, mutate: mutateCurrentEmployee } = useCurrentEmployee();
     const { user } = useAuth();
 
     // Admin PIN state
@@ -172,20 +172,23 @@ export default function ProfilePage() {
         }
     }, []);
 
+    // Use SWR cached data for instant 0ms load
     useEffect(() => {
-        fetchProfile();
-    }, []);
+        if (employee) {
+            setProfile(employee as ProfileData);
+            setLoading(false);
+        } else if (!isEmployeeLoading) {
+            // If SWR finished and there is no employee
+            setLoading(false);
+        }
+    }, [employee, isEmployeeLoading]);
 
+    // Keep fetchProfile available for forced refreshes after save
     const fetchProfile = async () => {
         try {
-            const response = await api.get('/api/profile/me/');
-            // Assuming get_queryset returns a list, we take the first item
-            const data = Array.isArray(response.data) ? response.data[0] : response.data;
-            setProfile(data);
+            await mutateCurrentEmployee(); // Re-fetch SWR data
         } catch (error) {
             console.error("Error fetching profile", error);
-        } finally {
-            setLoading(false);
         }
     };
 
