@@ -1758,7 +1758,6 @@ const EmployeeAttendancePage = () => {
 
                     <div 
                         className="rounded-[28px] mx-6 max-w-[240px] w-full shadow-[0_10px_40px_rgba(240,130,80,0.6)] border-[4px] border-[#F28C54] flex flex-col items-center overflow-hidden relative animate-in zoom-in-95 duration-200 bg-white"
-                        onClick={(e) => e.stopPropagation()}
                     >
                         {/* Bunny Image filling the popup */}
                         <img 
