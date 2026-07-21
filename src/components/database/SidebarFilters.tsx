@@ -89,11 +89,6 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                 </button>
             </div>
 
-            {/* Premium Institute Checkbox */}
-            <div className="p-4 border-b border-gray-100 flex items-center gap-3 shrink-0">
-                <input type="checkbox" id="premiumInstitute" className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
-                <label htmlFor="premiumInstitute" className="text-[14px] text-slate-700 cursor-pointer select-none">Premium Institute Candidates</label>
-            </div>
 
             {/* Accordions Container */}
             <div className="flex flex-col flex-1 overflow-y-auto custom-scrollbar">
