@@ -36,8 +36,12 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
   const cvDownloadUrl = getCvUrl();
 
   return (
-    <Card className="w-full mt-4 rounded-2xl shadow-sm border border-slate-200 bg-white overflow-hidden p-5 transition-all hover:shadow-md">
-      <div className="flex flex-col md:flex-row gap-6">
+    <Card className="w-full mt-4 rounded-2xl shadow-sm border border-slate-200 bg-white overflow-hidden p-5 pb-0 transition-all hover:shadow-md">
+      <style dangerouslySetInnerHTML={{__html: `
+        @import url('https://fonts.googleapis.com/css2?family=Kameron:wght@400;700&display=swap');
+        .font-kameron { font-family: 'Kameron', serif; }
+      `}} />
+      <div className="flex flex-col md:flex-row gap-6 mb-4">
         
         {/* Left Column */}
         <div className="w-full md:w-[280px] shrink-0 flex flex-col items-start border-b md:border-b-0 md:border-r border-slate-100 pb-5 md:pb-0 md:pr-6">
@@ -52,7 +56,7 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
               </Button>
             </div>
             
-            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight leading-tight mb-1 truncate" title={employee.name}>
+            <h2 className="text-2xl font-bold text-slate-900 tracking-tight leading-tight mb-1 truncate font-kameron" title={employee.name}>
               {employee.name}
             </h2>
             <p className="text-blue-600 font-bold text-sm mb-5 truncate" title={employee.job_title}>{employee.job_title}</p>
@@ -101,6 +105,11 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
           {/* Info Cards Row */}
           <div className="flex flex-wrap xl:flex-nowrap gap-3 mb-5 mt-1">
              <InfoCard 
+               icon={<Briefcase className="h-4 w-4 text-purple-500" />} 
+               title="Current Company" 
+               subtitle={employee.current_company_name || <span className="text-slate-400 font-medium">N/A</span>}
+             />
+             <InfoCard 
                icon={<CalendarDays className="h-4 w-4 text-blue-500" />} 
                title="Experience" 
                subtitle={`${employee.total_experience_years || 0} Yrs`}
@@ -118,11 +127,6 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
                    {!employee.salary || (employee.salary as any) === "None" ? "Not submitted" : `${employee.salary} LPA`}
                  </span>
                }
-             />
-             <InfoCard 
-               icon={<Briefcase className="h-4 w-4 text-purple-500" />} 
-               title="Current Company" 
-               subtitle={employee.current_company_name || <span className="text-slate-400 font-medium">N/A</span>}
              />
           </div>
 
@@ -154,24 +158,24 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
              </div>
           </div>
 
-          {/* Footer Section */}
-          <div className="mt-auto pt-4 border-t border-slate-100 flex flex-wrap gap-4 items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
-                <UserCircle2 className="h-3.5 w-3.5 text-slate-500" />
-              </div>
-              <div className="text-[12px]">
-                <span className="text-slate-500 font-medium mr-1">Source by</span>
-                <span className="text-slate-800 font-bold">{employee.source}</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-1.5 text-slate-500 text-[11px] font-semibold bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
-              <CalendarDays className="h-3.5 w-3.5" />
-              <span>{format(new Date(employee.created_at), "dd MMM yyyy, hh:mm a")}</span>
-            </div>
-          </div>
+        </div>
+      </div>
 
+      {/* Footer Section */}
+      <div className="pt-3 pb-3 border-t border-slate-100 flex flex-wrap gap-4 items-center justify-between -mx-1">
+        <div className="flex items-center gap-2">
+          <div className="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
+            <UserCircle2 className="h-3.5 w-3.5 text-slate-500" />
+          </div>
+          <div className="text-[12px]">
+            <span className="text-slate-500 font-medium mr-1">Source by</span>
+            <span className="text-slate-800 font-bold">{employee.source}</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-1.5 text-slate-500 text-[11px] font-semibold bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+          <CalendarDays className="h-3.5 w-3.5" />
+          <span>{format(new Date(employee.created_at), "dd MMM yyyy, hh:mm a")}</span>
         </div>
       </div>
     </Card>
