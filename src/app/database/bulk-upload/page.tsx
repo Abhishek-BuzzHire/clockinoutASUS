@@ -250,7 +250,6 @@ const BulkUploadForm: React.FC = () => {
         <div className="max-w-5xl mx-auto pb-20">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Bulk Upload Candidates</h1>
-                <Button variant="outline" onClick={() => navigate.push('/database')}>Back to Database</Button>
             </div>
 
             <Card className='mb-6 p-10 flex flex-col items-center justify-center border-dashed border-2 bg-gray-50'>
