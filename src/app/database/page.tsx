@@ -142,6 +142,7 @@ export default function CandidateDatabasePage() {
                             </DropdownMenu>
                         </div>
                     </div>
+                    </div>
 
                     <div className="px-5 py-3 bg-gray-50/40 flex items-center border-t border-gray-100">
                         <div className="flex items-center text-[13px] text-gray-700">
