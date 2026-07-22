@@ -15,6 +15,7 @@ interface DuplicateGroup {
     phone: string;
     created_at: string;
     cv_url: string;
+    source?: string;
   }[];
 }
 
@@ -201,6 +202,7 @@ export function DuplicateResolverModal({ onClose }: { onClose: () => void }) {
                         <div className="flex flex-col">
                           <span className="font-medium text-sm text-slate-700">{doc.name || "Unknown Name"}</span>
                           <span className="text-xs text-slate-400 mt-0.5">Uploaded: {new Date(doc.created_at).toLocaleString()}</span>
+                          {doc.source && <span className="text-xs text-blue-500 font-medium mt-0.5">By: {doc.source}</span>}
                         </div>
                         {idx === 0 ? (
                           <span className="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-semibold rounded uppercase tracking-wider">Original (Keep)</span>
