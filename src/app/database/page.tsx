@@ -12,14 +12,12 @@ import { Button } from "@/components/ui/button";
 import Cookies from "js-cookie";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { DuplicateResolverModal } from "@/components/database/DuplicateResolverModal";
-import { CopyX, Upload, UserPlus, MoreVertical } from "lucide-react";
+import { CopyX, Upload, UserPlus, MoreVertical, Phone, Mail } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function CandidateDatabasePage() {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [searchPhone, setSearchPhone] = useState('');
     const [debouncedSearchPhone, setDebouncedSearchPhone] = useState('');
     const [searchEmail, setSearchEmail] = useState('');
@@ -43,21 +41,19 @@ export default function CandidateDatabasePage() {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [debouncedSearchTerm, debouncedSearchPhone, debouncedSearchEmail, filters, itemsPerPage]);
+    }, [debouncedSearchPhone, debouncedSearchEmail, filters, itemsPerPage]);
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            setDebouncedSearchTerm(searchTerm);
             if (searchPhone.length >= 4 || searchPhone.length === 0) {
                 setDebouncedSearchPhone(searchPhone);
             }
             setDebouncedSearchEmail(searchEmail);
         }, 500);
         return () => clearTimeout(timeoutId);
-    }, [searchTerm, searchPhone, searchEmail]);
+    }, [searchPhone, searchEmail]);
 
     const queryParams = new URLSearchParams();
-    if (debouncedSearchTerm) queryParams.append('searchTerm', debouncedSearchTerm);
     if (debouncedSearchPhone) queryParams.append('phone', debouncedSearchPhone);
     if (debouncedSearchEmail) queryParams.append('email', debouncedSearchEmail);
     if (filters.skills) queryParams.append('skills', filters.skills);
@@ -111,15 +107,22 @@ export default function CandidateDatabasePage() {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-5 overflow-hidden">
                     <div className="p-4 border-b border-gray-100 flex flex-col gap-4">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <div className="flex-1 w-full max-w-4xl flex flex-col md:flex-row gap-3">
+                            <div className="flex-1 w-full max-w-2xl flex flex-col md:flex-row gap-4">
                                 <div className="flex-1">
-                                    <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Search by name, skill, title..." />
+                                    <SearchBar 
+                                        searchTerm={searchPhone} 
+                                        onSearchChange={setSearchPhone} 
+                                        placeholder="Search by number..." 
+                                        icon={<Phone className='h-[18px] w-[18px]' />}
+                                    />
                                 </div>
                                 <div className="flex-1">
-                                    <SearchBar searchTerm={searchPhone} onSearchChange={setSearchPhone} placeholder="Search by number..." />
-                                </div>
-                                <div className="flex-1">
-                                    <SearchBar searchTerm={searchEmail} onSearchChange={setSearchEmail} placeholder="Search by email..." />
+                                    <SearchBar 
+                                        searchTerm={searchEmail} 
+                                        onSearchChange={setSearchEmail} 
+                                        placeholder="Search by email..." 
+                                        icon={<Mail className='h-[18px] w-[18px]' />}
+                                    />
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 shrink-0">
@@ -150,7 +153,7 @@ export default function CandidateDatabasePage() {
                             <span className="font-bold">
                                 {totalProfiles}
                             </span>
-                            {(searchTerm || searchPhone || searchEmail) ? <span className="text-gray-500 ml-2">matching criteria</span> : ''}
+                            {(searchPhone || searchEmail) ? <span className="text-gray-500 ml-2">matching {(searchPhone && searchEmail) ? "both" : ""} criteria</span> : ''}
                         </div>
                     </div>
                 </div>
@@ -161,7 +164,6 @@ export default function CandidateDatabasePage() {
                 <>
                     <div className="space-y-4">
                         {employees.map(employee => {
-                            const nameKeywords = debouncedSearchTerm.replace(/,/g, ' ').split(/\s+/).filter(word => word.trim().length > 0);
                             const phoneKeywords = debouncedSearchPhone.replace(/,/g, ' ').split(/\s+/).filter(word => word.trim().length > 0);
                             const emailKeywords = debouncedSearchEmail.replace(/,/g, ' ').split(/\s+/).filter(word => word.trim().length > 0);
                             const skillKeywords = filters.skills.replace(/,/g, ' ').split(/\s+/).filter(word => word.trim().length > 0);
@@ -170,7 +172,6 @@ export default function CandidateDatabasePage() {
                                 <EmployeeCard 
                                     key={employee.id} 
                                     employee={employee} 
-                                    nameKeywords={nameKeywords}
                                     phoneKeywords={phoneKeywords}
                                     emailKeywords={emailKeywords}
                                     skillKeywords={skillKeywords}
