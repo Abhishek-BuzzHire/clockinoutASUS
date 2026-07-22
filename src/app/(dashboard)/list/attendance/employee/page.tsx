@@ -1234,7 +1234,13 @@ const EmployeeAttendancePage = () => {
         }
     }, [showLocationPopup]);
 
-    // Removed auto-dismiss out of range popup as per user request (must be manually closed)
+    // Auto-dismiss out of range popup after 3 seconds
+    useEffect(() => {
+        if (showOutOfRangePopup) {
+            const timer = setTimeout(() => setShowOutOfRangePopup(false), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [showOutOfRangePopup]);
 
     // set initial elapsed seconds when attendanceStatus changes
     useEffect(() => {
@@ -1744,7 +1750,7 @@ const EmployeeAttendancePage = () => {
 
             {/* SIMPLE OUT OF RANGE POPUP */}
             {showOutOfRangePopup && (
-                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[999] animate-in slide-in-from-bottom-5 fade-in duration-300">
+                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[999] animate-in slide-in-from-top-5 fade-in duration-300">
                     <div 
                         className="bg-slate-800 text-white px-6 py-3.5 rounded-full shadow-xl text-sm font-medium whitespace-nowrap cursor-pointer hover:bg-slate-700 transition-colors"
                         onClick={() => setShowOutOfRangePopup(false)}
