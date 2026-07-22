@@ -45,7 +45,9 @@ export default function CandidateDatabasePage() {
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            setDebouncedSearchPhone(searchPhone);
+            if (searchPhone.length >= 4 || searchPhone.length === 0) {
+                setDebouncedSearchPhone(searchPhone);
+            }
             setDebouncedSearchEmail(searchEmail);
         }, 500);
         return () => clearTimeout(timeoutId);
