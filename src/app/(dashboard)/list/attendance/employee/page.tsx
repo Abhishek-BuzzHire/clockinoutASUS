@@ -19,7 +19,7 @@ import EmployeeLeaveHistoryTable from "@/components/attendance/EmployeeLeaveHist
 import ApplyLeaveModal from "@/components/attendance/ApplyLeaveModal";
 import EmployeeWFHHistoryTable from "@/components/attendance/EmployeeWFHHistoryTable";
 import ApplyWFHModal from "@/components/attendance/ApplyWFHModal";
-import { CalendarDays, CalendarPlus, ClockArrowUp, Home, Laptop, LayoutDashboard, LogOut, LogIn, Plus, MapPin } from "lucide-react";
+import { CalendarDays, CalendarPlus, ClockArrowUp, Home, Laptop, LayoutDashboard, LogOut, LogIn, Plus, MapPin, MapPinOff } from "lucide-react";
 import EmployeeRegulizeRequests from "@/components/attendance/EmployeeRegulizeRequests";
 import { toMinutes } from "../admin/page";
 import { useCurrentEmployee } from "@/hooks/useCurrentEmployee";
