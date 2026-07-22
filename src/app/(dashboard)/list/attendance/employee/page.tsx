@@ -1752,7 +1752,7 @@ const EmployeeAttendancePage = () => {
             {showOutOfRangePopup && (
                 <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[999] animate-in slide-in-from-top-5 fade-in duration-300">
                     <div 
-                        className="bg-slate-800 text-white px-6 py-3.5 rounded-full shadow-xl text-sm font-medium whitespace-nowrap cursor-pointer hover:bg-slate-700 transition-colors"
+                        className="bg-white text-slate-800 border border-slate-200 px-6 py-3.5 rounded-full shadow-xl text-sm font-medium whitespace-nowrap cursor-pointer hover:bg-slate-50 transition-colors"
                         onClick={() => setShowOutOfRangePopup(false)}
                     >
                         Ohh no! You're out of range
