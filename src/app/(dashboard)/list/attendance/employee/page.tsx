@@ -1748,14 +1748,20 @@ const EmployeeAttendancePage = () => {
                 </div>
             )}
 
-            {/* SIMPLE OUT OF RANGE POPUP */}
+            {/* MODERN OUT OF RANGE POPUP */}
             {showOutOfRangePopup && (
-                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[999] animate-in slide-in-from-top-5 fade-in duration-300">
+                <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[999] animate-in slide-in-from-top-4 fade-in duration-300">
                     <div 
-                        className="bg-white text-slate-800 border border-slate-200 px-6 py-3.5 rounded-full shadow-xl text-sm font-medium whitespace-nowrap cursor-pointer hover:bg-slate-50 transition-colors"
+                        className="bg-white border border-slate-100 px-4 py-3 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] cursor-pointer hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all flex items-center gap-3"
                         onClick={() => setShowOutOfRangePopup(false)}
                     >
-                        Ohh no! You're out of range
+                        <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                            <MapPinOff className="w-5 h-5 text-red-500" />
+                        </div>
+                        <div className="flex flex-col pr-2">
+                            <span className="text-[14px] font-bold text-slate-800 leading-tight">Ohh no!</span>
+                            <span className="text-[13px] font-medium text-slate-500">You're out of range</span>
+                        </div>
                     </div>
                 </div>
             )}
