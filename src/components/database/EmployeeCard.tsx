@@ -7,7 +7,10 @@ import { format } from 'date-fns';
 
 interface EmployeeCardProps {
   employee: CandidateRec;
-  searchKeywords?: string[];
+  nameKeywords?: string[];
+  phoneKeywords?: string[];
+  emailKeywords?: string[];
+  skillKeywords?: string[];
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -24,7 +27,7 @@ const InfoCard: React.FC<{ icon: React.ReactNode, title: string, subtitle: React
   </div>
 );
 
-export function EmployeeCard({ employee, searchKeywords = [] }: EmployeeCardProps) {
+export function EmployeeCard({ employee, nameKeywords = [], phoneKeywords = [], emailKeywords = [], skillKeywords = [] }: EmployeeCardProps) {
   const getCvUrl = ():string | null => {
     if (!employee.cv_url) return null;
     if(/^https?:\/\//i.test(employee.cv_url)) {
@@ -36,15 +39,16 @@ export function EmployeeCard({ employee, searchKeywords = [] }: EmployeeCardProp
   const cvDownloadUrl = getCvUrl();
 
   const isSkillMatched = (skill: string) => {
-    if (!searchKeywords.length) return false;
+    const allKeywords = [...nameKeywords, ...skillKeywords];
+    if (!allKeywords.length) return false;
     const lowerSkill = skill.toLowerCase();
-    return searchKeywords.some(keyword => lowerSkill.includes(keyword.toLowerCase()));
+    return allKeywords.some(keyword => lowerSkill.includes(keyword.toLowerCase()));
   };
 
-  const highlightMatch = (text: string | undefined | null) => {
+  const highlightMatch = (text: string | undefined | null, keywords: string[] = []) => {
     if (!text) return text;
-    if (!searchKeywords.length) return text;
-    const escapedKeywords = searchKeywords.map(kw => kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    if (!keywords.length) return text;
+    const escapedKeywords = keywords.map(kw => kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     const regex = new RegExp(`(${escapedKeywords.join('|')})`, 'gi');
     const parts = text.split(regex);
     return parts.map((part, i) => 
@@ -65,9 +69,9 @@ export function EmployeeCard({ employee, searchKeywords = [] }: EmployeeCardProp
           <div className="flex flex-col w-full">
 
             <h2 className="text-2xl font-semibold text-slate-900 tracking-tight leading-tight mb-1 truncate font-outfit" title={employee.name}>
-              {highlightMatch(employee.name)}
+              {highlightMatch(employee.name, nameKeywords)}
             </h2>
-            <p className="text-blue-600 font-bold text-sm mb-5 truncate" title={employee.job_title}>{highlightMatch(employee.job_title)}</p>
+            <p className="text-blue-600 font-bold text-sm mb-5 truncate" title={employee.job_title}>{highlightMatch(employee.job_title, nameKeywords)}</p>
             
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-3 text-slate-600 text-[13px] font-medium">
@@ -76,11 +80,11 @@ export function EmployeeCard({ employee, searchKeywords = [] }: EmployeeCardProp
               </div>
               <div className="flex items-center gap-3 text-slate-600 text-[13px] font-medium">
                 <Phone className="h-4 w-4 text-slate-400 shrink-0" />
-                <span className="truncate" title={employee.phone}>{employee.phone}</span>
+                <span className="truncate" title={employee.phone}>{highlightMatch(employee.phone, phoneKeywords)}</span>
               </div>
               <div className="flex items-center gap-3 text-slate-600 text-[13px] font-medium">
                 <Mail className="h-4 w-4 text-slate-400 shrink-0" />
-                <span className="truncate" title={employee.email}>{employee.email}</span>
+                <span className="truncate" title={employee.email}>{highlightMatch(employee.email, emailKeywords)}</span>
               </div>
             </div>
             

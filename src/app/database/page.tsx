@@ -18,6 +18,8 @@ import Link from "next/link";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function CandidateDatabasePage() {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [searchPhone, setSearchPhone] = useState('');
     const [debouncedSearchPhone, setDebouncedSearchPhone] = useState('');
     const [searchEmail, setSearchEmail] = useState('');
@@ -41,19 +43,21 @@ export default function CandidateDatabasePage() {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [debouncedSearchPhone, debouncedSearchEmail, filters, itemsPerPage]);
+    }, [debouncedSearchTerm, debouncedSearchPhone, debouncedSearchEmail, filters, itemsPerPage]);
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
             if (searchPhone.length >= 4 || searchPhone.length === 0) {
                 setDebouncedSearchPhone(searchPhone);
             }
             setDebouncedSearchEmail(searchEmail);
         }, 500);
         return () => clearTimeout(timeoutId);
-    }, [searchPhone, searchEmail]);
+    }, [searchTerm, searchPhone, searchEmail]);
 
     const queryParams = new URLSearchParams();
+    if (debouncedSearchTerm) queryParams.append('searchTerm', debouncedSearchTerm);
     if (debouncedSearchPhone) queryParams.append('phone', debouncedSearchPhone);
     if (debouncedSearchEmail) queryParams.append('email', debouncedSearchEmail);
     if (filters.skills) queryParams.append('skills', filters.skills);
@@ -105,16 +109,20 @@ export default function CandidateDatabasePage() {
             <SidebarFilters filters={filters} setFilters={setFilters} />
             <div className="flex-1 flex flex-col min-w-0">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-5 overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div className="flex-1 w-full max-w-2xl flex flex-col md:flex-row gap-3">
-                            <div className="flex-1">
-                                <SearchBar searchTerm={searchPhone} onSearchChange={setSearchPhone} placeholder="Search by number..." />
+                    <div className="p-4 border-b border-gray-100 flex flex-col gap-4">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div className="flex-1 w-full max-w-4xl flex flex-col md:flex-row gap-3">
+                                <div className="flex-1">
+                                    <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Search by name, skill, title..." />
+                                </div>
+                                <div className="flex-1">
+                                    <SearchBar searchTerm={searchPhone} onSearchChange={setSearchPhone} placeholder="Search by number..." />
+                                </div>
+                                <div className="flex-1">
+                                    <SearchBar searchTerm={searchEmail} onSearchChange={setSearchEmail} placeholder="Search by email..." />
+                                </div>
                             </div>
-                            <div className="flex-1">
-                                <SearchBar searchTerm={searchEmail} onSearchChange={setSearchEmail} placeholder="Search by email..." />
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 shrink-0">
+                            <div className="flex items-center gap-3 shrink-0">
                             <Link href="/database/bulk-upload" className="group flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-all shadow-sm text-[14px]">
                                 <Upload className="w-[18px] h-[18px]" />
                                 <span>Upload Resume</span>
@@ -141,7 +149,7 @@ export default function CandidateDatabasePage() {
                             <span className="font-bold">
                                 {totalProfiles}
                             </span>
-                            {(searchPhone || searchEmail) ? <span className="text-gray-500 ml-2">matching {(searchPhone && searchEmail) ? "both" : ""} criteria</span> : ''}
+                            {(searchTerm || searchPhone || searchEmail) ? <span className="text-gray-500 ml-2">matching criteria</span> : ''}
                         </div>
                     </div>
                 </div>
@@ -152,14 +160,20 @@ export default function CandidateDatabasePage() {
                 <>
                     <div className="space-y-4">
                         {employees.map(employee => {
-                            const searchKeywords = [
-                                ...debouncedSearchPhone.replace(/,/g, ' ').split(/\s+/),
-                                ...debouncedSearchEmail.replace(/,/g, ' ').split(/\s+/),
-                                ...filters.skills.replace(/,/g, ' ').split(/\s+/)
-                            ].filter(word => word.trim().length > 0);
+                            const nameKeywords = debouncedSearchTerm.replace(/,/g, ' ').split(/\s+/).filter(word => word.trim().length > 0);
+                            const phoneKeywords = debouncedSearchPhone.replace(/,/g, ' ').split(/\s+/).filter(word => word.trim().length > 0);
+                            const emailKeywords = debouncedSearchEmail.replace(/,/g, ' ').split(/\s+/).filter(word => word.trim().length > 0);
+                            const skillKeywords = filters.skills.replace(/,/g, ' ').split(/\s+/).filter(word => word.trim().length > 0);
 
                             return (
-                                <EmployeeCard key={employee.id} employee={employee} searchKeywords={searchKeywords} />
+                                <EmployeeCard 
+                                    key={employee.id} 
+                                    employee={employee} 
+                                    nameKeywords={nameKeywords}
+                                    phoneKeywords={phoneKeywords}
+                                    emailKeywords={emailKeywords}
+                                    skillKeywords={skillKeywords}
+                                />
                             )
                         })}
                     </div>
