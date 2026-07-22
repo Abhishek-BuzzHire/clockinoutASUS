@@ -802,6 +802,43 @@ const EmployeeAttendancePage = () => {
             }
         }
 
+        // --- Mock Location Detection: take 3 rapid fresh GPS readings ---
+        // Real GPS always has micro-drift (1-5m). Mock GPS returns EXACT same coords every time.
+        const getMockCheckReading = (): Promise<{ lat: number; lon: number } | null> => {
+            return new Promise((resolve) => {
+                if (!("geolocation" in navigator)) { resolve(null); return; }
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+                    () => resolve(null),
+                    { enableHighAccuracy: true, timeout: 4000, maximumAge: 0 }
+                );
+            });
+        };
+
+        setIsProcessing(true);
+        const mockReadings: { lat: number; lon: number }[] = [];
+        for (let i = 0; i < 3; i++) {
+            const reading = await getMockCheckReading();
+            if (!reading) break;
+            mockReadings.push(reading);
+            if (i < 2) await new Promise(r => setTimeout(r, 400));
+        }
+
+        if (mockReadings.length >= 3) {
+            const allSameLat = mockReadings.every(r => r.lat === mockReadings[0].lat);
+            const allSameLon = mockReadings.every(r => r.lon === mockReadings[0].lon);
+            if (allSameLat && allSameLon) {
+                setShowOutOfRangePopup(true);
+                setIsProcessing(false);
+                return;
+            }
+            // Use the last fresh reading as the actual location
+            currentLocation = mockReadings[mockReadings.length - 1];
+            setLocation(currentLocation);
+            locationRef.current = currentLocation;
+        }
+        // --- End Mock Detection ---
+
         const endpoint = type === "in" ? `${apiUrl}/punch-in/` : `${apiUrl}/punch-out/`;
         setIsProcessing(true);
         setMessage(null);
