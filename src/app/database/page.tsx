@@ -137,24 +137,21 @@ export default function CandidateDatabasePage() {
                                         <MoreVertical className="w-5 h-5" />
                                     </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-48 bg-white rounded-lg shadow-lg border border-gray-100">
-                                    <DropdownMenuItem onClick={() => setShowDuplicateResolver(true)} className="cursor-pointer py-2.5 px-3 hover:bg-gray-50">
-                                        <span className="font-medium text-gray-700">Find Duplicate</span>
+                                <DropdownMenuContent align="end" className="w-56 bg-white rounded-lg shadow-lg border border-gray-100 p-1">
+                                    <div className="px-3 py-2 text-sm text-gray-700 border-b border-gray-100 mb-1">
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-medium text-gray-500">Total</span>
+                                            <span className="font-bold text-gray-900">{totalProfiles}</span>
+                                        </div>
+                                        {(searchPhone || searchEmail) ? <span className="text-gray-400 block text-[11px] mt-0.5 leading-tight">matching criteria</span> : ''}
+                                    </div>
+                                    <DropdownMenuItem onClick={() => setShowDuplicateResolver(true)} className="cursor-pointer py-2 px-3 hover:bg-gray-50 rounded-md">
+                                        <span className="font-medium text-gray-700 text-sm">Find Duplicate</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
                     </div>
-                    </div>
-
-                    <div className="px-5 py-3 bg-gray-50/40 flex items-center border-t border-gray-100">
-                        <div className="flex items-center text-[13px] text-gray-700">
-                            <span className="font-medium mr-1.5">Total Candidates:</span> 
-                            <span className="font-bold">
-                                {totalProfiles}
-                            </span>
-                            {(searchPhone || searchEmail) ? <span className="text-gray-500 ml-2">matching {(searchPhone && searchEmail) ? "both" : ""} criteria</span> : ''}
-                        </div>
                     </div>
                 </div>
 

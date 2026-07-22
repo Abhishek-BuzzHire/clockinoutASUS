@@ -21,7 +21,7 @@ export function SearchBar({ searchTerm, onSearchChange, placeholder = "Search...
                 placeholder={placeholder}
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className='w-full pl-11 pr-4 h-12 text-[14px] rounded-2xl border-slate-200 bg-slate-50/80 hover:bg-slate-100/50 hover:border-slate-300 focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-blue-500/10 focus-visible:border-blue-500 transition-all shadow-sm font-medium text-slate-700 placeholder:font-normal'
+                className='w-full pl-11 pr-4 h-12 text-[14px] rounded-full border-slate-200 bg-slate-50/80 hover:bg-slate-100/50 hover:border-slate-300 focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-blue-500/10 focus-visible:border-blue-500 transition-all shadow-sm font-medium text-slate-700 placeholder:font-normal'
             />
         </div>
     );
