@@ -1742,29 +1742,14 @@ const EmployeeAttendancePage = () => {
                 </div>
             )}
 
-            {/* FULLSCREEN OUT OF RANGE POPUP - Zepto Style */}
+            {/* SIMPLE OUT OF RANGE POPUP */}
             {showOutOfRangePopup && (
-                <div
-                    className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm"
-                    onClick={() => setShowOutOfRangePopup(false)}
-                >
-                    {/* Top Right Screen Close Button (Zepto style) */}
-                    <button
-                        onClick={(e) => { e.stopPropagation(); setShowOutOfRangePopup(false); }}
-                        className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-black/80 hover:bg-black text-white transition-colors"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-
+                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[999] animate-in slide-in-from-bottom-5 fade-in duration-300">
                     <div 
-                        className="rounded-[28px] mx-6 max-w-[240px] w-full shadow-[0_10px_40px_rgba(240,130,80,0.6)] border-[4px] border-[#F28C54] flex flex-col items-center overflow-hidden relative bg-white"
+                        className="bg-slate-800 text-white px-6 py-3.5 rounded-full shadow-xl text-sm font-medium whitespace-nowrap cursor-pointer hover:bg-slate-700 transition-colors"
+                        onClick={() => setShowOutOfRangePopup(false)}
                     >
-                        {/* Bunny Image filling the popup */}
-                        <img 
-                            src="/out-of-range-bunny.png" 
-                            alt="Out of Range" 
-                            className="w-full h-auto object-cover"
-                        />
+                        Ohh no! You're out of range
                     </div>
                 </div>
             )}
