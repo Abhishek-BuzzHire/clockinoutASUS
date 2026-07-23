@@ -5,7 +5,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/lib/data";
 import { format, subDays, addDays, isToday } from "date-fns";
-import { Users, CalendarOff, UserX, X, Clock, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { Users, CalendarOff, UserX, X, Clock, ChevronLeft, ChevronRight, Trash2, Pencil } from "lucide-react";
 import useSWR from "swr";
 
 interface EmpDetail {
@@ -32,6 +32,11 @@ export default function DailyOverview() {
   const [deletingEmpId, setDeletingEmpId] = useState<number | null>(null);
   const [confirmDeleteEmpId, setConfirmDeleteEmpId] = useState<number | null>(null);
 
+  const [editingEmpId, setEditingEmpId] = useState<number | null>(null);
+  const [editPunchIn, setEditPunchIn] = useState<string>("");
+  const [editPunchOut, setEditPunchOut] = useState<string>("");
+  const [isSavingEdit, setIsSavingEdit] = useState<boolean>(false);
+
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
     setIsMounted(true);
@@ -48,17 +53,48 @@ export default function DailyOverview() {
         { emp_id: empId, date: dateStr },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Clear local cache for this date
       if (typeof window !== "undefined") {
         localStorage.removeItem(`daily_overview_cache_${dateStr}`);
       }
-      // Revalidate SWR data
       mutate(`${apiUrl}/api/admin/emp-total-details/?start_date=${dateStr}&end_date=${dateStr}`);
       setConfirmDeleteEmpId(null);
     } catch (err) {
       console.error("Failed to delete attendance", err);
     } finally {
       setDeletingEmpId(null);
+    }
+  };
+
+  const startEditing = (emp: EmpDetail) => {
+    setEditingEmpId(emp.emp_id);
+    setConfirmDeleteEmpId(null);
+    setEditPunchIn(emp.punch_in || "09:30");
+    setEditPunchOut(emp.punch_out || "");
+  };
+
+  const handleEditTime = async (empId: number) => {
+    setIsSavingEdit(true);
+    try {
+      const token = Cookies.get("access");
+      await axios.post(
+        `${apiUrl}/api/admin/attendance/edit-time/`,
+        {
+          emp_id: empId,
+          date: dateStr,
+          punch_in_time: editPunchIn,
+          punch_out_time: editPunchOut || null,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(`daily_overview_cache_${dateStr}`);
+      }
+      mutate(`${apiUrl}/api/admin/emp-total-details/?start_date=${dateStr}&end_date=${dateStr}`);
+      setEditingEmpId(null);
+    } catch (err) {
+      console.error("Failed to edit attendance time", err);
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -265,36 +301,81 @@ export default function DailyOverview() {
                       <span className="text-sm font-medium text-gray-800">{emp.name}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      {emp.punch_in && (
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <Clock size={12} />
-                          <span>{emp.punch_in}{emp.punch_out ? ` — ${emp.punch_out}` : isToday(selectedDate) ? " (active)" : ""}</span>
-                        </div>
-                      )}
-                      {confirmDeleteEmpId === emp.emp_id ? (
-                        <div className="flex items-center gap-1">
+                      {editingEmpId === emp.emp_id ? (
+                        <div className="flex items-center gap-1.5 bg-gray-50 p-1 rounded-lg border border-gray-200">
+                          <input
+                            type="time"
+                            value={editPunchIn}
+                            onChange={(e) => setEditPunchIn(e.target.value)}
+                            className="px-1.5 py-0.5 border border-gray-300 text-xs rounded text-gray-800 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            title="Punch In Time"
+                          />
+                          <span className="text-xs text-gray-400">-</span>
+                          <input
+                            type="time"
+                            value={editPunchOut}
+                            onChange={(e) => setEditPunchOut(e.target.value)}
+                            className="px-1.5 py-0.5 border border-gray-300 text-xs rounded text-gray-800 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            title="Punch Out Time (Optional)"
+                          />
                           <button
-                            onClick={() => handleDeleteAttendance(emp.emp_id)}
-                            disabled={deletingEmpId === emp.emp_id}
-                            className="px-2 py-0.5 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50"
+                            onClick={() => handleEditTime(emp.emp_id)}
+                            disabled={isSavingEdit}
+                            className="px-2 py-0.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
                           >
-                            {deletingEmpId === emp.emp_id ? "..." : "Confirm"}
+                            {isSavingEdit ? "..." : "Save"}
                           </button>
                           <button
-                            onClick={() => setConfirmDeleteEmpId(null)}
-                            className="px-2 py-0.5 text-xs bg-gray-200 text-gray-600 rounded hover:bg-gray-300 transition-colors"
+                            onClick={() => setEditingEmpId(null)}
+                            className="p-0.5 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-200 transition-colors"
+                            title="Cancel"
                           >
-                            Cancel
+                            <X size={14} />
                           </button>
                         </div>
                       ) : (
-                        <button
-                          onClick={() => setConfirmDeleteEmpId(emp.emp_id)}
-                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"
-                          title="Delete attendance"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <>
+                          {emp.punch_in && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <Clock size={12} />
+                              <span>{emp.punch_in}{emp.punch_out ? ` — ${emp.punch_out}` : isToday(selectedDate) ? " (active)" : ""}</span>
+                            </div>
+                          )}
+                          {confirmDeleteEmpId === emp.emp_id ? (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleDeleteAttendance(emp.emp_id)}
+                                disabled={deletingEmpId === emp.emp_id}
+                                className="px-2 py-0.5 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50"
+                              >
+                                {deletingEmpId === emp.emp_id ? "..." : "Confirm"}
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteEmpId(null)}
+                                className="px-2 py-0.5 text-xs bg-gray-200 text-gray-600 rounded hover:bg-gray-300 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                              <button
+                                onClick={() => startEditing(emp)}
+                                className="p-1 rounded hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-all"
+                                title="Edit punch time"
+                              >
+                                <Pencil size={14} />
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteEmpId(emp.emp_id)}
+                                className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"
+                                title="Delete attendance"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
