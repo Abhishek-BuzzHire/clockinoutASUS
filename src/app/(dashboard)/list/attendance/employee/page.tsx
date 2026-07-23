@@ -782,7 +782,7 @@ const EmployeeAttendancePage = () => {
                     navigator.geolocation.getCurrentPosition(
                         (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
                         () => resolve(null),
-                        { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
+                        { enableHighAccuracy: true, timeout: 3000, maximumAge: 30000 }
                     );
                 });
             } catch {
@@ -848,11 +848,11 @@ const EmployeeAttendancePage = () => {
                         setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
                     }
                 } else {
-                    // fallback: refresh today's attendance
-                    await fetchTodayAttendance();
+                    // fallback: refresh today's attendance (non-blocking)
+                    fetchTodayAttendance();
                 }
 
-                // Refresh the timesheet table so it shows immediately
+                // Refresh the timesheet table in background (non-blocking)
                 if (viewMode === "weekly") {
                     fetchWeeklyAttendance(currentWeekStart, endOfWeek(currentWeekStart, { weekStartsOn: 0 }));
                 } else {
