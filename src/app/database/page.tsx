@@ -124,31 +124,29 @@ export default function CandidateDatabasePage() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 shrink-0">
-                            <Link href="/database/bulk-upload" className="group flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-all shadow-sm text-[14px]">
-                                <Upload className="w-[18px] h-[18px]" />
-                                <span>Upload Resume</span>
-                            </Link>
-                            
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <button className="p-2.5 text-gray-500 hover:bg-gray-100 rounded-full transition-colors focus:outline-none">
-                                        <MoreVertical className="w-5 h-5" />
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-56 bg-white rounded-lg shadow-lg border border-gray-100 p-1">
-                                    <div className="px-3 py-2 text-sm text-gray-700 border-b border-gray-100 mb-1">
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-medium text-gray-500">Total</span>
-                                            <span className="font-bold text-gray-900">{totalProfiles}</span>
-                                        </div>
-                                        {(searchPhone || searchEmail) ? <span className="text-gray-400 block text-[11px] mt-0.5 leading-tight">matching criteria</span> : ''}
-                                    </div>
-                                    <DropdownMenuItem onClick={() => setShowDuplicateResolver(true)} className="cursor-pointer py-2 px-3 hover:bg-gray-50 rounded-md">
-                                        <span className="font-medium text-gray-700 text-sm">Find Duplicate</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
+                                <div className="px-4 py-2 bg-gray-100/80 border border-gray-200 text-gray-700 rounded-full text-sm font-medium flex items-center gap-2 shadow-xs">
+                                    <span className="text-gray-500 font-normal">Total:</span>
+                                    <span className="font-bold text-gray-900">{totalProfiles}</span>
+                                </div>
+
+                                <Link href="/database/bulk-upload" className="group flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-all shadow-sm text-[14px]">
+                                    <Upload className="w-[18px] h-[18px]" />
+                                    <span>Upload Resume</span>
+                                </Link>
+                                
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button className="p-2.5 text-gray-500 hover:bg-gray-100 rounded-full transition-colors focus:outline-none">
+                                            <MoreVertical className="w-5 h-5" />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-48 bg-white rounded-lg shadow-lg border border-gray-100 p-1">
+                                        <DropdownMenuItem onClick={() => setShowDuplicateResolver(true)} className="cursor-pointer py-2 px-3 hover:bg-gray-50 rounded-md">
+                                            <span className="font-medium text-gray-700 text-sm">Find Duplicate</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
                     </div>
                     </div>
                 </div>
