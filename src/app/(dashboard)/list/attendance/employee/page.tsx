@@ -896,7 +896,7 @@ const EmployeeAttendancePage = () => {
         }
 
         if (isMock) {
-            setOutOfRangeMessage("You are out of range.");
+            setOutOfRangeMessage("LOCATION_NOT_SUPPORTED");
             setShowOutOfRangePopup(true);
             setIsProcessing(false);
             return;
@@ -968,7 +968,12 @@ const EmployeeAttendancePage = () => {
             } else {
                 const lowerMsg = data.message?.toLowerCase() || "";
                 if (lowerMsg.includes("range") || lowerMsg.includes("distance") || lowerMsg.includes("radius") || lowerMsg.includes("location") || lowerMsg.includes("office")) {
-                    setOutOfRangeMessage(data.message);
+                    // Backend detected mock location → show "Location Not Supported"
+                    if (lowerMsg.includes("static") || lowerMsg.includes("mocked") || lowerMsg.includes("mock")) {
+                        setOutOfRangeMessage("LOCATION_NOT_SUPPORTED");
+                    } else {
+                        setOutOfRangeMessage(data.message);
+                    }
                     setShowOutOfRangePopup(true);
                 } else {
                     toast({ title: "Punch Failed", description: data.message, variant: "destructive" });
@@ -980,7 +985,12 @@ const EmployeeAttendancePage = () => {
             const lowerError = typeof errorDetail === "string" ? errorDetail.toLowerCase() : "";
             
             if (lowerError.includes("range") || lowerError.includes("distance") || lowerError.includes("radius") || lowerError.includes("location") || lowerError.includes("office")) {
-                setOutOfRangeMessage(typeof errorDetail === "string" ? errorDetail : "You are out of range.");
+                // Backend detected mock location → show "Location Not Supported"
+                if (lowerError.includes("static") || lowerError.includes("mocked") || lowerError.includes("mock")) {
+                    setOutOfRangeMessage("LOCATION_NOT_SUPPORTED");
+                } else {
+                    setOutOfRangeMessage(typeof errorDetail === "string" ? errorDetail : "You are out of range.");
+                }
                 setShowOutOfRangePopup(true);
             } else {
                 toast({ title: "Error", description: typeof errorDetail === "string" ? errorDetail : "An error occurred", variant: "destructive" });
@@ -1856,16 +1866,30 @@ const EmployeeAttendancePage = () => {
                 </div>
             )}
 
-            {/* OUT OF RANGE POPUP - Centered on screen */}
+            {/* OUT OF RANGE / LOCATION NOT SUPPORTED POPUP */}
             {showOutOfRangePopup && (
                 <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setShowOutOfRangePopup(false)}>
                     <div 
                         className="bg-white text-slate-800 border border-slate-200 px-8 py-6 rounded-2xl shadow-2xl text-center max-w-xs mx-4 animate-in zoom-in-95 fade-in duration-200"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="text-4xl mb-3">📍</div>
-                        <p className="text-lg font-semibold text-slate-800 mb-1">You're out of range</p>
-                        <p className="text-sm text-slate-500 mb-4">Please move closer to the office to punch in/out.</p>
+                        {outOfRangeMessage === "LOCATION_NOT_SUPPORTED" ? (
+                            <>
+                                <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><line x1="8" y1="8" x2="16" y2="16"/><line x1="16" y1="8" x2="8" y2="16"/></svg>
+                                </div>
+                                <p className="text-lg font-semibold text-slate-800 mb-1">Location Not Supported</p>
+                                <p className="text-sm text-slate-500 mb-4">Your current location could not be verified. Please ensure your device GPS is functioning correctly and try again.</p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                </div>
+                                <p className="text-lg font-semibold text-slate-800 mb-1">You are out of range</p>
+                                <p className="text-sm text-slate-500 mb-4">Please move closer to the office to punch in/out.</p>
+                            </>
+                        )}
                         <button 
                             onClick={() => setShowOutOfRangePopup(false)}
                             className="px-6 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition-colors"
