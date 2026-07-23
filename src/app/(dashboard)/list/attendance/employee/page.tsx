@@ -19,7 +19,7 @@ import EmployeeLeaveHistoryTable from "@/components/attendance/EmployeeLeaveHist
 import ApplyLeaveModal from "@/components/attendance/ApplyLeaveModal";
 import EmployeeWFHHistoryTable from "@/components/attendance/EmployeeWFHHistoryTable";
 import ApplyWFHModal from "@/components/attendance/ApplyWFHModal";
-import { CalendarDays, CalendarPlus, ClockArrowUp, Home, Laptop, LayoutDashboard, LogOut, LogIn, Plus, MapPin, MapPinOff } from "lucide-react";
+import { CalendarDays, CalendarPlus, ClockArrowUp, Home, Laptop, LayoutDashboard, LogOut, LogIn, Plus, MapPin } from "lucide-react";
 import EmployeeRegulizeRequests from "@/components/attendance/EmployeeRegulizeRequests";
 import { toMinutes } from "../admin/page";
 import { useCurrentEmployee } from "@/hooks/useCurrentEmployee";
@@ -802,43 +802,6 @@ const EmployeeAttendancePage = () => {
             }
         }
 
-        // --- Mock Location Detection: take 3 rapid fresh GPS readings ---
-        // Real GPS always has micro-drift (1-5m). Mock GPS returns EXACT same coords every time.
-        const getMockCheckReading = (): Promise<{ lat: number; lon: number } | null> => {
-            return new Promise((resolve) => {
-                if (!("geolocation" in navigator)) { resolve(null); return; }
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-                    () => resolve(null),
-                    { enableHighAccuracy: true, timeout: 4000, maximumAge: 0 }
-                );
-            });
-        };
-
-        setIsProcessing(true);
-        const mockReadings: { lat: number; lon: number }[] = [];
-        for (let i = 0; i < 3; i++) {
-            const reading = await getMockCheckReading();
-            if (!reading) break;
-            mockReadings.push(reading);
-            if (i < 2) await new Promise(r => setTimeout(r, 400));
-        }
-
-        if (mockReadings.length >= 3) {
-            const allSameLat = mockReadings.every(r => r.lat === mockReadings[0].lat);
-            const allSameLon = mockReadings.every(r => r.lon === mockReadings[0].lon);
-            if (allSameLat && allSameLon) {
-                setShowOutOfRangePopup(true);
-                setIsProcessing(false);
-                return;
-            }
-            // Use the last fresh reading as the actual location
-            currentLocation = mockReadings[mockReadings.length - 1];
-            setLocation(currentLocation);
-            locationRef.current = currentLocation;
-        }
-        // --- End Mock Detection ---
-
         const endpoint = type === "in" ? `${apiUrl}/punch-in/` : `${apiUrl}/punch-out/`;
         setIsProcessing(true);
         setMessage(null);
@@ -1271,13 +1234,7 @@ const EmployeeAttendancePage = () => {
         }
     }, [showLocationPopup]);
 
-    // Auto-dismiss out of range popup after 3 seconds
-    useEffect(() => {
-        if (showOutOfRangePopup) {
-            const timer = setTimeout(() => setShowOutOfRangePopup(false), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [showOutOfRangePopup]);
+    // Removed auto-dismiss out of range popup as per user request (must be manually closed)
 
     // set initial elapsed seconds when attendanceStatus changes
     useEffect(() => {
@@ -1785,14 +1742,29 @@ const EmployeeAttendancePage = () => {
                 </div>
             )}
 
-            {/* SIMPLE OUT OF RANGE POPUP */}
+            {/* FULLSCREEN OUT OF RANGE POPUP - Zepto Style */}
             {showOutOfRangePopup && (
-                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[999] animate-in slide-in-from-top-5 fade-in duration-300">
-                    <div 
-                        className="bg-white text-slate-800 border border-slate-200 px-6 py-3.5 rounded-full shadow-xl text-sm font-medium whitespace-nowrap cursor-pointer hover:bg-slate-50 transition-colors"
-                        onClick={() => setShowOutOfRangePopup(false)}
+                <div
+                    className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                    onClick={() => setShowOutOfRangePopup(false)}
+                >
+                    {/* Top Right Screen Close Button (Zepto style) */}
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setShowOutOfRangePopup(false); }}
+                        className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-black/80 hover:bg-black text-white transition-colors"
                     >
-                        Ohh no! You're out of range
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+
+                    <div 
+                        className="rounded-[28px] mx-6 max-w-[240px] w-full shadow-[0_10px_40px_rgba(240,130,80,0.6)] border-[4px] border-[#F28C54] flex flex-col items-center overflow-hidden relative bg-white"
+                    >
+                        {/* Bunny Image filling the popup */}
+                        <img 
+                            src="/out-of-range-bunny.png" 
+                            alt="Out of Range" 
+                            className="w-full h-auto object-cover"
+                        />
                     </div>
                 </div>
             )}
