@@ -769,12 +769,11 @@ const EmployeeAttendancePage = () => {
             return;
         }
 
-        // Always fetch fresh GPS on every punch (don't use cached)
-        // This ensures if mock was turned off, real GPS is picked up without refresh
-        let currentLocation: { lat: number; lon: number; accuracy?: number } | null = null;
+        // Smart location check: Try fetching fresh GPS first, fallback to cached locationRef.current if fresh fetch fails
+        let currentLocation: { lat: number; lon: number; accuracy?: number } | null = locationRef.current;
         setIsProcessing(true);
         try {
-            currentLocation = await new Promise<{ lat: number; lon: number; accuracy?: number } | null>((resolve) => {
+            const freshLoc = await new Promise<{ lat: number; lon: number; accuracy?: number } | null>((resolve) => {
                 if (!("geolocation" in navigator)) {
                     resolve(null);
                     return;
@@ -782,11 +781,14 @@ const EmployeeAttendancePage = () => {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy }),
                     () => resolve(null),
-                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 5000 }
+                    { enableHighAccuracy: true, timeout: 6000, maximumAge: 10000 }
                 );
             });
+            if (freshLoc) {
+                currentLocation = freshLoc;
+            }
         } catch {
-            currentLocation = null;
+            // If fresh fetch throws, keep currentLocation as locationRef.current fallback
         }
 
         if (currentLocation) {
