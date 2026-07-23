@@ -802,7 +802,7 @@ const EmployeeAttendancePage = () => {
             }
         }
 
-        // --- Mock Location Detection: take 3 rapid fresh GPS readings ---
+        // --- Mock Location Detection: take rapid fresh GPS readings ---
         // Real GPS always has micro-drift (1-5m). Mock GPS returns EXACT same coords every time.
         const getMockCheckReading = (): Promise<{ lat: number; lon: number } | null> => {
             return new Promise((resolve) => {
@@ -817,21 +817,46 @@ const EmployeeAttendancePage = () => {
 
         setIsProcessing(true);
         const mockReadings: { lat: number; lon: number }[] = [];
-        for (let i = 0; i < 3; i++) {
-            const reading = await getMockCheckReading();
-            if (!reading) break;
-            mockReadings.push(reading);
-            if (i < 2) await new Promise(r => setTimeout(r, 400));
+        
+        // Push initial location to check against
+        if (locationRef.current) {
+            mockReadings.push(locationRef.current);
         }
 
-        if (mockReadings.length >= 3) {
-            const allSameLat = mockReadings.every(r => r.lat === mockReadings[0].lat);
-            const allSameLon = mockReadings.every(r => r.lon === mockReadings[0].lon);
-            if (allSameLat && allSameLon) {
-                setShowOutOfRangePopup(true);
-                setIsProcessing(false);
-                return;
+        for (let i = 0; i < 2; i++) {
+            const reading = await getMockCheckReading();
+            if (reading) mockReadings.push(reading);
+            if (i < 1) await new Promise(r => setTimeout(r, 400));
+        }
+
+        let isMock = false;
+        if (mockReadings.length >= 2) {
+            // Check if any two consecutive readings are exactly identical
+            for (let i = 1; i < mockReadings.length; i++) {
+                if (mockReadings[i].lat === mockReadings[i-1].lat && mockReadings[i].lon === mockReadings[i-1].lon) {
+                    isMock = true;
+                    break;
+                }
             }
+            
+            // Or if the drift over time is suspiciously small (less than ~1cm)
+            if (!isMock) {
+                const latDiff = Math.abs(mockReadings[mockReadings.length-1].lat - mockReadings[0].lat);
+                const lonDiff = Math.abs(mockReadings[mockReadings.length-1].lon - mockReadings[0].lon);
+                if (latDiff < 0.00000001 && lonDiff < 0.00000001) {
+                    isMock = true;
+                }
+            }
+        }
+
+        if (isMock) {
+            setOutOfRangeMessage("Location appears to be mocked or static. You are out of range.");
+            setShowOutOfRangePopup(true);
+            setIsProcessing(false);
+            return;
+        }
+
+        if (mockReadings.length > 0) {
             // Use the last fresh reading as the actual location
             currentLocation = mockReadings[mockReadings.length - 1];
             setLocation(currentLocation);
