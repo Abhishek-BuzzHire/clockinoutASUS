@@ -1856,14 +1856,22 @@ const EmployeeAttendancePage = () => {
                 </div>
             )}
 
-            {/* SIMPLE OUT OF RANGE POPUP */}
+            {/* OUT OF RANGE POPUP - Centered on screen */}
             {showOutOfRangePopup && (
-                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[999] animate-in slide-in-from-top-5 fade-in duration-300">
+                <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setShowOutOfRangePopup(false)}>
                     <div 
-                        className="bg-white text-slate-800 border border-slate-200 px-6 py-3.5 rounded-full shadow-xl text-sm font-medium whitespace-nowrap cursor-pointer hover:bg-slate-50 transition-colors"
-                        onClick={() => setShowOutOfRangePopup(false)}
+                        className="bg-white text-slate-800 border border-slate-200 px-8 py-6 rounded-2xl shadow-2xl text-center max-w-xs mx-4 animate-in zoom-in-95 fade-in duration-200"
+                        onClick={(e) => e.stopPropagation()}
                     >
-                        Ohh no! You're out of range
+                        <div className="text-4xl mb-3">📍</div>
+                        <p className="text-lg font-semibold text-slate-800 mb-1">You're out of range</p>
+                        <p className="text-sm text-slate-500 mb-4">Please move closer to the office to punch in/out.</p>
+                        <button 
+                            onClick={() => setShowOutOfRangePopup(false)}
+                            className="px-6 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition-colors"
+                        >
+                            OK
+                        </button>
                     </div>
                 </div>
             )}
