@@ -254,8 +254,8 @@ const EmployeeAttendancePage = () => {
     const [calendarMap, setCalendarMap] = useState<Record<string, CalendarDay>>({});
 
     // Geolocation
-    const [location, setLocation] = useState<{ lat: number; lon: number; accuracy?: number } | null>(null);
-    const locationRef = useRef<{ lat: number; lon: number; accuracy?: number } | null>(null);
+    const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
+    const locationRef = useRef<{ lat: number; lon: number } | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
     const [showLocationPopup, setShowLocationPopup] = useState(false);
     const [showOutOfRangePopup, setShowOutOfRangePopup] = useState(false);
@@ -485,69 +485,61 @@ const EmployeeAttendancePage = () => {
         setLocationError(null);
         setShowLocationPopup(false);
 
-        const getPosition = (enableHighAccuracy: boolean, timeout: number) => {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const loc = {
-                        lat: position.coords.latitude,
-                        lon: position.coords.longitude,
-                        accuracy: position.coords.accuracy,
-                    };
-                    setLocation(loc);
-                    locationRef.current = loc;
-                    setLocationReady(true);
-                    setLocationError(null);
-                    retryCountRef.current = 0;
-                    setIsProcessing(false);
-                    if (showPopup) {
-                        setShowRefreshSuccess(true);
-                        setTimeout(() => setShowRefreshSuccess(false), 2000);
-                    }
-                },
-                (error) => {
-                    // Fallback to low accuracy (WiFi / Cell network) if high accuracy failed and not permission denied
-                    if (enableHighAccuracy && error.code !== error.PERMISSION_DENIED) {
-                        getPosition(false, 10000);
-                        return;
-                    }
-
-                    if (retryOnFail && !showPopup && retryCountRef.current < 3) {
-                        retryCountRef.current += 1;
-                        const delay = retryCountRef.current * 2000;
-                        setTimeout(() => {
-                            fetchGeolocation(false, retryCountRef.current < 3);
-                        }, delay);
-                        return;
-                    }
-
-                    let errorMessage = "Geolocation failed: ";
-                    switch (error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMessage += "User denied the request for Geolocation. Please allow location access.";
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMessage += "Location information is unavailable.";
-                            break;
-                        case error.TIMEOUT:
-                            errorMessage += "The request to get user location timed out.";
-                            break;
-                        default:
-                            errorMessage += "An unknown error occurred.";
-                            break;
-                    }
-                    setLocationError(errorMessage);
-                    if (showPopup) setShowLocationPopup(true);
-                    setIsProcessing(false);
-                },
-                {
-                    enableHighAccuracy,
-                    timeout,
-                    maximumAge: 60000, // Accept cached position up to 60s old
-                }
-            );
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 30000, // Accept cached position up to 30s old
         };
 
-        getPosition(true, 8000);
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const loc = {
+                    lat: position.coords.latitude,
+                    lon: position.coords.longitude,
+                };
+                setLocation(loc);
+                locationRef.current = loc;
+                setLocationReady(true);
+                setLocationError(null);
+                retryCountRef.current = 0;
+                setIsProcessing(false);
+                if (showPopup) {
+                    setShowRefreshSuccess(true);
+                    setTimeout(() => setShowRefreshSuccess(false), 2000);
+                }
+            },
+            (error) => {
+                // If this is a silent fetch (not user-triggered) and we can retry, try again
+                if (retryOnFail && !showPopup && retryCountRef.current < 3) {
+                    retryCountRef.current += 1;
+                    const delay = retryCountRef.current * 2000; // 2s, 4s, 6s
+                    setTimeout(() => {
+                        fetchGeolocation(false, retryCountRef.current < 3);
+                    }, delay);
+                    return; // Don't show error yet, still retrying
+                }
+
+                let errorMessage = "Geolocation failed: ";
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage += "User denied the request for Geolocation. Please allow location access.";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage += "Location information is unavailable.";
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage += "The request to get user location timed out.";
+                        break;
+                    default:
+                        errorMessage += "An unknown error occurred.";
+                        break;
+                }
+                setLocationError(errorMessage);
+                if (showPopup) setShowLocationPopup(true);
+                setIsProcessing(false);
+            },
+            options
+        );
     }, []);
 
     // --- Fetch today's attendance from backend with retry ---
@@ -776,52 +768,147 @@ const EmployeeAttendancePage = () => {
             return;
         }
 
-        // Smart location check: Try High Accuracy GPS -> Low Accuracy (WiFi/Cell) -> Cached locationRef fallback
-        let currentLocation: { lat: number; lon: number; accuracy?: number } | null = locationRef.current;
-        setIsProcessing(true);
-        try {
-            const freshLoc = await new Promise<{ lat: number; lon: number; accuracy?: number } | null>((resolve) => {
-                if (!("geolocation" in navigator)) {
-                    resolve(null);
-                    return;
-                }
-                // Stage 1: High Accuracy GPS (4s timeout)
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy }),
-                    (err) => {
-                        if (err.code === err.PERMISSION_DENIED) {
-                            resolve(null);
-                            return;
-                        }
-                        // Stage 2: Fallback to Low Accuracy Wi-Fi / Cell tower location (5s timeout)
-                        navigator.geolocation.getCurrentPosition(
-                            (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy }),
-                            () => resolve(null),
-                            { enableHighAccuracy: false, timeout: 5000, maximumAge: 30000 }
-                        );
-                    },
-                    { enableHighAccuracy: true, timeout: 4000, maximumAge: 10000 }
-                );
-            });
-            if (freshLoc) {
-                currentLocation = freshLoc;
+        // Smart location check: use ref for latest value, try fetching if missing
+        let currentLocation = locationRef.current;
+        if (!currentLocation) {
+            // Try one quick geolocation fetch before showing popup
+            setIsProcessing(true);
+            try {
+                currentLocation = await new Promise<{ lat: number; lon: number } | null>((resolve) => {
+                    if (!("geolocation" in navigator)) {
+                        resolve(null);
+                        return;
+                    }
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+                        () => resolve(null),
+                        { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
+                    );
+                });
+            } catch {
+                currentLocation = null;
             }
-        } catch {
-            // Keep locationRef.current fallback
+
+            if (currentLocation) {
+                setLocation(currentLocation);
+                locationRef.current = currentLocation;
+                setLocationReady(true);
+                setLocationError(null);
+            } else {
+                setIsProcessing(false);
+                setLocationError("Location is required to punch in or out. Please turn on GPS and try again.");
+                setShowLocationPopup(true);
+                return;
+            }
         }
 
-        if (currentLocation) {
-            setLocation(currentLocation);
-            locationRef.current = currentLocation;
-            setLocationReady(true);
-            setLocationError(null);
-        } else {
+        // --- Advanced Mock Location Detection ---
+        // Mock location apps can't properly fake: accuracy values, altitude, speed
+        // Real GPS: accuracy 3-30m, altitude varies, speed fluctuates
+        // Mock GPS: accuracy often exactly 20.0 or 0, altitude 0, speed null/0
+        
+        interface GpsReading {
+            lat: number;
+            lon: number;
+            accuracy: number;
+            altitude: number | null;
+            speed: number | null;
+            heading: number | null;
+            timestamp: number;
+        }
+
+        const getAdvancedReading = (): Promise<GpsReading | null> => {
+            return new Promise((resolve) => {
+                if (!("geolocation" in navigator)) { resolve(null); return; }
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => resolve({
+                        lat: pos.coords.latitude,
+                        lon: pos.coords.longitude,
+                        accuracy: pos.coords.accuracy,
+                        altitude: pos.coords.altitude,
+                        speed: pos.coords.speed,
+                        heading: pos.coords.heading,
+                        timestamp: pos.timestamp,
+                    }),
+                    () => resolve(null),
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                );
+            });
+        };
+
+        setIsProcessing(true);
+        const readings: GpsReading[] = [];
+
+        // Take 3 fresh GPS readings with delays
+        for (let i = 0; i < 3; i++) {
+            const reading = await getAdvancedReading();
+            if (reading) readings.push(reading);
+            if (i < 2) await new Promise(r => setTimeout(r, 500));
+        }
+
+        let isMock = false;
+        let mockReason = "";
+
+        if (readings.length >= 2) {
+            // CHECK 1: Exact coordinate match across any 2 readings
+            for (let i = 1; i < readings.length; i++) {
+                if (readings[i].lat === readings[i-1].lat && readings[i].lon === readings[i-1].lon) {
+                    isMock = true;
+                    mockReason = "Location coordinates are static.";
+                    break;
+                }
+            }
+
+            // CHECK 2: Suspiciously small drift (< ~0.1 meters)
+            if (!isMock) {
+                const latDrift = Math.abs(readings[readings.length-1].lat - readings[0].lat);
+                const lonDrift = Math.abs(readings[readings.length-1].lon - readings[0].lon);
+                if (latDrift < 0.000001 && lonDrift < 0.000001) {
+                    isMock = true;
+                    mockReason = "Location drift is suspiciously small.";
+                }
+            }
+
+            // CHECK 3: All accuracy values are exactly the same round number
+            // Real GPS accuracy fluctuates (e.g., 12.3, 14.7, 11.1)
+            // Mock GPS often returns exactly 20.0 or identical values
+            if (!isMock && readings.length >= 2) {
+                const accuracies = readings.map(r => r.accuracy);
+                const allSameAccuracy = accuracies.every(a => a === accuracies[0]);
+                const isRoundNumber = accuracies.every(a => a === Math.round(a));
+                if (allSameAccuracy && isRoundNumber) {
+                    isMock = true;
+                    mockReason = "GPS accuracy pattern is suspicious.";
+                }
+            }
+
+            // CHECK 4: Compare with initial location from page load
+            if (!isMock && locationRef.current) {
+                const initLat = locationRef.current.lat;
+                const initLon = locationRef.current.lon;
+                const latDiffFromInit = Math.abs(readings[readings.length-1].lat - initLat);
+                const lonDiffFromInit = Math.abs(readings[readings.length-1].lon - initLon);
+                if (latDiffFromInit < 0.000001 && lonDiffFromInit < 0.000001) {
+                    isMock = true;
+                    mockReason = "Location unchanged since page load.";
+                }
+            }
+        }
+
+        if (isMock) {
+            setOutOfRangeMessage("You are out of range.");
+            setShowOutOfRangePopup(true);
             setIsProcessing(false);
-            setLocationError("Location is required to punch in or out. Please turn on GPS and try again.");
-            setShowLocationPopup(true);
             return;
         }
 
+        if (readings.length > 0) {
+            const lastReading = readings[readings.length - 1];
+            currentLocation = { lat: lastReading.lat, lon: lastReading.lon };
+            setLocation(currentLocation);
+            locationRef.current = currentLocation;
+        }
+        // --- End Mock Detection ---
 
         const endpoint = type === "in" ? `${apiUrl}/punch-in/` : `${apiUrl}/punch-out/`;
         setIsProcessing(true);
@@ -835,7 +922,6 @@ const EmployeeAttendancePage = () => {
                 {
                     latitude: currentLocation.lat,
                     longitude: currentLocation.lon,
-                    accuracy: currentLocation.accuracy,
                 },
                 {
                     headers: {
@@ -869,11 +955,11 @@ const EmployeeAttendancePage = () => {
                         setPunchTime(new Date(data.data.punch_out_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }));
                     }
                 } else {
-                    // fallback: refresh today's attendance (non-blocking)
-                    fetchTodayAttendance();
+                    // fallback: refresh today's attendance
+                    await fetchTodayAttendance();
                 }
 
-                // Refresh the timesheet table in background (non-blocking)
+                // Refresh the timesheet table so it shows immediately
                 if (viewMode === "weekly") {
                     fetchWeeklyAttendance(currentWeekStart, endOfWeek(currentWeekStart, { weekStartsOn: 0 }));
                 } else {
@@ -882,12 +968,7 @@ const EmployeeAttendancePage = () => {
             } else {
                 const lowerMsg = data.message?.toLowerCase() || "";
                 if (lowerMsg.includes("range") || lowerMsg.includes("distance") || lowerMsg.includes("radius") || lowerMsg.includes("location") || lowerMsg.includes("office")) {
-                    // Backend detected mock location → show "Location Not Supported"
-                    if (lowerMsg.includes("static") || lowerMsg.includes("mocked") || lowerMsg.includes("mock")) {
-                        setOutOfRangeMessage("LOCATION_NOT_SUPPORTED");
-                    } else {
-                        setOutOfRangeMessage(data.message);
-                    }
+                    setOutOfRangeMessage(data.message);
                     setShowOutOfRangePopup(true);
                 } else {
                     toast({ title: "Punch Failed", description: data.message, variant: "destructive" });
@@ -899,12 +980,7 @@ const EmployeeAttendancePage = () => {
             const lowerError = typeof errorDetail === "string" ? errorDetail.toLowerCase() : "";
             
             if (lowerError.includes("range") || lowerError.includes("distance") || lowerError.includes("radius") || lowerError.includes("location") || lowerError.includes("office")) {
-                // Backend detected mock location → show "Location Not Supported"
-                if (lowerError.includes("static") || lowerError.includes("mocked") || lowerError.includes("mock")) {
-                    setOutOfRangeMessage("LOCATION_NOT_SUPPORTED");
-                } else {
-                    setOutOfRangeMessage(typeof errorDetail === "string" ? errorDetail : "You are out of range.");
-                }
+                setOutOfRangeMessage(typeof errorDetail === "string" ? errorDetail : "You are out of range.");
                 setShowOutOfRangePopup(true);
             } else {
                 toast({ title: "Error", description: typeof errorDetail === "string" ? errorDetail : "An error occurred", variant: "destructive" });
@@ -1780,30 +1856,16 @@ const EmployeeAttendancePage = () => {
                 </div>
             )}
 
-            {/* OUT OF RANGE / LOCATION NOT SUPPORTED POPUP */}
+            {/* OUT OF RANGE POPUP - Centered on screen */}
             {showOutOfRangePopup && (
                 <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setShowOutOfRangePopup(false)}>
                     <div 
                         className="bg-white text-slate-800 border border-slate-200 px-8 py-6 rounded-2xl shadow-2xl text-center max-w-xs mx-4 animate-in zoom-in-95 fade-in duration-200"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {outOfRangeMessage === "LOCATION_NOT_SUPPORTED" ? (
-                            <>
-                                <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><line x1="8" y1="8" x2="16" y2="16"/><line x1="16" y1="8" x2="8" y2="16"/></svg>
-                                </div>
-                                <p className="text-lg font-semibold text-slate-800 mb-1">Location Not Supported</p>
-                                <p className="text-sm text-slate-500 mb-4">Your current location could not be verified. Please ensure your device GPS is functioning correctly and try again.</p>
-                            </>
-                        ) : (
-                            <>
-                                <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                                </div>
-                                <p className="text-lg font-semibold text-slate-800 mb-1">You are out of range</p>
-                                <p className="text-sm text-slate-500 mb-4">Please move closer to the office to punch in/out.</p>
-                            </>
-                        )}
+                        <div className="text-4xl mb-3">📍</div>
+                        <p className="text-lg font-semibold text-slate-800 mb-1">You're out of range</p>
+                        <p className="text-sm text-slate-500 mb-4">Please move closer to the office to punch in/out.</p>
                         <button 
                             onClick={() => setShowOutOfRangePopup(false)}
                             className="px-6 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition-colors"
