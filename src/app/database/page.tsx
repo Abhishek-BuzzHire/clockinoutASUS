@@ -22,6 +22,9 @@ export default function CandidateDatabasePage() {
     const [debouncedSearchPhone, setDebouncedSearchPhone] = useState('');
     const [searchEmail, setSearchEmail] = useState('');
     const [debouncedSearchEmail, setDebouncedSearchEmail] = useState('');
+    const [searchCompany, setSearchCompany] = useState('');
+    const [debouncedSearchCompany, setDebouncedSearchCompany] = useState('');
+
     const [filters, setFilters] = useState<Filters>({
         skills: '',
         minExperience: 0,
@@ -41,19 +44,23 @@ export default function CandidateDatabasePage() {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [debouncedSearchPhone, debouncedSearchEmail, filters, itemsPerPage]);
+    }, [debouncedSearchPhone, debouncedSearchEmail, debouncedSearchCompany, filters, itemsPerPage]);
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             setDebouncedSearchPhone(searchPhone);
             setDebouncedSearchEmail(searchEmail);
-        }, 250);
+            setDebouncedSearchCompany(searchCompany);
+        }, 150);
         return () => clearTimeout(timeoutId);
-    }, [searchPhone, searchEmail]);
+    }, [searchPhone, searchEmail, searchCompany]);
 
     const queryParams = new URLSearchParams();
     if (debouncedSearchPhone) queryParams.append('phone', debouncedSearchPhone);
     if (debouncedSearchEmail) queryParams.append('email', debouncedSearchEmail);
+    if (debouncedSearchCompany) queryParams.append('company', debouncedSearchCompany);
+    else if (filters.company) queryParams.append('company', filters.company);
+
     if (filters.skills) queryParams.append('skills', filters.skills);
     if (filters.minExperience > 0) queryParams.append('minExperience', filters.minExperience.toString());
     if (filters.maxExperience !== null) queryParams.append('maxExperience', filters.maxExperience.toString());
@@ -62,7 +69,6 @@ export default function CandidateDatabasePage() {
     if (filters.minSalary > 0) queryParams.append('minSalary', filters.minSalary.toString());
     if (filters.maxSalary !== null) queryParams.append('maxSalary', filters.maxSalary.toString());
     if (filters.notice !== null) queryParams.append('notice', filters.notice.toString());
-    if (filters.company) queryParams.append('company', filters.company);
     if (filters.education) queryParams.append('education', filters.education);
 
     queryParams.append('page', currentPage.toString());
@@ -124,8 +130,11 @@ export default function CandidateDatabasePage() {
                                 </div>
                                 <div className="flex-1">
                                     <SearchBar 
-                                        searchTerm={filters.company} 
-                                        onSearchChange={(val) => setFilters(prev => ({ ...prev, company: val }))} 
+                                        searchTerm={searchCompany} 
+                                        onSearchChange={(val) => {
+                                            setSearchCompany(val);
+                                            setFilters(prev => ({ ...prev, company: val }));
+                                        }} 
                                         placeholder="Search by company..." 
                                         icon={<Building2 className='h-[18px] w-[18px]' />}
                                     />
