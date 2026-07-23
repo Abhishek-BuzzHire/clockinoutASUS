@@ -802,109 +802,38 @@ const EmployeeAttendancePage = () => {
             }
         }
 
-        // --- Advanced Mock Location Detection ---
-        // Mock location apps can't properly fake: accuracy values, altitude, speed
-        // Real GPS: accuracy 3-30m, altitude varies, speed fluctuates
-        // Mock GPS: accuracy often exactly 20.0 or 0, altitude 0, speed null/0
-        
-        interface GpsReading {
-            lat: number;
-            lon: number;
-            accuracy: number;
-            altitude: number | null;
-            speed: number | null;
-            heading: number | null;
-            timestamp: number;
-        }
-
-        const getAdvancedReading = (): Promise<GpsReading | null> => {
+        // --- Mock Location Detection: take 3 rapid fresh GPS readings ---
+        // Real GPS always has micro-drift (1-5m). Mock GPS returns EXACT same coords every time.
+        const getMockCheckReading = (): Promise<{ lat: number; lon: number } | null> => {
             return new Promise((resolve) => {
                 if (!("geolocation" in navigator)) { resolve(null); return; }
                 navigator.geolocation.getCurrentPosition(
-                    (pos) => resolve({
-                        lat: pos.coords.latitude,
-                        lon: pos.coords.longitude,
-                        accuracy: pos.coords.accuracy,
-                        altitude: pos.coords.altitude,
-                        speed: pos.coords.speed,
-                        heading: pos.coords.heading,
-                        timestamp: pos.timestamp,
-                    }),
+                    (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
                     () => resolve(null),
-                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 4000, maximumAge: 0 }
                 );
             });
         };
 
         setIsProcessing(true);
-        const readings: GpsReading[] = [];
-
-        // Take 3 fresh GPS readings with delays
+        const mockReadings: { lat: number; lon: number }[] = [];
         for (let i = 0; i < 3; i++) {
-            const reading = await getAdvancedReading();
-            if (reading) readings.push(reading);
-            if (i < 2) await new Promise(r => setTimeout(r, 500));
+            const reading = await getMockCheckReading();
+            if (!reading) break;
+            mockReadings.push(reading);
+            if (i < 2) await new Promise(r => setTimeout(r, 400));
         }
 
-        let isMock = false;
-        let mockReason = "";
-
-        if (readings.length >= 2) {
-            // CHECK 1: Exact coordinate match across any 2 readings
-            for (let i = 1; i < readings.length; i++) {
-                if (readings[i].lat === readings[i-1].lat && readings[i].lon === readings[i-1].lon) {
-                    isMock = true;
-                    mockReason = "Location coordinates are static.";
-                    break;
-                }
+        if (mockReadings.length >= 3) {
+            const allSameLat = mockReadings.every(r => r.lat === mockReadings[0].lat);
+            const allSameLon = mockReadings.every(r => r.lon === mockReadings[0].lon);
+            if (allSameLat && allSameLon) {
+                setShowOutOfRangePopup(true);
+                setIsProcessing(false);
+                return;
             }
-
-            // CHECK 2: Suspiciously small drift (< ~0.1 meters)
-            if (!isMock) {
-                const latDrift = Math.abs(readings[readings.length-1].lat - readings[0].lat);
-                const lonDrift = Math.abs(readings[readings.length-1].lon - readings[0].lon);
-                if (latDrift < 0.000001 && lonDrift < 0.000001) {
-                    isMock = true;
-                    mockReason = "Location drift is suspiciously small.";
-                }
-            }
-
-            // CHECK 3: All accuracy values are exactly the same round number
-            // Real GPS accuracy fluctuates (e.g., 12.3, 14.7, 11.1)
-            // Mock GPS often returns exactly 20.0 or identical values
-            if (!isMock && readings.length >= 2) {
-                const accuracies = readings.map(r => r.accuracy);
-                const allSameAccuracy = accuracies.every(a => a === accuracies[0]);
-                const isRoundNumber = accuracies.every(a => a === Math.round(a));
-                if (allSameAccuracy && isRoundNumber) {
-                    isMock = true;
-                    mockReason = "GPS accuracy pattern is suspicious.";
-                }
-            }
-
-            // CHECK 4: Compare with initial location from page load
-            if (!isMock && locationRef.current) {
-                const initLat = locationRef.current.lat;
-                const initLon = locationRef.current.lon;
-                const latDiffFromInit = Math.abs(readings[readings.length-1].lat - initLat);
-                const lonDiffFromInit = Math.abs(readings[readings.length-1].lon - initLon);
-                if (latDiffFromInit < 0.000001 && lonDiffFromInit < 0.000001) {
-                    isMock = true;
-                    mockReason = "Location unchanged since page load.";
-                }
-            }
-        }
-
-        if (isMock) {
-            setOutOfRangeMessage("You are out of range.");
-            setShowOutOfRangePopup(true);
-            setIsProcessing(false);
-            return;
-        }
-
-        if (readings.length > 0) {
-            const lastReading = readings[readings.length - 1];
-            currentLocation = { lat: lastReading.lat, lon: lastReading.lon };
+            // Use the last fresh reading as the actual location
+            currentLocation = mockReadings[mockReadings.length - 1];
             setLocation(currentLocation);
             locationRef.current = currentLocation;
         }
@@ -1856,22 +1785,14 @@ const EmployeeAttendancePage = () => {
                 </div>
             )}
 
-            {/* OUT OF RANGE POPUP - Centered on screen */}
+            {/* SIMPLE OUT OF RANGE POPUP */}
             {showOutOfRangePopup && (
-                <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setShowOutOfRangePopup(false)}>
+                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[999] animate-in slide-in-from-top-5 fade-in duration-300">
                     <div 
-                        className="bg-white text-slate-800 border border-slate-200 px-8 py-6 rounded-2xl shadow-2xl text-center max-w-xs mx-4 animate-in zoom-in-95 fade-in duration-200"
-                        onClick={(e) => e.stopPropagation()}
+                        className="bg-white text-slate-800 border border-slate-200 px-6 py-3.5 rounded-full shadow-xl text-sm font-medium whitespace-nowrap cursor-pointer hover:bg-slate-50 transition-colors"
+                        onClick={() => setShowOutOfRangePopup(false)}
                     >
-                        <div className="text-4xl mb-3">📍</div>
-                        <p className="text-lg font-semibold text-slate-800 mb-1">You're out of range</p>
-                        <p className="text-sm text-slate-500 mb-4">Please move closer to the office to punch in/out.</p>
-                        <button 
-                            onClick={() => setShowOutOfRangePopup(false)}
-                            className="px-6 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition-colors"
-                        >
-                            OK
-                        </button>
+                        Ohh no! You're out of range
                     </div>
                 </div>
             )}
