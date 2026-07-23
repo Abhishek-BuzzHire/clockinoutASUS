@@ -254,8 +254,8 @@ const EmployeeAttendancePage = () => {
     const [calendarMap, setCalendarMap] = useState<Record<string, CalendarDay>>({});
 
     // Geolocation
-    const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
-    const locationRef = useRef<{ lat: number; lon: number } | null>(null);
+    const [location, setLocation] = useState<{ lat: number; lon: number; accuracy?: number } | null>(null);
+    const locationRef = useRef<{ lat: number; lon: number; accuracy?: number } | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
     const [showLocationPopup, setShowLocationPopup] = useState(false);
     const [showOutOfRangePopup, setShowOutOfRangePopup] = useState(false);
@@ -496,6 +496,7 @@ const EmployeeAttendancePage = () => {
                 const loc = {
                     lat: position.coords.latitude,
                     lon: position.coords.longitude,
+                    accuracy: position.coords.accuracy,
                 };
                 setLocation(loc);
                 locationRef.current = loc;
@@ -774,13 +775,13 @@ const EmployeeAttendancePage = () => {
             // Try one quick geolocation fetch before showing popup
             setIsProcessing(true);
             try {
-                currentLocation = await new Promise<{ lat: number; lon: number } | null>((resolve) => {
+                currentLocation = await new Promise<{ lat: number; lon: number; accuracy?: number } | null>((resolve) => {
                     if (!("geolocation" in navigator)) {
                         resolve(null);
                         return;
                     }
                     navigator.geolocation.getCurrentPosition(
-                        (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+                        (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy }),
                         () => resolve(null),
                         { enableHighAccuracy: true, timeout: 3000, maximumAge: 30000 }
                     );
@@ -815,6 +816,7 @@ const EmployeeAttendancePage = () => {
                 {
                     latitude: currentLocation.lat,
                     longitude: currentLocation.lon,
+                    accuracy: currentLocation.accuracy,
                 },
                 {
                     headers: {
