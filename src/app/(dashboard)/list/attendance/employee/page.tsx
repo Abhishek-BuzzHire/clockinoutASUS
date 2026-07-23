@@ -485,62 +485,69 @@ const EmployeeAttendancePage = () => {
         setLocationError(null);
         setShowLocationPopup(false);
 
-        const options = {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 30000, // Accept cached position up to 30s old
+        const getPosition = (enableHighAccuracy: boolean, timeout: number) => {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const loc = {
+                        lat: position.coords.latitude,
+                        lon: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                    };
+                    setLocation(loc);
+                    locationRef.current = loc;
+                    setLocationReady(true);
+                    setLocationError(null);
+                    retryCountRef.current = 0;
+                    setIsProcessing(false);
+                    if (showPopup) {
+                        setShowRefreshSuccess(true);
+                        setTimeout(() => setShowRefreshSuccess(false), 2000);
+                    }
+                },
+                (error) => {
+                    // Fallback to low accuracy (WiFi / Cell network) if high accuracy failed and not permission denied
+                    if (enableHighAccuracy && error.code !== error.PERMISSION_DENIED) {
+                        getPosition(false, 10000);
+                        return;
+                    }
+
+                    if (retryOnFail && !showPopup && retryCountRef.current < 3) {
+                        retryCountRef.current += 1;
+                        const delay = retryCountRef.current * 2000;
+                        setTimeout(() => {
+                            fetchGeolocation(false, retryCountRef.current < 3);
+                        }, delay);
+                        return;
+                    }
+
+                    let errorMessage = "Geolocation failed: ";
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage += "User denied the request for Geolocation. Please allow location access.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage += "Location information is unavailable.";
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage += "The request to get user location timed out.";
+                            break;
+                        default:
+                            errorMessage += "An unknown error occurred.";
+                            break;
+                    }
+                    setLocationError(errorMessage);
+                    if (showPopup) setShowLocationPopup(true);
+                    setIsProcessing(false);
+                },
+                {
+                    enableHighAccuracy,
+                    timeout,
+                    maximumAge: 60000, // Accept cached position up to 60s old
+                }
+            );
         };
 
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const loc = {
-                    lat: position.coords.latitude,
-                    lon: position.coords.longitude,
-                    accuracy: position.coords.accuracy,
-                };
-                setLocation(loc);
-                locationRef.current = loc;
-                setLocationReady(true);
-                setLocationError(null);
-                retryCountRef.current = 0;
-                setIsProcessing(false);
-                if (showPopup) {
-                    setShowRefreshSuccess(true);
-                    setTimeout(() => setShowRefreshSuccess(false), 2000);
-                }
-            },
-            (error) => {
-                // If this is a silent fetch (not user-triggered) and we can retry, try again
-                if (retryOnFail && !showPopup && retryCountRef.current < 3) {
-                    retryCountRef.current += 1;
-                    const delay = retryCountRef.current * 2000; // 2s, 4s, 6s
-                    setTimeout(() => {
-                        fetchGeolocation(false, retryCountRef.current < 3);
-                    }, delay);
-                    return; // Don't show error yet, still retrying
-                }
-
-                let errorMessage = "Geolocation failed: ";
-                switch (error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage += "User denied the request for Geolocation. Please allow location access.";
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage += "Location information is unavailable.";
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage += "The request to get user location timed out.";
-                        break;
-                    default:
-                        errorMessage += "An unknown error occurred.";
-                        break;
-                }
-                setLocationError(errorMessage);
-                if (showPopup) setShowLocationPopup(true);
-                setIsProcessing(false);
-            },
-            options
-        );
+        getPosition(true, 8000);
     }, []);
 
     // --- Fetch today's attendance from backend with retry ---
@@ -769,7 +776,7 @@ const EmployeeAttendancePage = () => {
             return;
         }
 
-        // Smart location check: Try fetching fresh GPS first, fallback to cached locationRef.current if fresh fetch fails
+        // Smart location check: Try High Accuracy GPS -> Low Accuracy (WiFi/Cell) -> Cached locationRef fallback
         let currentLocation: { lat: number; lon: number; accuracy?: number } | null = locationRef.current;
         setIsProcessing(true);
         try {
@@ -778,17 +785,29 @@ const EmployeeAttendancePage = () => {
                     resolve(null);
                     return;
                 }
+                // Stage 1: High Accuracy GPS (4s timeout)
                 navigator.geolocation.getCurrentPosition(
                     (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy }),
-                    () => resolve(null),
-                    { enableHighAccuracy: true, timeout: 6000, maximumAge: 10000 }
+                    (err) => {
+                        if (err.code === err.PERMISSION_DENIED) {
+                            resolve(null);
+                            return;
+                        }
+                        // Stage 2: Fallback to Low Accuracy Wi-Fi / Cell tower location (5s timeout)
+                        navigator.geolocation.getCurrentPosition(
+                            (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy }),
+                            () => resolve(null),
+                            { enableHighAccuracy: false, timeout: 5000, maximumAge: 30000 }
+                        );
+                    },
+                    { enableHighAccuracy: true, timeout: 4000, maximumAge: 10000 }
                 );
             });
             if (freshLoc) {
                 currentLocation = freshLoc;
             }
         } catch {
-            // If fresh fetch throws, keep currentLocation as locationRef.current fallback
+            // Keep locationRef.current fallback
         }
 
         if (currentLocation) {
