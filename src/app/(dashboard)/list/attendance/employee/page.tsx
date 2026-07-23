@@ -782,7 +782,7 @@ const EmployeeAttendancePage = () => {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy }),
                     () => resolve(null),
-                    { enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 5000 }
                 );
             });
         } catch {
