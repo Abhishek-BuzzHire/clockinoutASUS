@@ -358,6 +358,7 @@ export default function DailyOverview() {
                               </button>
                             </div>
                           ) : (
+                            /* Hidden for now: Admin edit and delete attendance buttons
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
                               <button
                                 onClick={() => startEditing(emp)}
@@ -374,6 +375,8 @@ export default function DailyOverview() {
                                 <Trash2 size={14} />
                               </button>
                             </div>
+                            */
+                            null
                           )}
                         </>
                       )}
