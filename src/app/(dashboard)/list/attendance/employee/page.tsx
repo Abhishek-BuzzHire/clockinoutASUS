@@ -769,38 +769,36 @@ const EmployeeAttendancePage = () => {
             return;
         }
 
-        // Smart location check: use ref for latest value, try fetching if missing
-        let currentLocation = locationRef.current;
-        if (!currentLocation) {
-            // Try one quick geolocation fetch before showing popup
-            setIsProcessing(true);
-            try {
-                currentLocation = await new Promise<{ lat: number; lon: number; accuracy?: number } | null>((resolve) => {
-                    if (!("geolocation" in navigator)) {
-                        resolve(null);
-                        return;
-                    }
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy }),
-                        () => resolve(null),
-                        { enableHighAccuracy: true, timeout: 3000, maximumAge: 30000 }
-                    );
-                });
-            } catch {
-                currentLocation = null;
-            }
+        // Always fetch fresh GPS on every punch (don't use cached)
+        // This ensures if mock was turned off, real GPS is picked up without refresh
+        let currentLocation: { lat: number; lon: number; accuracy?: number } | null = null;
+        setIsProcessing(true);
+        try {
+            currentLocation = await new Promise<{ lat: number; lon: number; accuracy?: number } | null>((resolve) => {
+                if (!("geolocation" in navigator)) {
+                    resolve(null);
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy }),
+                    () => resolve(null),
+                    { enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }
+                );
+            });
+        } catch {
+            currentLocation = null;
+        }
 
-            if (currentLocation) {
-                setLocation(currentLocation);
-                locationRef.current = currentLocation;
-                setLocationReady(true);
-                setLocationError(null);
-            } else {
-                setIsProcessing(false);
-                setLocationError("Location is required to punch in or out. Please turn on GPS and try again.");
-                setShowLocationPopup(true);
-                return;
-            }
+        if (currentLocation) {
+            setLocation(currentLocation);
+            locationRef.current = currentLocation;
+            setLocationReady(true);
+            setLocationError(null);
+        } else {
+            setIsProcessing(false);
+            setLocationError("Location is required to punch in or out. Please turn on GPS and try again.");
+            setShowLocationPopup(true);
+            return;
         }
 
 
