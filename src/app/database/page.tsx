@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import Cookies from "js-cookie";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { DuplicateResolverModal } from "@/components/database/DuplicateResolverModal";
-import { CopyX, Upload, UserPlus, MoreVertical, Phone, Mail } from "lucide-react";
+import { CopyX, Upload, UserPlus, MoreVertical, Phone, Mail, Building2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -104,8 +104,8 @@ export default function CandidateDatabasePage() {
             <div className="flex-1 flex flex-col min-w-0">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-5 overflow-hidden">
                     <div className="p-4 border-b border-gray-100 flex flex-col gap-4">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <div className="flex-1 w-full max-w-2xl flex flex-col md:flex-row gap-4">
+                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                            <div className="flex-1 w-full max-w-4xl flex flex-col md:flex-row gap-3">
                                 <div className="flex-1">
                                     <SearchBar 
                                         searchTerm={searchPhone} 
@@ -120,6 +120,14 @@ export default function CandidateDatabasePage() {
                                         onSearchChange={setSearchEmail} 
                                         placeholder="Search by email..." 
                                         icon={<Mail className='h-[18px] w-[18px]' />}
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <SearchBar 
+                                        searchTerm={filters.company} 
+                                        onSearchChange={(val) => setFilters(prev => ({ ...prev, company: val }))} 
+                                        placeholder="Search by company..." 
+                                        icon={<Building2 className='h-[18px] w-[18px]' />}
                                     />
                                 </div>
                             </div>
