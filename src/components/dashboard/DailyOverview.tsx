@@ -5,7 +5,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/lib/data";
 import { format, subDays, addDays, isToday } from "date-fns";
-import { Users, CalendarOff, UserX, X, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users, CalendarOff, UserX, X, Clock, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import useSWR from "swr";
 
 interface EmpDetail {
@@ -29,6 +29,8 @@ const fetcher = async (url: string) => {
 export default function DailyOverview() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [activeModal, setActiveModal] = useState<StatCategory | null>(null);
+  const [deletingEmpId, setDeletingEmpId] = useState<number | null>(null);
+  const [confirmDeleteEmpId, setConfirmDeleteEmpId] = useState<number | null>(null);
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
@@ -36,6 +38,29 @@ export default function DailyOverview() {
   }, []);
 
   const dateStr = format(selectedDate, "yyyy-MM-dd");
+
+  const handleDeleteAttendance = async (empId: number) => {
+    setDeletingEmpId(empId);
+    try {
+      const token = Cookies.get("access");
+      await axios.post(
+        `${apiUrl}/api/admin/attendance/delete/`,
+        { emp_id: empId, date: dateStr },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Clear local cache for this date
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(`daily_overview_cache_${dateStr}`);
+      }
+      // Revalidate SWR data
+      mutate(`${apiUrl}/api/admin/emp-total-details/?start_date=${dateStr}&end_date=${dateStr}`);
+      setConfirmDeleteEmpId(null);
+    } catch (err) {
+      console.error("Failed to delete attendance", err);
+    } finally {
+      setDeletingEmpId(null);
+    }
+  };
 
   const [effectiveData, setEffectiveData] = useState<any | undefined>(() => {
     if (typeof window !== "undefined") {
@@ -51,7 +76,7 @@ export default function DailyOverview() {
     return undefined;
   });
 
-  const { data, isLoading } = useSWR(
+  const { data, isLoading, mutate } = useSWR(
     `${apiUrl}/api/admin/emp-total-details/?start_date=${dateStr}&end_date=${dateStr}`,
     fetcher,
     {
@@ -232,19 +257,46 @@ export default function DailyOverview() {
                 <p className="text-sm text-gray-500 py-8 text-center">No employees in this category.</p>
               ) : (
                 empsByCategory[activeModal].map((emp) => (
-                  <div key={emp.emp_id} className="flex items-center justify-between py-3">
+                  <div key={emp.emp_id} className="flex items-center justify-between py-3 group">
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
                         {emp.name.charAt(0).toUpperCase()}
                       </div>
                       <span className="text-sm font-medium text-gray-800">{emp.name}</span>
                     </div>
-                    {emp.punch_in && (
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
-                        <Clock size={12} />
-                        <span>{emp.punch_in}{emp.punch_out ? ` — ${emp.punch_out}` : isToday(selectedDate) ? " (active)" : ""}</span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {emp.punch_in && (
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <Clock size={12} />
+                          <span>{emp.punch_in}{emp.punch_out ? ` — ${emp.punch_out}` : isToday(selectedDate) ? " (active)" : ""}</span>
+                        </div>
+                      )}
+                      {confirmDeleteEmpId === emp.emp_id ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleDeleteAttendance(emp.emp_id)}
+                            disabled={deletingEmpId === emp.emp_id}
+                            className="px-2 py-0.5 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50"
+                          >
+                            {deletingEmpId === emp.emp_id ? "..." : "Confirm"}
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteEmpId(null)}
+                            className="px-2 py-0.5 text-xs bg-gray-200 text-gray-600 rounded hover:bg-gray-300 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteEmpId(emp.emp_id)}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"
+                          title="Delete attendance"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))
               )}
