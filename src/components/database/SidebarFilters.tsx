@@ -91,13 +91,14 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
 
 
             {/* Accordions Container */}
-            <div className="flex flex-col flex-1 overflow-y-auto custom-scrollbar">
+            <form onSubmit={(e) => { e.preventDefault(); applySearch(); }} className="flex flex-col flex-1 overflow-y-auto custom-scrollbar">
                 <AccordionItem title="Keywords" defaultOpen>
                     <input
                         type="text"
                         name="skills"
                         value={localFilters.skills}
                         onChange={handleInputChange}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applySearch(); } }}
                         placeholder="e.g. React, Java, Sales"
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                     />
@@ -109,6 +110,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                         name="company"
                         value={localFilters.company}
                         onChange={handleInputChange}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applySearch(); } }}
                         placeholder="e.g. Amazon, Google"
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                     />
@@ -120,6 +122,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                         name="location"
                         value={localFilters.location}
                         onChange={handleInputChange}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applySearch(); } }}
                         placeholder="e.g. Mumbai, Delhi"
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                     />
@@ -132,6 +135,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                             name="minExperience"
                             value={localFilters.minExperience === 0 ? '' : localFilters.minExperience}
                             onChange={(e) => setLocalFilters(p => ({...p, minExperience: Number(e.target.value)}))}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applySearch(); } }}
                             placeholder="Min"
                             className="w-full border border-gray-300 rounded-md px-2 py-2 text-[13px] text-slate-700 text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                         />
@@ -141,6 +145,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                             name="maxExperience"
                             value={localFilters.maxExperience ?? ''}
                             onChange={handleNumberChange}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applySearch(); } }}
                             placeholder="Max"
                             className="w-full border border-gray-300 rounded-md px-2 py-2 text-[13px] text-slate-700 text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                         />
@@ -154,6 +159,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                             name="minSalary"
                             value={localFilters.minSalary === 0 ? '' : localFilters.minSalary}
                             onChange={(e) => setLocalFilters(p => ({...p, minSalary: Number(e.target.value)}))}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applySearch(); } }}
                             placeholder="Min"
                             className="w-full border border-gray-300 rounded-md px-2 py-2 text-[13px] text-slate-700 text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                         />
@@ -163,6 +169,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                             name="maxSalary"
                             value={localFilters.maxSalary ?? ''}
                             onChange={handleNumberChange}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applySearch(); } }}
                             placeholder="Max"
                             className="w-full border border-gray-300 rounded-md px-2 py-2 text-[13px] text-slate-700 text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                         />
@@ -175,6 +182,7 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                         name="jobTitle"
                         value={localFilters.jobTitle}
                         onChange={handleInputChange}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applySearch(); } }}
                         placeholder="e.g. Software Engineer"
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                     />
@@ -186,11 +194,12 @@ export function SidebarFilters({ filters, setFilters }: SidebarFiltersProps) {
                         name="education"
                         value={localFilters.education}
                         onChange={handleInputChange}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applySearch(); } }}
                         placeholder="e.g. B.Tech, MBA"
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all"
                     />
                 </AccordionItem>
-            </div>
+            </form>
         </div>
     );
 }
