@@ -802,63 +802,109 @@ const EmployeeAttendancePage = () => {
             }
         }
 
-        // --- Mock Location Detection: take rapid fresh GPS readings ---
-        // Real GPS always has micro-drift (1-5m). Mock GPS returns EXACT same coords every time.
-        const getMockCheckReading = (): Promise<{ lat: number; lon: number } | null> => {
+        // --- Advanced Mock Location Detection ---
+        // Mock location apps can't properly fake: accuracy values, altitude, speed
+        // Real GPS: accuracy 3-30m, altitude varies, speed fluctuates
+        // Mock GPS: accuracy often exactly 20.0 or 0, altitude 0, speed null/0
+        
+        interface GpsReading {
+            lat: number;
+            lon: number;
+            accuracy: number;
+            altitude: number | null;
+            speed: number | null;
+            heading: number | null;
+            timestamp: number;
+        }
+
+        const getAdvancedReading = (): Promise<GpsReading | null> => {
             return new Promise((resolve) => {
                 if (!("geolocation" in navigator)) { resolve(null); return; }
                 navigator.geolocation.getCurrentPosition(
-                    (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+                    (pos) => resolve({
+                        lat: pos.coords.latitude,
+                        lon: pos.coords.longitude,
+                        accuracy: pos.coords.accuracy,
+                        altitude: pos.coords.altitude,
+                        speed: pos.coords.speed,
+                        heading: pos.coords.heading,
+                        timestamp: pos.timestamp,
+                    }),
                     () => resolve(null),
-                    { enableHighAccuracy: true, timeout: 4000, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
                 );
             });
         };
 
         setIsProcessing(true);
-        const mockReadings: { lat: number; lon: number }[] = [];
-        
-        // Push initial location to check against
-        if (locationRef.current) {
-            mockReadings.push(locationRef.current);
-        }
+        const readings: GpsReading[] = [];
 
-        for (let i = 0; i < 2; i++) {
-            const reading = await getMockCheckReading();
-            if (reading) mockReadings.push(reading);
-            if (i < 1) await new Promise(r => setTimeout(r, 400));
+        // Take 3 fresh GPS readings with delays
+        for (let i = 0; i < 3; i++) {
+            const reading = await getAdvancedReading();
+            if (reading) readings.push(reading);
+            if (i < 2) await new Promise(r => setTimeout(r, 500));
         }
 
         let isMock = false;
-        if (mockReadings.length >= 2) {
-            // Check if any two consecutive readings are exactly identical
-            for (let i = 1; i < mockReadings.length; i++) {
-                if (mockReadings[i].lat === mockReadings[i-1].lat && mockReadings[i].lon === mockReadings[i-1].lon) {
+        let mockReason = "";
+
+        if (readings.length >= 2) {
+            // CHECK 1: Exact coordinate match across any 2 readings
+            for (let i = 1; i < readings.length; i++) {
+                if (readings[i].lat === readings[i-1].lat && readings[i].lon === readings[i-1].lon) {
                     isMock = true;
+                    mockReason = "Location coordinates are static.";
                     break;
                 }
             }
-            
-            // Or if the drift over time is suspiciously small (less than ~1cm)
+
+            // CHECK 2: Suspiciously small drift (< ~0.1 meters)
             if (!isMock) {
-                const latDiff = Math.abs(mockReadings[mockReadings.length-1].lat - mockReadings[0].lat);
-                const lonDiff = Math.abs(mockReadings[mockReadings.length-1].lon - mockReadings[0].lon);
-                if (latDiff < 0.00000001 && lonDiff < 0.00000001) {
+                const latDrift = Math.abs(readings[readings.length-1].lat - readings[0].lat);
+                const lonDrift = Math.abs(readings[readings.length-1].lon - readings[0].lon);
+                if (latDrift < 0.000001 && lonDrift < 0.000001) {
                     isMock = true;
+                    mockReason = "Location drift is suspiciously small.";
+                }
+            }
+
+            // CHECK 3: All accuracy values are exactly the same round number
+            // Real GPS accuracy fluctuates (e.g., 12.3, 14.7, 11.1)
+            // Mock GPS often returns exactly 20.0 or identical values
+            if (!isMock && readings.length >= 2) {
+                const accuracies = readings.map(r => r.accuracy);
+                const allSameAccuracy = accuracies.every(a => a === accuracies[0]);
+                const isRoundNumber = accuracies.every(a => a === Math.round(a));
+                if (allSameAccuracy && isRoundNumber) {
+                    isMock = true;
+                    mockReason = "GPS accuracy pattern is suspicious.";
+                }
+            }
+
+            // CHECK 4: Compare with initial location from page load
+            if (!isMock && locationRef.current) {
+                const initLat = locationRef.current.lat;
+                const initLon = locationRef.current.lon;
+                const latDiffFromInit = Math.abs(readings[readings.length-1].lat - initLat);
+                const lonDiffFromInit = Math.abs(readings[readings.length-1].lon - initLon);
+                if (latDiffFromInit < 0.000001 && lonDiffFromInit < 0.000001) {
+                    isMock = true;
+                    mockReason = "Location unchanged since page load.";
                 }
             }
         }
 
         if (isMock) {
-            setOutOfRangeMessage("Location appears to be mocked or static. You are out of range.");
+            setOutOfRangeMessage("You are out of range.");
             setShowOutOfRangePopup(true);
             setIsProcessing(false);
             return;
         }
 
-        if (mockReadings.length > 0) {
-            // Use the last fresh reading as the actual location
-            currentLocation = mockReadings[mockReadings.length - 1];
+        if (readings.length > 0) {
+            const lastReading = readings[readings.length - 1];
+            currentLocation = { lat: lastReading.lat, lon: lastReading.lon };
             setLocation(currentLocation);
             locationRef.current = currentLocation;
         }
