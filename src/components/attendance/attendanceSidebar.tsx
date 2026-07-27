@@ -28,9 +28,11 @@ const EmployeeListItem = ({
   employee?: NewEmployee;
   onRefresh?: () => void;
 }) => {
-  if (!employee) return null;
   const [loading, setLoading] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!employee) return null;
 
   const handleToggle = async () => {
     try {
@@ -87,7 +89,10 @@ const EmployeeListItem = ({
         {record.workStatus === "LEAVE" && (
           <>
             <button
-              onClick={() => setShowCancelModal(true)}
+              onClick={() => {
+                setError(null);
+                setShowCancelModal(true);
+              }}
               disabled={loading}
               className="flex items-center justify-center px-2 py-1 text-xs font-semibold text-red-600 bg-red-50 border border-red-200 hover:text-red-700 hover:bg-red-100 rounded-md transition-all shadow-sm opacity-0 group-hover:opacity-100"
               title="Cancel Leave for this day"
@@ -124,6 +129,12 @@ const EmployeeListItem = ({
                     </div>
                   </div>
                   
+                  {error && (
+                    <div className="bg-red-50 text-red-600 px-6 py-3 text-sm font-semibold text-center border-t border-b border-red-100">
+                      {error}
+                    </div>
+                  )}
+
                   <div className="p-4 sm:px-6 sm:py-5 border-t border-slate-100 bg-slate-50/50">
                     <button
                       onClick={async () => {
@@ -140,7 +151,7 @@ const EmployeeListItem = ({
                           if (onRefresh) onRefresh();
                         } catch (err: any) {
                           console.error(err);
-                          alert(err.response?.data?.error || "Failed to cancel leave");
+                          setError(err.response?.data?.error || "Failed to cancel leave");
                         } finally {
                           setLoading(false);
                         }
