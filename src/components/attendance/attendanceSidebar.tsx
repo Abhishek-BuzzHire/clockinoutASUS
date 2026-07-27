@@ -96,41 +96,41 @@ const EmployeeListItem = ({
             </button>
 
             {showCancelModal && (
-              <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
-                  <div className="bg-red-50 p-5 border-b border-red-100 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                      <AlertTriangle className="w-5 h-5 text-red-600" />
+              <div className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+                <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+                  <div className="p-6 pb-4 border-b border-slate-100 flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0">
+                      <AlertTriangle className="w-5 h-5 text-rose-500" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-red-700">Cancel Leave Request</h3>
-                      <p className="text-sm font-medium text-red-600/80">Action cannot be undone</p>
+                      <h3 className="text-lg font-bold text-slate-800">Cancel Leave Request</h3>
+                      <p className="text-sm font-medium text-slate-500 mt-0.5">This action cannot be undone.</p>
                     </div>
                   </div>
                   
-                  <div className="p-6 space-y-4">
-                    <p className="text-sm text-slate-700 font-medium leading-relaxed">
-                      You are about to cancel the approved leave for <span className="font-bold text-slate-900">{employee.name}</span> on <span className="font-bold text-slate-900">{record.date}</span>.
+                  <div className="p-6 space-y-5">
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      You are about to cancel the approved leave for <span className="font-semibold text-slate-900">{employee.name}</span> on <span className="font-semibold text-slate-900">{record.date}</span>.
                     </p>
                     
-                    <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-2">
-                      <p className="text-sm text-slate-600 font-semibold">Important Consequences:</p>
-                      <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                        <li>The employee's Paid Leave balance will automatically be credited with <span className="font-bold text-emerald-600">1 day</span>.</li>
-                        <li>Their attendance for this day will be reset to absent/no clock-in.</li>
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2.5">
+                      <p className="text-sm text-slate-700 font-semibold">Consequences of cancellation:</p>
+                      <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1.5">
+                        <li>Paid Leave balance will automatically be credited with <span className="font-bold text-emerald-600">1 day</span>.</li>
+                        <li>Attendance for this day will be marked as <span className="font-bold text-blue-600">Present</span>.</li>
                       </ul>
                     </div>
 
-                    <p className="text-[11px] font-bold text-red-600 uppercase tracking-wider">
-                      Please only use this feature if the employee genuinely did not take this leave.
+                    <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                      * Please only use this if the employee genuinely did not take this leave.
                     </p>
                   </div>
                   
-                  <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3">
+                  <div className="p-4 sm:px-6 sm:py-5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-3">
                     <button
                       onClick={() => setShowCancelModal(false)}
                       disabled={loading}
-                      className="px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-300 hover:bg-slate-100 rounded-lg transition-colors"
+                      className="px-5 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors"
                     >
                       Keep Leave
                     </button>
@@ -155,7 +155,7 @@ const EmployeeListItem = ({
                         }
                       }}
                       disabled={loading}
-                      className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-colors flex items-center gap-2"
+                      className="px-5 py-2.5 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-sm transition-colors flex items-center gap-2"
                     >
                       {loading ? "Cancelling..." : "Yes, Cancel Leave"}
                     </button>
