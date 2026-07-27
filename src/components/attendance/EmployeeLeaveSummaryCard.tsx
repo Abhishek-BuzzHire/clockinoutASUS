@@ -25,12 +25,12 @@ export default function EmployeeLeaveSummaryCard({
       borderLeft: "border-l-blue-500",
     },
     { 
-      label: "CONSUMED LEAVE", 
+      label: "CONSUMED LEAVE BY YOU", 
       value: summary.taken_leave, 
       borderLeft: "border-l-amber-500",
     },
     { 
-      label: "AVAILABLE BALANCE", 
+      label: "AVAILABLE PAID LEAVE", 
       value: summary.remaining_leave, 
       borderLeft: "border-l-emerald-500",
     },
