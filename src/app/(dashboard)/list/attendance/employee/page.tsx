@@ -249,6 +249,19 @@ const EmployeeAttendancePage = () => {
 
     const tabs = ["Attendance", "Leaves & WFH", "Employee Hierarchy"];
     const [activeTab, setActiveTab] = useState("Attendance");
+
+    useEffect(() => {
+        const savedTab = localStorage.getItem("activeTab_employee");
+        if (savedTab && tabs.includes(savedTab)) {
+            setActiveTab(savedTab);
+        }
+    }, []);
+
+    const handleTabChange = (tab: string) => {
+        setActiveTab(tab);
+        localStorage.setItem("activeTab_employee", tab);
+    };
+
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
     const [calendarMap, setCalendarMap] = useState<Record<string, CalendarDay>>({});
@@ -1703,7 +1716,7 @@ const EmployeeAttendancePage = () => {
                     {tabs.map((tab) => (
                         <button
                             key={tab}
-                            onClick={() => setActiveTab(tab)}
+                            onClick={() => handleTabChange(tab)}
                             className={`p-2 ${activeTab === tab
                                 ? "border-b-2 border-blue-600"
                                 : "text-gray-500"

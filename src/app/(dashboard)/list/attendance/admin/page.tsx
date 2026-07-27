@@ -111,9 +111,14 @@ const AdminAttendanceContent = () => {
 
     if (tab && tabNameMap[tab]) {
       setActiveTab(tabNameMap[tab]);
+      localStorage.setItem("activeTab_admin", tabNameMap[tab]);
     } else {
-      // Default to the first tab if none is specified
-      setActiveTab("Attendance");
+      const savedTab = localStorage.getItem("activeTab_admin");
+      if (savedTab && tabs.includes(savedTab)) {
+        setActiveTab(savedTab);
+      } else {
+        setActiveTab("Attendance");
+      }
     }
 
     // 2. Handle WFH Modal
@@ -858,6 +863,7 @@ const AdminAttendanceContent = () => {
                     "Company Holidays & Rules": "settings",
                   };
                   const newTabId = tabIdMap[tab];
+                  localStorage.setItem("activeTab_admin", tab);
                   router.push(`/list/attendance/admin?tab=${newTabId}`);
                 }}
                 className={`p-2 ${activeTab === tab

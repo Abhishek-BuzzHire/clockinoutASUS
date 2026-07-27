@@ -415,10 +415,18 @@ const EmployeesListPage = () => {
   const [activeTab, setActiveTab] = useState("Employee Hierarchy");
 
   React.useEffect(() => {
-    if (user?.role && user.role !== "employee") {
+    const savedTab = localStorage.getItem("activeTab_employees_page");
+    if (savedTab && tabs.includes(savedTab)) {
+      setActiveTab(savedTab);
+    } else if (user?.role && user.role !== "employee") {
       setActiveTab("Employees");
     }
-  }, [user]);
+  }, [user, tabs.length]);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    localStorage.setItem("activeTab_employees_page", tab);
+  };
 
   const [formData, setFormData] = useState({
     email: "",
@@ -941,7 +949,7 @@ const EmployeesListPage = () => {
           {tabs.map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => handleTabChange(tab)}
               className={`p-2 ${activeTab === tab
                 ? "border-b-2 border-blue-600"
                 : "text-gray-500"
