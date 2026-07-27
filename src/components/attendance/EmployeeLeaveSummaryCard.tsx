@@ -8,10 +8,10 @@ export default function EmployeeLeaveSummaryCard({
   summary: any;
 }) {
   if (loading) return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 flex items-center justify-center">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex items-center justify-center mx-4 sm:mx-0">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-6 h-6 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
-        <p className="text-xs font-medium text-slate-500">Loading metrics...</p>
+        <div className="w-5 h-5 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
+        <p className="text-[10px] md:text-xs font-medium text-slate-500">Loading metrics...</p>
       </div>
     </div>
   );
@@ -20,42 +20,33 @@ export default function EmployeeLeaveSummaryCard({
 
   const stats = [
     { 
-      label: "Total Paid Leave", 
+      label: "TOTAL PAID LEAVE", 
       value: summary.total_leave, 
-      icon: CalendarCheck, 
       borderLeft: "border-l-blue-500",
-      iconBg: "bg-blue-50",
-      iconColor: "text-blue-600"
     },
     { 
-      label: "Leave Consumed", 
+      label: "CONSUMED LEAVE", 
       value: summary.taken_leave, 
-      icon: PieChart, 
       borderLeft: "border-l-amber-500",
-      iconBg: "bg-amber-50",
-      iconColor: "text-amber-600"
     },
     { 
-      label: "Available Balance", 
+      label: "AVAILABLE BALANCE", 
       value: summary.remaining_leave, 
-      icon: Timer, 
       borderLeft: "border-l-emerald-500",
-      iconBg: "bg-emerald-50",
-      iconColor: "text-emerald-600"
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+    <div className="grid grid-cols-3 gap-2 md:gap-4 w-full px-4 sm:px-0">
       {stats.map((stat, idx) => (
         <div 
           key={idx} 
-          className={`flex flex-col justify-center bg-white border border-slate-200 rounded-xl p-4 md:p-5 border-l-[4px] ${stat.borderLeft} shadow-sm`}
+          className={`flex flex-col justify-center bg-white border border-slate-200 rounded-xl p-3 md:p-5 border-l-[3px] md:border-l-[4px] ${stat.borderLeft} shadow-sm transition-all hover:shadow-md`}
         >
-          <span className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
+          <span className="text-lg sm:text-xl md:text-3xl font-black text-slate-800 leading-none mb-1">
             {stat.value}
           </span>
-          <span className="text-[10px] md:text-xs font-semibold text-slate-500 tracking-wider uppercase mt-0.5">
+          <span className="text-[8px] sm:text-[9px] md:text-xs font-bold text-slate-400 tracking-wider md:tracking-widest uppercase leading-tight line-clamp-2 md:line-clamp-1">
             {stat.label}
           </span>
         </div>
