@@ -96,16 +96,22 @@ const EmployeeListItem = ({
             </button>
 
             {showCancelModal && (
-              <div className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-                <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+              <div 
+                className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
+                onClick={() => setShowCancelModal(false)}
+              >
+                <div 
+                  className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <div className="p-6 pb-4 border-b border-slate-100 flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0">
-                        <AlertTriangle className="w-5 h-5 text-rose-500" />
+                      <div className="w-10 h-10 rounded-full bg-sky-50 flex items-center justify-center flex-shrink-0">
+                        <AlertTriangle className="w-5 h-5 text-sky-500" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-slate-800">Cancel Leave Request</h3>
-                        <p className="text-sm font-medium text-slate-500 mt-0.5">This action cannot be undone.</p>
+                        <h3 className="text-lg font-bold text-slate-800">Cancel Leave</h3>
+                        <p className="text-sm font-medium text-slate-500 mt-0.5">Please confirm your action</p>
                       </div>
                     </div>
                     <button onClick={() => setShowCancelModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
@@ -115,12 +121,14 @@ const EmployeeListItem = ({
                   
                   <div className="p-6 space-y-6">
                     <p className="text-[15px] text-slate-600 leading-relaxed">
-                      You are about to cancel the approved leave for <span className="font-semibold text-slate-900">{employee.name}</span> on <span className="font-semibold text-slate-900">{record.date}</span>.
+                      You are about to cancel the approved leave for <span className="font-bold text-slate-900">{employee.name}</span> on <span className="font-bold text-slate-900">{record.date}</span>.
                     </p>
 
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      * Please only use this if the employee genuinely did not take this leave.
-                    </p>
+                    <div className="bg-sky-50/50 border border-sky-100 p-4 rounded-xl">
+                      <p className="text-[13px] font-medium text-sky-800 leading-relaxed">
+                        <span className="font-bold">Note:</span> Please only proceed if the employee genuinely did not take this leave.
+                      </p>
+                    </div>
                   </div>
                   
                   <div className="p-4 sm:px-6 sm:py-5 border-t border-slate-100 bg-slate-50/50">
@@ -145,9 +153,9 @@ const EmployeeListItem = ({
                         }
                       }}
                       disabled={loading}
-                      className="w-full px-6 py-3 text-[15px] font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-full shadow-sm transition-colors flex items-center justify-center gap-2"
+                      className="w-full px-6 py-3.5 text-[15px] font-bold text-white bg-sky-500 hover:bg-sky-600 rounded-full shadow-sm transition-colors flex items-center justify-center gap-2"
                     >
-                      {loading ? "Cancelling..." : "Yes, Cancel Leave"}
+                      {loading ? "Cancelling..." : "Confirm Cancellation"}
                     </button>
                   </div>
                 </div>
