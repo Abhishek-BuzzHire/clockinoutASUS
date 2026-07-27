@@ -274,6 +274,7 @@ const EmployeeAttendancePage = () => {
     const [showOutOfRangePopup, setShowOutOfRangePopup] = useState(false);
     const [outOfRangeMessage, setOutOfRangeMessage] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isFetchingLocationState, setIsFetchingLocationState] = useState(false);
     const [showRefreshSuccess, setShowRefreshSuccess] = useState(false);
     const [locationReady, setLocationReady] = useState(false);
     const retryCountRef = useRef(0);
@@ -786,6 +787,7 @@ const EmployeeAttendancePage = () => {
         if (!currentLocation) {
             // Try one quick geolocation fetch before showing popup
             setIsProcessing(true);
+            setIsFetchingLocationState(true);
             try {
                 currentLocation = await new Promise<{ lat: number; lon: number } | null>((resolve) => {
                     if (!("geolocation" in navigator)) {
@@ -800,6 +802,8 @@ const EmployeeAttendancePage = () => {
                 });
             } catch {
                 currentLocation = null;
+            } finally {
+                setIsFetchingLocationState(false);
             }
 
             if (currentLocation) {
@@ -1755,29 +1759,63 @@ const EmployeeAttendancePage = () => {
                 </div>
             )}
 
-            {/* FULLSCREEN OUT OF RANGE POPUP - Zepto Style */}
+            {/* FULLSCREEN OUT OF RANGE POPUP - Nice Professional Style */}
             {showOutOfRangePopup && (
                 <div
-                    className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                    className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
                     onClick={() => setShowOutOfRangePopup(false)}
                 >
-                    {/* Top Right Screen Close Button (Zepto style) */}
-                    <button
-                        onClick={(e) => { e.stopPropagation(); setShowOutOfRangePopup(false); }}
-                        className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-black/80 hover:bg-black text-white transition-colors"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-
                     <div 
-                        className="rounded-[28px] mx-6 max-w-[240px] w-full shadow-[0_10px_40px_rgba(240,130,80,0.6)] border-[4px] border-[#F28C54] flex flex-col items-center overflow-hidden relative bg-white"
+                        className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200"
+                        onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Bunny Image filling the popup */}
-                        <img 
-                            src="/out-of-range-bunny.png" 
-                            alt="Out of Range" 
-                            className="w-full h-auto object-cover"
-                        />
+                        <div className="p-6 pb-4 border-b border-slate-100 relative text-center">
+                            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-800">Out of Range</h3>
+                            <button onClick={() => setShowOutOfRangePopup(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors text-2xl leading-none font-light" title="Close">
+                                &times;
+                            </button>
+                        </div>
+                        
+                        <div className="p-6 space-y-4 text-center">
+                            <p className="text-[15px] text-slate-600 leading-relaxed">
+                                {outOfRangeMessage || "You are currently outside the allowed office location range."}
+                            </p>
+                            <div className="bg-red-50/50 border border-red-100 p-4 rounded-xl inline-block text-left">
+                                <p className="text-[13px] font-medium text-red-800 leading-relaxed">
+                                    <span className="font-bold">Note:</span> Please move closer to the office location to punch in or out.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div className="p-4 sm:px-6 sm:py-5 border-t border-slate-100 bg-slate-50/50">
+                            <button
+                                onClick={() => setShowOutOfRangePopup(false)}
+                                className="w-full px-6 py-3.5 text-[15px] font-bold text-white bg-slate-800 hover:bg-slate-900 rounded-full shadow-sm transition-colors"
+                            >
+                                Understood
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* FETCHING LOCATION OVERLAY */}
+            {isFetchingLocationState && (
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-white/80 backdrop-blur-sm animate-in fade-in">
+                    <div className="flex flex-col items-center p-8 bg-white rounded-3xl shadow-2xl border border-slate-100 min-w-[280px]">
+                        <div className="relative w-16 h-16 mb-5 flex items-center justify-center">
+                            <div className="absolute inset-0 border-[4px] border-blue-50 rounded-full"></div>
+                            <div className="absolute inset-0 border-[4px] border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+                            <svg className="w-6 h-6 text-blue-600 absolute" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-800 text-center">Fetching Location...</h3>
+                        <p className="text-sm text-slate-500 mt-1.5 text-center">Please hold on</p>
                     </div>
                 </div>
             )}
