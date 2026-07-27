@@ -1,4 +1,4 @@
-import { CalendarCheck, PieChart, Timer, Sparkles } from "lucide-react";
+import { CalendarCheck, PieChart, Timer } from "lucide-react";
 
 export default function EmployeeLeaveSummaryCard({
   loading,
@@ -8,13 +8,10 @@ export default function EmployeeLeaveSummaryCard({
   summary: any;
 }) {
   if (loading) return (
-    <div className="bg-white/80 backdrop-blur-xl rounded-[24px] border border-white/40 shadow-sm p-8 flex items-center justify-center min-h-[160px]">
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative w-10 h-10 flex items-center justify-center">
-           <div className="absolute inset-0 border-4 border-blue-600/20 rounded-full animate-ping opacity-75"></div>
-           <div className="w-10 h-10 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
-        </div>
-        <p className="text-sm font-semibold text-slate-500 animate-pulse">Calculating entitlements...</p>
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-6 h-6 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
+        <p className="text-xs font-medium text-slate-500">Loading metrics...</p>
       </div>
     </div>
   );
@@ -23,60 +20,49 @@ export default function EmployeeLeaveSummaryCard({
 
   const stats = [
     { 
-      label: "Total Entitlement", 
+      label: "Total Paid Leave", 
       value: summary.total_leave, 
       icon: CalendarCheck, 
-      gradient: "from-blue-500 to-indigo-600",
-      shadow: "shadow-blue-500/20",
+      borderLeft: "border-l-blue-500",
+      iconBg: "bg-blue-50",
+      iconColor: "text-blue-600"
     },
     { 
       label: "Leave Consumed", 
       value: summary.taken_leave, 
       icon: PieChart, 
-      gradient: "from-amber-500 to-orange-500",
-      shadow: "shadow-amber-500/20",
+      borderLeft: "border-l-amber-500",
+      iconBg: "bg-amber-50",
+      iconColor: "text-amber-600"
     },
     { 
       label: "Available Balance", 
       value: summary.remaining_leave, 
       icon: Timer, 
-      gradient: "from-emerald-400 to-teal-500",
-      shadow: "shadow-emerald-500/20",
+      borderLeft: "border-l-emerald-500",
+      iconBg: "bg-emerald-50",
+      iconColor: "text-emerald-600"
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 w-full">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
       {stats.map((stat, idx) => (
         <div 
           key={idx} 
-          className={`relative overflow-hidden bg-white rounded-[24px] border border-slate-100 p-5 md:p-7 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${stat.shadow} group`}
+          className={`flex items-center gap-4 bg-white border border-slate-200 rounded-xl p-4 md:p-5 border-l-[4px] ${stat.borderLeft} shadow-sm`}
         >
-          {/* Top glowing accent line */}
-          <div className={`absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r ${stat.gradient} opacity-80`} />
-          
-          {/* Subtle background glow effect on hover */}
-          <div className={`absolute -right-8 -bottom-8 w-32 h-32 bg-gradient-to-br ${stat.gradient} opacity-[0.03] rounded-full blur-2xl group-hover:opacity-[0.08] transition-opacity duration-500`} />
-          
-          <div className="flex items-start justify-between w-full mb-4 relative z-10">
-            <div className={`p-3 rounded-[16px] bg-gradient-to-br ${stat.gradient} text-white shadow-md ${stat.shadow} transition-transform duration-300 group-hover:scale-110`}>
-              <stat.icon className="w-5 h-5 md:w-6 md:h-6" />
-            </div>
-            
-            {/* Optional badge or decorative element */}
-            <div className="hidden group-hover:flex items-center gap-1 text-[9px] font-bold text-slate-400 uppercase tracking-wider animate-in fade-in zoom-in duration-300 bg-slate-50 px-2 py-1 rounded-full border border-slate-100">
-               <Sparkles className="w-3 h-3 text-amber-400" /> Updated
-            </div>
+          <div className={`flex items-center justify-center shrink-0 w-12 h-12 rounded-xl ${stat.iconBg} ${stat.iconColor}`}>
+            <stat.icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
           </div>
           
-          <div className="relative z-10 mt-1">
-            <h3 className="text-[11px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">{stat.label}</h3>
-            <div className="flex items-baseline gap-1.5">
-              <span className={`text-4xl md:text-5xl font-black bg-gradient-to-br ${stat.gradient} bg-clip-text text-transparent drop-shadow-sm leading-tight tracking-tight`}>
-                {stat.value}
-              </span>
-              <span className="text-xs md:text-sm font-bold text-slate-400">Days</span>
-            </div>
+          <div className="flex flex-col justify-center">
+            <span className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
+              {stat.value}
+            </span>
+            <span className="text-[10px] md:text-xs font-semibold text-slate-500 tracking-wider uppercase mt-0.5">
+              {stat.label}
+            </span>
           </div>
         </div>
       ))}
