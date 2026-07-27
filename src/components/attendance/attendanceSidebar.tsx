@@ -4,7 +4,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { format } from 'date-fns';
-import { User, Clock, AlertTriangle, UserX, FileEdit, Lock, Unlock } from 'lucide-react';
+import { User, Clock, AlertTriangle, UserX, FileEdit, Lock, Unlock, XCircle } from 'lucide-react';
 import type { AttendanceRecord, NewEmployee } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -83,6 +83,34 @@ const EmployeeListItem = ({
       </div>
       
       <div className="flex items-center gap-3">
+        {record.workStatus === "LEAVE" && (
+          <button
+            onClick={async () => {
+              if(!confirm("Are you sure you want to cancel the leave for this specific day?")) return;
+              try {
+                setLoading(true);
+                const token = Cookies.get("access");
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+                await axios.post(
+                  `${apiUrl}/api/admin/attendance/cancel-leave-day/`,
+                  { user_id: record.employeeId, date: record.date },
+                  { headers: { Authorization: token ? `Bearer ${token}` : "" } }
+                );
+                if (onRefresh) onRefresh();
+              } catch (err: any) {
+                console.error(err);
+                alert(err.response?.data?.error || "Failed to cancel leave");
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={loading}
+            className="flex items-center justify-center p-1.5 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors shadow-sm"
+            title="Cancel Leave for this day"
+          >
+            {loading ? "..." : <XCircle className="w-5 h-5" />}
+          </button>
+        )}
         {record.canGrantPastPermission && (
           <div>
             {record.pastPermissionGranted ? (
