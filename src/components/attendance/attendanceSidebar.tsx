@@ -104,27 +104,20 @@ const EmployeeListItem = ({
                   className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="p-6 pb-4 border-b border-slate-100 flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-full bg-sky-50 flex items-center justify-center flex-shrink-0">
-                        <AlertTriangle className="w-5 h-5 text-sky-500" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-slate-800">Cancel Leave</h3>
-                        <p className="text-sm font-medium text-slate-500 mt-0.5">Please confirm your action</p>
-                      </div>
-                    </div>
-                    <button onClick={() => setShowCancelModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                      <XCircle className="w-6 h-6" />
+                  <div className="p-6 pb-4 border-b border-slate-100 relative text-center">
+                    <h3 className="text-xl font-bold text-slate-800">Cancel Leave</h3>
+                    <p className="text-sm font-medium text-slate-500 mt-1">Please confirm your action</p>
+                    <button onClick={() => setShowCancelModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors text-2xl leading-none font-light" title="Close">
+                      &times;
                     </button>
                   </div>
                   
-                  <div className="p-6 space-y-6">
+                  <div className="p-6 space-y-6 text-center">
                     <p className="text-[15px] text-slate-600 leading-relaxed">
                       You are about to cancel the approved leave for <span className="font-bold text-slate-900">{employee.name}</span> on <span className="font-bold text-slate-900">{record.date}</span>.
                     </p>
 
-                    <div className="bg-sky-50/50 border border-sky-100 p-4 rounded-xl">
+                    <div className="bg-sky-50/50 border border-sky-100 p-4 rounded-xl inline-block text-left">
                       <p className="text-[13px] font-medium text-sky-800 leading-relaxed">
                         <span className="font-bold">Note:</span> Please only proceed if the employee genuinely did not take this leave.
                       </p>
