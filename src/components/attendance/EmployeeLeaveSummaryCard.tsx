@@ -50,20 +50,14 @@ export default function EmployeeLeaveSummaryCard({
       {stats.map((stat, idx) => (
         <div 
           key={idx} 
-          className={`flex items-center gap-4 bg-white border border-slate-200 rounded-xl p-4 md:p-5 border-l-[4px] ${stat.borderLeft} shadow-sm`}
+          className={`flex flex-col justify-center bg-white border border-slate-200 rounded-xl p-4 md:p-5 border-l-[4px] ${stat.borderLeft} shadow-sm`}
         >
-          <div className={`flex items-center justify-center shrink-0 w-12 h-12 rounded-xl ${stat.iconBg} ${stat.iconColor}`}>
-            <stat.icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
-          </div>
-          
-          <div className="flex flex-col justify-center">
-            <span className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
-              {stat.value}
-            </span>
-            <span className="text-[10px] md:text-xs font-semibold text-slate-500 tracking-wider uppercase mt-0.5">
-              {stat.label}
-            </span>
-          </div>
+          <span className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
+            {stat.value}
+          </span>
+          <span className="text-[10px] md:text-xs font-semibold text-slate-500 tracking-wider uppercase mt-0.5">
+            {stat.label}
+          </span>
         </div>
       ))}
     </div>
