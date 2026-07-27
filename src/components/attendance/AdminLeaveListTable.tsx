@@ -59,32 +59,6 @@ export default function AdminLeaveListTable({
             key={l.leave_id}
             className="group relative bg-white border border-slate-200 rounded-2xl p-5 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300"
           >
-            {/* Cancel icon visible on hover for approved leaves */}
-            {l.status === "APPROVED" && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // Cancel leave API call
-                  fetch(`/api/admin/leaves/${l.leave_id}/action/`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "CANCEL" }),
-                  })
-                    .then((res) => res.json())
-                    .then((data) => {
-                      // Optionally refresh list via parent callback or reload
-                      console.log("Cancel response", data);
-                      window.location.reload();
-                    })
-                    .catch((err) => console.error(err));
-                }}
-                className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-red-500 hover:text-red-700 cursor-pointer"
-                title="Cancel Approved Leave"
-              >
-                ×
-              </button>
-            )}
-
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               
               {/* LEFT: EMPLOYEE PROFILE */}
