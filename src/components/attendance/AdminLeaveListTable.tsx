@@ -78,7 +78,7 @@ export default function AdminLeaveListTable({
                     })
                     .catch((err) => console.error(err));
                 }}
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-red-500 hover:text-red-700"
+                className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-red-500 hover:text-red-700 cursor-pointer"
                 title="Cancel Approved Leave"
               >
                 ×
