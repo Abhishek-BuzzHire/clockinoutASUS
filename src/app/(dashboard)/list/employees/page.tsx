@@ -402,7 +402,11 @@ const EmployeesListPage = () => {
       role: (profile?.name && String(profile.name).toLowerCase().includes("shivam")) || (profile?.email && String(profile.email).toLowerCase().includes("shivam")) || (profile?.user?.email && String(profile.user.email).toLowerCase().includes("shivam")) ? "employee" : profile.user.role,
       is_active: profile.user.is_active,
       manager: profile.user.manager
-    }));
+    })).sort((a: any, b: any) => {
+      if (a.role === 'admin' && b.role !== 'admin') return -1;
+      if (a.role !== 'admin' && b.role === 'admin') return 1;
+      return (a.name || a.username || '').localeCompare(b.name || b.username || '');
+    });
   }, [effectiveEmployees]);
 
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
@@ -533,7 +537,11 @@ const EmployeesListPage = () => {
   const filteredUsers = users.filter((u: any) =>
     u.username.toLowerCase().includes(search.toLowerCase()) ||
     (u.name && u.name.toLowerCase().includes(search.toLowerCase()))
-  )
+  ).sort((a: any, b: any) => {
+    if (a.role === 'admin' && b.role !== 'admin') return -1;
+    if (a.role !== 'admin' && b.role === 'admin') return 1;
+    return (a.name || a.username || '').localeCompare(b.name || b.username || '');
+  });
 
   const renderContent = () => {
     switch (activeTab) {
