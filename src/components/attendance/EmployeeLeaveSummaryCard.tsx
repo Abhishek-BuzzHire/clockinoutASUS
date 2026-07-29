@@ -19,19 +19,19 @@ export default function EmployeeLeaveSummaryCard({
   if (!summary) return null;
 
   const stats = [
-    { 
-      label: "TOTAL PAID LEAVE", 
-      value: summary.total_leave, 
+    {
+      label: "TOTAL PAID LEAVES",
+      value: summary.total_leave,
       borderLeft: "border-l-blue-500",
     },
-    { 
-      label: "CONSUMED LEAVE BY YOU", 
-      value: summary.taken_leave, 
+    {
+      label: "UTILIZED LEAVE/S",
+      value: summary.taken_leave,
       borderLeft: "border-l-amber-500",
     },
-    { 
-      label: "AVAILABLE PAID LEAVE", 
-      value: summary.remaining_leave, 
+    {
+      label: "REMAINING PAID LEAVE",
+      value: summary.remaining_leave,
       borderLeft: "border-l-emerald-500",
     },
   ];
@@ -39,8 +39,8 @@ export default function EmployeeLeaveSummaryCard({
   return (
     <div className="grid grid-cols-3 gap-2 md:gap-4 w-full px-4 sm:px-0">
       {stats.map((stat, idx) => (
-        <div 
-          key={idx} 
+        <div
+          key={idx}
           className={`flex flex-col justify-center bg-white border border-slate-200 rounded-xl p-3 md:p-5 border-l-[3px] md:border-l-[4px] ${stat.borderLeft} shadow-sm transition-all hover:shadow-md`}
         >
           <span className="text-lg sm:text-xl md:text-3xl font-black text-slate-800 leading-none mb-1">
