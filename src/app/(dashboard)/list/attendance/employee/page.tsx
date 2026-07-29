@@ -133,7 +133,7 @@ const PunchCard: React.FC<{
 
     return (
         <div className="relative w-full max-w-xs mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-0 mb-6">
-            
+
             <div className="flex justify-center pt-5 relative z-10">
                 <div className="relative">
                     <img
@@ -164,7 +164,7 @@ const PunchCard: React.FC<{
                             {!isPunchedIn && hasPunchedOut ? formatTime(workedSeconds ?? 0) : formatTime(elapsedTime)}
                         </p>
                     </div>
-                    
+
                     <div className="text-left bg-white border border-slate-200/70 px-2.5 py-1.5 rounded-xl shadow-sm shrink-0">
                         <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                             {isPunchedIn ? "Punched In At" : hasPunchedOut ? "Punched Out At" : "Punched At"}
@@ -181,7 +181,7 @@ const PunchCard: React.FC<{
                         disabled
                         className="w-full py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-white text-base shadow-lg shadow-sky-200 bg-gradient-to-r from-sky-600 to-blue-600 cursor-not-allowed opacity-90 transition-all"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="m9 11 3 3L22 4" /></svg>
                         Successfully Punched Out
                     </button>
                 ) : (
@@ -232,8 +232,8 @@ const EmployeeAttendancePage = () => {
         if (!profilePhoto) return "/avatar.png";
         if (typeof profilePhoto === 'string') {
             if (profilePhoto.startsWith('/api/')) {
-                return profilePhoto.includes('?') 
-                    ? `${apiUrl}${profilePhoto}` 
+                return profilePhoto.includes('?')
+                    ? `${apiUrl}${profilePhoto}`
                     : `${apiUrl}${profilePhoto}?t=${photoTimestamp}`;
             }
             if (profilePhoto.startsWith("data:")) return profilePhoto;
@@ -887,7 +887,7 @@ const EmployeeAttendancePage = () => {
             const axiosError = error as AxiosError<PunchResponse>;
             const errorDetail = axiosError.response?.data?.message ?? axiosError.message;
             const lowerError = typeof errorDetail === "string" ? errorDetail.toLowerCase() : "";
-            
+
             if (lowerError.includes("range") || lowerError.includes("distance") || lowerError.includes("radius") || lowerError.includes("location") || lowerError.includes("office")) {
                 setOutOfRangeMessage(typeof errorDetail === "string" ? errorDetail : "You are out of range.");
                 setShowOutOfRangePopup(true);
@@ -957,7 +957,7 @@ const EmployeeAttendancePage = () => {
     const navigateWeek = (direction: "prev" | "next") => {
         const newStart = new Date(currentWeekStart);
         newStart.setDate(currentWeekStart.getDate() + (direction === "next" ? 7 : -7));
-        
+
         if (direction === "prev" && joiningDate) {
             const newEnd = new Date(newStart);
             newEnd.setDate(newStart.getDate() + 6);
@@ -972,7 +972,7 @@ const EmployeeAttendancePage = () => {
         setCurrentMonthStart(prev => {
             const newDate = new Date(prev);
             newDate.setMonth(prev.getMonth() + (direction === "next" ? 1 : -1));
-            
+
             if (direction === "prev" && joiningDate) {
                 const lastDayOfNewMonth = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0);
                 if (getNormalizedDate(lastDayOfNewMonth) < joiningDate) {
@@ -1434,13 +1434,12 @@ const EmployeeAttendancePage = () => {
                                         <button
                                             onClick={() => fetchGeolocation(true)}
                                             disabled={isProcessing || showRefreshSuccess}
-                                            className={`w-full py-3.5 px-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition duration-200 shadow-sm cursor-pointer ${
-                                                showRefreshSuccess
+                                            className={`w-full py-3.5 px-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition duration-200 shadow-sm cursor-pointer ${showRefreshSuccess
                                                     ? "bg-green-50 text-green-600 border border-green-200"
                                                     : locationError
-                                                    ? "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
-                                                    : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100"
-                                            }`}
+                                                        ? "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                                                        : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100"
+                                                }`}
                                         >
                                             {showRefreshSuccess ? (
                                                 <>
@@ -1566,7 +1565,7 @@ const EmployeeAttendancePage = () => {
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest px-4 sm:px-1">
                                     <CalendarDays className="w-3.5 h-3.5" />
-                                    Leave Entitlement Overview
+                                    Leave ALLOCATION Overview
                                 </div>
                                 <EmployeeLeaveSummaryCard
                                     loading={loadingLeaves}
@@ -1746,10 +1745,10 @@ const EmployeeAttendancePage = () => {
                             onClick={(e) => { e.stopPropagation(); setShowLocationPopup(false); }}
                             className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                         </button>
                         <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-5">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
                         </div>
                         <h2 className="text-xl font-bold text-slate-800 mb-2">Turn On Location</h2>
                         <p className="text-sm text-slate-500 leading-relaxed">
@@ -1765,20 +1764,20 @@ const EmployeeAttendancePage = () => {
                     className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
                     onClick={() => setShowOutOfRangePopup(false)}
                 >
-                    <div 
+                    <div
                         className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="p-6 pb-4 border-b border-slate-100 relative text-center">
                             <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
                             </div>
                             <h3 className="text-xl font-bold text-slate-800">Out of Range</h3>
                             <button onClick={() => setShowOutOfRangePopup(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors text-2xl leading-none font-light" title="Close">
                                 &times;
                             </button>
                         </div>
-                        
+
                         <div className="p-6 space-y-4 text-center">
                             <p className="text-[15px] text-slate-600 leading-relaxed">
                                 {outOfRangeMessage || "You are currently outside the allowed office location range."}
@@ -1789,7 +1788,7 @@ const EmployeeAttendancePage = () => {
                                 </p>
                             </div>
                         </div>
-                        
+
                         <div className="p-4 sm:px-6 sm:py-5 border-t border-slate-100 bg-slate-50/50">
                             <button
                                 onClick={() => setShowOutOfRangePopup(false)}
